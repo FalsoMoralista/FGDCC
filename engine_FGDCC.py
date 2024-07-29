@@ -45,8 +45,6 @@ from src.utils.logging import (
 from src.datasets.FineTuningDataset import make_GenericDataset
 
 from src.helper import (
-    configure_finetuning,
-    get_classification_head,
     load_checkpoint,
     load_DC_checkpoint,
     init_model,
@@ -55,6 +53,9 @@ from src.helper import (
     build_cache,
     VICReg
     )
+
+from src.models import FGDCC
+
 from src.transforms import make_transforms
 import time
 
@@ -209,10 +210,6 @@ def main(args, resume_preempt=False):
                            ('%.3f', 'Test - Acc@1'),
                            ('%.3f', 'Test - Acc@5'),
                            ('%f', 'avg_empty_clusters_per_class'),
-                           ('%f', 'avg_empty_clusters_k=2'),
-                           ('%f', 'avg_empty_clusters_k=3'),
-                           ('%f', 'avg_empty_clusters_k=4'),
-                           ('%f', 'avg_empty_clusters_k=5'),
                            ('%d', 'time (ms)'))
     
     # -- init model
@@ -224,7 +221,7 @@ def main(args, resume_preempt=False):
         pred_emb_dim=pred_emb_dim,
         model_name=model_name)
     target_encoder = copy.deepcopy(encoder)
-    target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Wrap around ddp to make state dict compatible
+    target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Wrap around ddp. to make state dict compatible?
 
     logger.info(autoencoder)
 
@@ -331,11 +328,11 @@ def main(args, resume_preempt=False):
         
     del encoder
     del predictor
-    
+
     def save_checkpoint(epoch):
         save_dict = {
-            'target_encoder': target_encoder.state_dict(),
-            'classification_head': hierarchical_classifier.state_dict(),
+            'target_encoder': fgdcc.module.vit_encoder.state_dict(),
+            'classification_head': fgdcc.module.classifier.state_dict(),
             'opt_1': optimizer.state_dict(),
             'opt_2': AE_optimizer.state_dict(),
             'scaler': None if scaler is None else scaler.state_dict(),
@@ -364,17 +361,23 @@ def main(args, resume_preempt=False):
         p.requires_grad = True
     target_encoder = target_encoder.module 
 
-    proj_embed_dim = 128
-    VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=25.0, std_coeff=25.0, cov_coeff=1.0) # Default coefficient values employed
-    target_encoder = configure_finetuning(target_encoder, nb_classes=nb_classes, drop_path=drop_path, device=device)
-    hierarchical_classifier = get_classification_head(target_encoder.pretrained_model.embed_dim, nb_classes=nb_classes, drop_path=drop_path, K_range=[2,3,4,5], proj_embed_dim=proj_embed_dim, device=device)
+    proj_embed_dim = 1024
+    VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=12.5, std_coeff=25.0, cov_coeff=1.0) 
     
+    fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
+                      drop_path=drop_path,
+                      nb_classes=nb_classes,
+                      K_range = [2,3,4,5],
+                      proj_embed_dim=proj_embed_dim,
+                      pretrained_model=target_encoder,
+                      device=device)
+
     # -- Override previously loaded optimization configs.
     # Create one optimizer that takes into account both encoder and its classifier parameters.
     optimizer, AE_optimizer, AE_scheduler, scaler, scheduler, wd_scheduler = init_DC_opt(
-        encoder=target_encoder,
-        classifier=hierarchical_classifier,
-        autoencoder=autoencoder,
+        encoder=fgdcc.vit_encoder,
+        classifier=fgdcc.classifier,
+        autoencoder=fgdcc.autoencoder,
         wd=wd,
         final_wd=final_wd,
         start_lr=start_lr,
@@ -386,9 +389,12 @@ def main(args, resume_preempt=False):
         ipe_scale=ipe_scale,
         use_bfloat16=use_bfloat16)
     
-    autoencoder = DistributedDataParallel(autoencoder, static_graph=True)
-    target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Static Graph: the set of used and unused parameters will not change during the whole training loop.    
-    hierarchical_classifier = DistributedDataParallel(hierarchical_classifier, static_graph=False, find_unused_parameters=True) # Static Graph: the set of used and unused parameters will not change during the whole training loop.
+    # Hierarchical classifier requires both static_graph=False and to find unused parameters to work.
+    fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=True) 
+
+    #autoencoder = DistributedDataParallel(autoencoder, static_graph=True)
+    #target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Static Graph: the set of used and unused parameters will not change during the whole training loop.    
+    #hierarchical_classifier = DistributedDataParallel(hierarchical_classifier, static_graph=False, find_unused_parameters=True) # Static Graph: the set of used and unused parameters will not change during the whole training loop.
     
     # TODO: ADJUST THIS later!
     if resume_epoch != 0:
@@ -403,7 +409,7 @@ def main(args, resume_preempt=False):
             wd_scheduler.step()
 
     logger.info(target_encoder)
-
+    
     resources = faiss.StandardGpuResources()
     config = faiss.GpuIndexFlatConfig()
     config.device = rank
@@ -424,34 +430,32 @@ def main(args, resume_preempt=False):
     # K-Means runs several iterations (until convergence) and from the way this is currently implemented
     # the code is logging empty clusters per iteration. This way the same cluster can be logged many times across iterations.
     # We will keep it as it is for now.
-    empty_clusters_per_epoch = AverageMeter() # Tracks the number of empty clusters per epoch and class
-    empty_clusters_per_k_per_epoch = [AverageMeter() for _ in K_range] 
+    empty_clusters_per_epoch = AverageMeter() # Tracks the number of empty clusters per epoch and class 
     
+    model_noddp = fgdcc.module
     logger.info('Building cache...')
     cached_features_last_epoch = build_cache(data_loader=supervised_loader_train,
-                                             device=device, target_encoder=target_encoder,
-                                             autoencoder=autoencoder,
+                                             device=device, target_encoder=model_noddp.vit_encoder,
+                                             autoencoder=model_noddp.autoencoder,
+                                             hierarchical_classifier=model_noddp.classifier, 
                                              path=root_path+'/DeepCluster/cache')
+    
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]    
-    assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing' # Img qtt before upsampling = 243916
+    assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
+    
     logger.info('Done.')
     logger.info('Initializing centroids...')
+    
     k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device) # E-step
+    
     logger.info('Done.')
     logger.info('M - Step...')
-    M_losses, empty_clusters_per_epoch, empty_clusters_per_k_per_epoch = k_means_module.update(cached_features_last_epoch, device, empty_clusters_per_epoch, empty_clusters_per_k_per_epoch) # M-step
-    print('Losses', M_losses)
-    print('Avg no of empty clusters:', empty_clusters_per_epoch.avg)
-    print('Empty clusters per K:')
-    print(empty_clusters_per_k_per_epoch[0].avg,
-          empty_clusters_per_k_per_epoch[1].avg,
-          empty_clusters_per_k_per_epoch[2].avg,
-          empty_clusters_per_k_per_epoch[3].avg)
-
+    
+    M_losses = k_means_module.update(cached_features_last_epoch, device, empty_clusters_per_epoch) # M-step
+    
+    #print("S:", k_means_module.inter_cluster_separation())
     accum_iter = 1
     start_epoch = resume_epoch
-
-    l2_norm = torch.nn.MSELoss()
 
     # -- TRAINING LOOP
     for epoch in range(start_epoch, num_epochs):
@@ -470,8 +474,7 @@ def main(args, resume_preempt=False):
 
         time_meter = AverageMeter()
 
-        target_encoder.train(True)
-        hierarchical_classifier.train(True)
+        fgdcc.train(True)
 
         cached_features = {}
         for itr, (sample, target) in enumerate(supervised_loader_train):
@@ -499,23 +502,11 @@ def main(args, resume_preempt=False):
 
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
 
-                    # Step 1. Forward into the encoder
-                    h = target_encoder(imgs) 
+                    reconstruction_loss, bottleneck_output, parent_logits, child_logits, parent_proj_embed, child_proj_embed = fgdcc(imgs, targets, device)
 
-                    h_detached = h.detach() # Detaching will prevent autograd from backpropagating the gradients from the autoencoder to the vision transformer model 
-                    
-                    # Step 2. Autoencoder Dimensionality Reduction  
-                    reconstructed_input, bottleneck_output = autoencoder(h_detached)                     
-
-                    reconstruction_loss = l2_norm(reconstructed_input, h_detached)
-
-                    # Step 3. Compute K-Means assignments with disabled autocast as faiss requires float32
+                    #-- Compute K-Means assignments with disabled autocast as faiss requires float32
                     with torch.cuda.amp.autocast(enabled=False): 
                         k_means_losses, k_means_assignments = k_means_module.assign(x=bottleneck_output, y=target, resources=resources, rank=rank, device=device, cached_features=cached_features_last_epoch)  
-
-
-                    # Step 4. Hierarchical Classification
-                    parent_logits, child_logits, parent_proj_embeddings, child_proj_embeddings = hierarchical_classifier(h, device)
 
                     loss = loss_fn(parent_logits, targets)
                     parent_cls_loss_meter.update(loss)
@@ -534,9 +525,9 @@ def main(args, resume_preempt=False):
                             #print('Subclass loss', subclass_loss)
                             subclass_losses.append(subclass_loss)
 
-                        subclass_losses = torch.vstack(subclass_losses)
                         #print(subclass_losses)
                         #print(subclass_losses.size())
+                        subclass_losses = torch.vstack(subclass_losses)
                         best_k_indexes = torch.argmin(subclass_losses, dim=0)
 
                         #print('Best K index by datapoint:', best_k_indexes)
@@ -550,24 +541,11 @@ def main(args, resume_preempt=False):
                     consistency_loss = 0
 
                     k_means_losses = k_means_losses.squeeze(2).transpose(0,1)
-
-                    # -- Consistency Regularization with KL Divergence
-                    size = imgs.size(0) # This allows handling cases when the number of points is different from batch size (due to drop_last=False)
-                    gathered_child_embeddings = []
-                    for i in range(size):
-                        gathered_child_embeddings.append(child_proj_embeddings[best_k_indexes[i]][i])
-                    gathered_child_embeddings = torch.stack(gathered_child_embeddings)
-
-                    parent_probs = F.log_softmax(parent_proj_embeddings, dim=1)
-                    subclass_probs = F.log_softmax(gathered_child_embeddings, dim=1)
-                    consistency_loss = F.kl_div(parent_probs, subclass_probs, log_target=True,  reduction='batchmean')
-
                     subclass_loss = subclass_losses[best_k_indexes, torch.arange(best_k_indexes.size(0))].mean()
                     k_means_loss = k_means_losses[best_k_indexes, torch.arange(best_k_indexes.size(0))].mean()
                     
-                    vicreg_loss = VICReg_loss(parent_proj_embeddings, gathered_child_embeddings)
+                    vicreg_loss = VICReg_loss(parent_proj_embed, child_proj_embed)
 
-                    #subclass_loss = AllReduce.apply(subclass_loss).clone()
                     children_cls_loss_meter.update(subclass_loss)
                     
                     consistency_loss_meter.update(consistency_loss)
@@ -575,15 +553,13 @@ def main(args, resume_preempt=False):
                     vicreg_loss_meter.update(vicreg_loss)
 
                     # Sum parent and subclass loss + Regularizers
-                    loss += subclass_loss + consistency_loss + vicreg_loss
+                    loss += subclass_loss + vicreg_loss + consistency_loss
                     #reconstruction_loss = AllReduce.apply(reconstruction_loss).clone()
                     reconstruction_loss_meter.update(reconstruction_loss)
 
-                    
                     # FIXME: this won't work as expected since its a constant
-                    # TODO: perhaps multiplying by the gradients of the parameters from the ViT encoder.
-                    # Add K-means distances term as penalty to enforce a "k-means friendly space" 
-                    reconstruction_loss += 0.25 * k_means_loss 
+                    # TODO check: perhaps multiplying by the gradients of the parameters from the ViT encoder.
+                    reconstruction_loss += 0.25 * k_means_loss # Add K-means distances term as penalty to enforce a "k-means friendly space" 
                     '''
                         `all_reduce`: is used to perform an element-wise reduction operation (like sum, product, max, min, etc.) 
                         across all processes in a process group. 
@@ -597,12 +573,7 @@ def main(args, resume_preempt=False):
                     #k_means_loss = AllReduce.apply(k_means_loss).clone()
                     #subclass_loss = AllReduce.apply(subclass_loss).clone()
                     
-                    #print('Losses')
-                    #print('Parent class loss:', loss)
-                    #print('Subclass loss', subclass_loss)
-                    #print('K-means loss', k_means_loss)
-                    #print('Autoencoder reconstruction loss', reconstruction_loss)
-                # TODO: fix
+                # FIXME
                 if accum_iter > 1: 
                     loss_value = loss.item()
                     reconstruction_loss_value = reconstruction_loss.item()
@@ -616,11 +587,11 @@ def main(args, resume_preempt=False):
                 #  Step 2. Backward & step
                 if use_bfloat16:
                     scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
-                                parameters=autoencoder.parameters(), create_graph=False, retain_graph=False,
+                                parameters=fgdcc.module.autoencoder.parameters(), create_graph=False, retain_graph=True,
                                 update_grad=(itr + 1) % accum_iter == 0)
                     
                     scaler(loss, optimizer, clip_grad=None,
-                                parameters=(list(target_encoder.parameters())+ list(hierarchical_classifier.parameters())),
+                                parameters=(list(fgdcc.module.vit_encoder.parameters())+ list(fgdcc.module.classifier.parameters())),
                                 create_graph=False, retain_graph=False,
                                 update_grad=(itr + 1) % accum_iter == 0) # Scaling is only necessary when using bfloat16.   
                 else:
@@ -629,7 +600,7 @@ def main(args, resume_preempt=False):
                     optimizer.step()
                     AE_optimizer.step()
 
-                grad_stats = grad_logger(list(target_encoder.named_parameters())+ list(hierarchical_classifier.named_parameters()))
+                grad_stats = grad_logger(list(fgdcc.module.vit_encoder.named_parameters())+ list(fgdcc.module.classifier.named_parameters()))
                 
                 if (itr + 1) % accum_iter == 0:
                     optimizer.zero_grad()
@@ -731,13 +702,8 @@ def main(args, resume_preempt=False):
         # Good news is that we only have to make the cache consistent in order to make the k-means consistent as well.
         
         # -- Perform M step on K-means module
-        M_losses = k_means_module.update(cached_features, device, empty_clusters_per_epoch, empty_clusters_per_k_per_epoch)
+        M_losses = k_means_module.update(cached_features, device, empty_clusters_per_epoch)
         print('Avg no of empty clusters:', empty_clusters_per_epoch.avg)
-        print('Empty clusters per K:')
-        print(empty_clusters_per_k_per_epoch[0].avg,
-            empty_clusters_per_k_per_epoch[1].avg,
-            empty_clusters_per_k_per_epoch[2].avg,
-            empty_clusters_per_k_per_epoch[3].avg)
     
         #for k in range(len(K_range)):            
         #    logger.info('Average K-Means Loss after M step: [K=',K_range[k],', value:', M_losses[k],']')
@@ -753,8 +719,7 @@ def main(args, resume_preempt=False):
         @torch.no_grad()
         def evaluate():
             crossentropy = torch.nn.CrossEntropyLoss()
-            target_encoder.eval()
-            hierarchical_classifier.eval()              
+            fgdcc.eval()
             supervised_sampler_val.set_epoch(epoch) # -- Enable shuffling to reduce monitor bias
             
             for cnt, (samples, targets) in enumerate(supervised_loader_val):
@@ -762,8 +727,7 @@ def main(args, resume_preempt=False):
                 labels = targets.to(device, non_blocking=True)
                                  
                 with torch.cuda.amp.autocast():
-                    output = target_encoder(images)
-                    parent_logits, _, _, _ = hierarchical_classifier(output, device)                    
+                    _, _, parent_logits, _, _, _ = fgdcc(images, targets, device)                    
                     loss = crossentropy(parent_logits, labels)
                 
                 acc1, acc5 = accuracy(parent_logits, labels, topk=(1, 5))
@@ -788,10 +752,6 @@ def main(args, resume_preempt=False):
                         testAcc1.avg,
                         testAcc5.avg,
                         empty_clusters_per_epoch.avg,
-                        empty_clusters_per_k_per_epoch[0].avg,
-                        empty_clusters_per_k_per_epoch[1].avg,
-                        empty_clusters_per_k_per_epoch[2].avg,
-                        empty_clusters_per_k_per_epoch[3].avg,
                         time_meter.avg)
 
         # -- Save Checkpoint after every epoch
@@ -803,7 +763,6 @@ def main(args, resume_preempt=False):
         
         # -- Reset loggers at end of the epoch
         empty_clusters_per_epoch = AverageMeter() # Tracks the number of empty clusters per class 
-        empty_clusters_per_k_per_epoch = [AverageMeter() for _ in K_range]
 
 if __name__ == "__main__":
     main()

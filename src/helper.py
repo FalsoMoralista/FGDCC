@@ -7,6 +7,7 @@
 
 import logging
 import sys
+import copy
 
 import torch
 
@@ -20,9 +21,7 @@ import torch.nn.functional as F
 from torch import inf 
 
 import src.models.autoencoder as AE
-
 # from timm.models.layers import trunc_normal_ 
-import util.lr_decay as lrd
 import os
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
@@ -42,29 +41,12 @@ def load_checkpoint(
         checkpoint = torch.load(r_path, map_location=torch.device('cpu'))
         epoch = checkpoint['epoch']
 
-        # -- loading encoder
-        #pretrained_dict = checkpoint['encoder']
-        #msg = encoder.load_state_dict(pretrained_dict)
-        #logger.info(f'loaded pretrained encoder from epoch {epoch} with msg: {msg}')
-
-        # -- loading predictor
-        #pretrained_dict = checkpoint['predictor']
-        #msg = predictor.load_state_dict(pretrained_dict)
-        #logger.info(f'loaded pretrained encoder from epoch {epoch} with msg: {msg}')
-
         # -- loading target_encoder
         if target_encoder is not None:
             print(list(checkpoint.keys()))
             pretrained_dict = checkpoint['target_encoder']
             msg = target_encoder.load_state_dict(pretrained_dict)
             logger.info(f'loaded pretrained encoder from epoch {epoch} with msg: {msg}')
-
-        # -- loading optimizer
-        #opt.load_state_dict(checkpoint['opt'])
-        #if scaler is not None:
-        #    scaler.load_state_dict(checkpoint['scaler'])
-        #logger.info(f'loaded optimizers from epoch {epoch}')
-        #logger.info(f'read-path: {r_path}')
         del checkpoint
 
     except Exception as e:
@@ -121,211 +103,6 @@ def load_DC_checkpoint(
     return target_encoder, hierarchical_classifier, None, opt, None, scaler, epoch
 
 
-class ParentClassifier(nn.Module):
-    def __init__(self, input_dim, proj_embed_dim ,num_parents):
-        super(ParentClassifier, self).__init__()
-        self.proj_embed_dim = proj_embed_dim
-        self.fc = nn.Linear(input_dim, num_parents)
-        self.proj = nn.Linear(num_parents, self.proj_embed_dim)
-        self.drop = nn.Dropout(0.2)
-        trunc_normal_(self.proj.weight, std=2e-5)
-        trunc_normal_(self.fc.weight, std=2e-5)
-        if self.fc.bias is not None:
-            torch.nn.init.constant_(self.fc.bias, 0)
-            torch.nn.init.constant_(self.proj.bias, 0)
-
-    def forward(self, x):
-        x = self.fc(x)
-        x = F.layer_norm(x, (x.size(-1),))  # normalize over feature-dim 
-        return x, self.proj(self.drop(x))
-
-class ChildClassifier(nn.Module):
-    def __init__(self, input_dim, proj_embed_dim, num_children):
-        super(ChildClassifier, self).__init__()
-        self.proj_embed_dim = proj_embed_dim
-        self.fc = nn.Linear(input_dim, num_children)
-        self.proj = nn.Linear(num_children, self.proj_embed_dim)
-        self.drop = nn.Dropout(0.2)
-        
-        trunc_normal_(self.proj.weight, std=2e-5)
-        trunc_normal_(self.fc.weight, std=2e-5)
-        if self.fc.bias is not None:
-            torch.nn.init.constant_(self.fc.bias, 0)
-            torch.nn.init.constant_(self.proj.bias, 0)
-    
-    def forward(self, x):
-        x = self.fc(x)        
-        x = F.layer_norm(x, (x.size(-1),))  # normalize over feature-dim 
-        return x, self.proj(self.drop(x))
-
-'''
-    Hierarchical Classifier
-    ----------
-    num_parents: int
-        Number of parent classes.
-
-    num_children_per_parent: list 
-
-        This allows for model selection, i.e., finding the optimal value of K.
-        
-        We associate 1 classifier of shape (embed_dim, K) for each K in the range within num_children_per_parent. Each one will then be used 
-        to predict the K-means assignment correspondent to each value of K and the one to make the most accurate prediction will be selected 
-        for backpropagation.   
-
-        One concern with this approach is that the probability that randomness plays a bigger role in the subclass prediction
-        increases inversely with the number of K. In other words, if a random subclass classifier learns how to produce one hot 
-        vectors, regardless of its semantic meaning, the chance that it correctly guess a subclass is 25% for K=2. If it does 
-        learns that every subclass classifier with output size = K = 2 could either be [0, 1] or [1, 0], the probability
-        that it generates a correct output at random is 50%. One way to prevent this from happening perhaps is by forcing it
-        to make predictions in the space of the cartesian product between K-means assingments and ground truth labels.
-
-'''
-class HierarchicalClassifier(nn.Module):
-    def __init__(self, input_dim, num_parents, drop_path, proj_embed_dim, num_children_per_parent):
-        super(HierarchicalClassifier, self).__init__()
-        self.proj_embed_dim = proj_embed_dim
-        self.head_drop = nn.Dropout(drop_path)
-        self.num_parents = num_parents
-        self.num_children_per_parent = num_children_per_parent
-        self.parent_classifier = ParentClassifier(input_dim, proj_embed_dim, num_parents)
-        self.child_classifiers = nn.ModuleList(
-            [nn.ModuleList(
-                [ChildClassifier(input_dim, proj_embed_dim ,num_children) for _ in range(num_parents)]
-            ) for num_children in num_children_per_parent]    
-        )
-
-    def forward(self, x, device):
-        x = self.head_drop(x)
-        parent_logits, parent_proj_embeddings = self.parent_classifier(x)  # Shape (batch_size, num_parents)
-        parent_probs = F.softmax(parent_logits, dim=1)  # Softmax over class dimension
-
-        # The parent class prediction allows to select the index for the correspondent subclass classifier
-        parent_class = torch.argmax(parent_probs, dim=1)  # Argmax over class dimension: Shape (batch_size)
-
-        # Use the predicted parent class to select the corresponding child classifier
-        child_logits = [torch.zeros(x.size(0), num, device=device) for num in self.num_children_per_parent] # Each element within child_logits is associated to a classifier with K outputs.
-        child_proj_embeddings = [torch.zeros(x.size(0), self.proj_embed_dim, device=device) for num in self.num_children_per_parent] # Each element within child_logits is associated to a classifier with K outputs.
-        for i in range(len(self.num_children_per_parent)):
-            for j in range(x.size(0)): # Iterate over each sample in the batch                   
-                # We will make predictions for each value of K belonging to num_children_per_parent (e.g., [2,3,4,5]) 
-                logits, proj_embeddings = self.child_classifiers[i][parent_class[j]](x[j])
-                child_logits[i][j] = logits
-                child_proj_embeddings[i][j] = proj_embeddings
-        return parent_logits, child_logits, parent_proj_embeddings, child_proj_embeddings
-
-
-class FinetuningModel(nn.Module):
-    def __init__(self, pretrained_model, drop_path, nb_classes, K_range = [2,3,4,5]):
-        super(FinetuningModel, self).__init__()        
-        self.pretrained_model = pretrained_model
-
-        self.drop_path = drop_path
-        self.nb_classes = nb_classes
-        
-        self.pretrained_model.drop_path = 0.2
-        self.pretrained_model.drop_rate = 0.25
-        
-        self.head_drop = nn.Dropout(drop_path)
-
-    '''
-        Returns normalized features only.
-    '''
-    def forward(self, x):
-        x = self.pretrained_model(x)
-
-        x = torch.mean(x, dim=1)
-        x = torch.squeeze(x, dim=1)
-        
-        x = F.layer_norm(x, (x.size(-1),))  # normalize over feature-dim 
-
-        return x
-    
-    '''
-    # Another Idea:
-     I guess that another possibility of doing classification hierarchically 
-     is by setting up a classifier for each subclass. 
-     This way, we'd have an array of linear layers with one-to-one correspondence between parent and subclasses.
-     We could then make conditioned predictions by using the prediction from the parent class as index to the array of linear classifiers.
-     Then we'd predict the subclass, given that we used the parent classifier prediction to select the subclass classifier.
-     
-     Questions:
-        Which one should make more sense?
-        This one seems rather insightful but it doesn't explicitly uses a product between probabilities as information as input to the criterion
-        which is a bit counterintuitive. On the other hand, it seems more "semantically alligned" with, let us say, this "type of programming" 
-        that we'd have one classifier for each set of classes, which it's not the further case. 
-
-        It also seems more semantically alligned with our purpose, that we'd have separate classifiers for each subclass, such that
-        it allows the model to learn explicit features for each subclass in a less fuzzier way. 
-
-        Should we use the prediction as index, or should we use the parent (target) label directly? Does that configures cheating? Does by
-        using the target directly we "disconnect" the information flow of the hierarchy? 
-
-        TODO: Reconsider below (approach no. 3).
-        Should we instead train the model to predict the cartesian product between the probabilities, instead of using the cartesian
-        product as information, that is, input to a linear layer that will learns the weights for each pair/product? 
-        
-        I sense that this is an idea that unifies both approaches. It's scalable and reasonable.  
-        Because, that is also the problem that, for our case which involves K=5, so, for problems with a small number of subclasses,
-        those approaches (1 and 2), approaches that involves predicting the correct subclass are more prone to the effects randomness
-        that is, for our K=5 subclasses example, the probability that the model outputs a correct class by random chance is 20%. 
-        Perhaps the model wouldn't choose random strategy because it is not much successful, but to which extent this can worsen 
-        the learning process by confusion? My guess is that randomness could help because it could have a strong effect in cases
-        of lower values of K, and therefore, it could affect the learning process negatively. 
-
-        Otherwise, if we try to predict a cartesian product between the two labels, in cases of a higher amount of classes, and subclasses
-        the chance of randomness playing a substantial role in learning diminishes significantly.
-
-        TODO: Rethink this approach as trying to predict cartesian products will imply the model to have to learn to predict not only the correct 
-        outputs, but the incorrect ones as well? Perhaps it will turn the problem even harder. Perhaps dropping 0 values would be a viable solution. 
-        Perhaps what we are calling cartesian product is not the correct name of it, perhaps the model should predict the pair of compatible labels instead.   
-    '''
-    def forward_classifiers(self, h): 
-        
-        # Output the prediction correspondent to the label provided by the dataset i.e., P(Y_p | h)
-        y_parent_pred = self.parent_classifier(self.head_drop(h)) 
-        
-        # P(Y_s | h)
-        y_subclass_pred = self.subclass_classifier(self.head_drop(h)) # Hoping that this dropout operation is performed sequentially otherwise will require a bunch of memory
-
-        # This allows to predict the joint probability of both classes assuming that they are independent, i.e., P(Y_p, Y_s | h) = P(Y_s | h) * P(Y_p | h)
-        y_subclass_pred = torch.cartesian_prod(y_subclass_pred, y_parent_pred) # But do we really want to assume independence? 
-        
-        return y_parent_pred, y_subclass_pred
-
-
-    def forward_parent_classifier(self, x):
-
-        x = self.pretrained_model(x)
-
-        x = torch.mean(x, dim=1) # alternative
-        
-        x = F.layer_norm(x, (x.size(-1),))  # normalize over feature-dim 
-        
-        x = self.head_drop(x) # As in in timm.models
-        
-        x = self.parent_classifier(x)
-        return x
-
-def configure_finetuning(pretrained_model, drop_path, nb_classes, device):
-    model = FinetuningModel(pretrained_model, drop_path, nb_classes)    
-    model.to(device)
-    return model         
-
-def get_classification_head(embed_dim, drop_path, nb_classes, K_range, proj_embed_dim, device):
-    model = HierarchicalClassifier(input_dim=embed_dim,
-                                   num_parents=nb_classes,
-                                   drop_path=drop_path,
-                                   proj_embed_dim=proj_embed_dim,
-                                   num_children_per_parent=K_range)        
-    model.to(device)
-    return model                 
-
-def off_diagonal(x):
-    n, m = x.shape
-    assert n == m
-    return x.flatten()[:-1].view(n - 1, n + 1)[:, 1:].flatten()
-
-
 class VICReg(nn.Module):
     def __init__(self, args, num_features, sim_coeff, std_coeff, cov_coeff):
         super().__init__()
@@ -335,20 +112,19 @@ class VICReg(nn.Module):
         self.sim_coeff = sim_coeff
         self.std_coeff = std_coeff
         self.cov_coeff = cov_coeff
-         
-        #self.backbone, self.embedding = resnet.__dict__[args.arch](
-        #    zero_init_residual=True
-        #)
-        #self.projector = Projector(args, self.embedding)
+
+    def off_diagonal(self, x):
+        n, m = x.shape
+        assert n == m
+        return x.flatten()[:-1].view(n - 1, n + 1)[:, 1:].flatten()
 
     def forward(self, x, y):
-        #x = self.projector(self.backbone(x))
-        #y = self.projector(self.backbone(y))
         batch_size = x.size(0)
-        repr_loss = F.mse_loss(x, y)
+        
+        repr_loss = 0
+        if self.sim_coeff > 0:
+            repr_loss = F.mse_loss(x, y)
 
-        #x = torch.cat(FullGatherLayer.apply(x), dim=0)
-        #y = torch.cat(FullGatherLayer.apply(y), dim=0)
         x = x - x.mean(dim=0)
         y = y - y.mean(dim=0)
 
@@ -358,9 +134,9 @@ class VICReg(nn.Module):
 
         cov_x = (x.T @ x) / (batch_size - 1)
         cov_y = (y.T @ y) / (batch_size - 1)
-        cov_loss = off_diagonal(cov_x).pow_(2).sum().div(
+        cov_loss = self.off_diagonal(cov_x).pow_(2).sum().div(
             self.num_features
-        ) + off_diagonal(cov_y).pow_(2).sum().div(self.num_features)
+        ) + self.off_diagonal(cov_y).pow_(2).sum().div(self.num_features)
 
         loss = (
             self.sim_coeff * repr_loss
@@ -458,10 +234,11 @@ def init_model(
     
     return encoder, predictor, autoencoder
 
-def build_cache(data_loader, device, target_encoder, autoencoder, path):   
+def build_cache(data_loader, device, target_encoder, hierarchical_classifier, autoencoder, path):   
 
     target_encoder.eval()
     autoencoder.eval()
+    hierarchical_classifier.eval()
 
     items = []
     def forward_inputs():
@@ -473,8 +250,9 @@ def build_cache(data_loader, device, target_encoder, autoencoder, path):
                     return (samples, targets)
                 imgs, _ = load_imgs()            
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=True):            
-                    h = target_encoder(imgs)
-                    _, bottleneck_output = autoencoder(h)
+                    h = target_encoder(imgs)        
+                    _, _, _, child_proj_emb = hierarchical_classifier(h, device)                    
+                    _, bottleneck_output = autoencoder(child_proj_emb)
                     items.append((bottleneck_output, target))
            
     def build_cache():
@@ -495,6 +273,7 @@ def build_cache(data_loader, device, target_encoder, autoencoder, path):
         cache = torch.load(path + '/cached_features_epoch_0.pt')        
     autoencoder.train(True)
     target_encoder.train(True)
+    hierarchical_classifier.train(True)
     return cache
 
 def init_opt(

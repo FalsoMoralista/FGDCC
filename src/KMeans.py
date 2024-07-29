@@ -4,6 +4,10 @@ import torch.distributed as dist
 import faiss
 import faiss.contrib.torch_utils
 
+import itertools
+
+import torch.nn.functional as F
+
 import numpy as np
 np.random.seed(0) # TODO: modify
 
@@ -11,22 +15,13 @@ from src.utils.logging import (
     CSVLogger,
     AverageMeter)
 
-
-'''
-        - TODO (Ideas/Ablation):
-            - Keep track of the average no. of iterations to converge and log this.
-            - Keep track of the classes that are presenting empty clusters (log as well). 
-            - How frequently should we perform E on the k-means? 
-                I sense that we could use a scheduler to increase the amount of epochs before performing E
-                e.g., start with 1 and double on every 10 epochs;
-                e.g., start with 1 for 10 epochs then double it on every 5. 
-'''
 class KMeansModule:
 
     def __init__(self, nb_classes, dimensionality=256, n_iter=300, tol=1e-4, k_range=[2,3,4,5], resources=None, config=None):
         
         self.resources = resources
         self.config = config
+        self.nb_classes = nb_classes
 
         self.k_range = k_range
         self.d = dimensionality
@@ -41,23 +36,69 @@ class KMeansModule:
             for _ in range(nb_classes):
                 self.n_kmeans.append([faiss.Kmeans(d=dimensionality, k=k, niter=1, verbose=False, min_points_per_centroid = 1) for k in k_range])                                                            
 
-    def my_index_cpu_to_gpu_multiple(self, resources, index, co=None, gpu_nos=None):
-        vres = faiss.GpuResourcesVector()
-        vdev = faiss.IntVector()
-        if gpu_nos is None: 
-            gpu_nos = range(len(resources))
-        for i, res in zip(gpu_nos, resources):
-            vdev.push_back(i)
-            vres.push_back(res)
-        index = faiss.index_cpu_to_gpu_multiple(vres, vdev, index, co)
-        index.referenced_objects = resources
-        return index
-    
-    def CosineClusterIndex(self, xb, yb, cached_features):
+    '''
+        TODO speedup: create a 1081 length batch and compute all at once?
+    '''
+    def InterClusterSeparationPerClass(self, cls):
+        # Generates a list containing the combinations of the centroid indexes for a K-Means cluster
+        def two_by_two_combinations(values):
+            return list(itertools.combinations(values, 2)) # Returns the centroids index for all pairs of distinct clusters        
+        combination_list = [two_by_two_combinations(range(k)) for k in self.k_range]
+            
+        S_score = torch.zeros(len(self.k_range))
+        target_K_Means = self.n_kmeans[cls]
+        for k_i in range(len(self.k_range)):
+            centroids = target_K_Means[k_i].centroids
+            # Computes the cosine similarity between every distinct pair of centroids within a cluster for each k in K
+            for pair in combination_list[k_i]:
+                centroid_0 = torch.from_numpy(centroids[pair[0]])
+                centroid_1 = torch.from_numpy(centroids[pair[1]])
+                S_score[k_i] += F.cosine_similarity(centroid_0, centroid_1, dim=0)  
+        return S_score
+
+
+    '''
+        TODO (Robustness/Consistency):
+            - Check if the updated cache has more than K samples, if so use it
+            otherwise use the previous epoch's one. 
+
+            Which problems arises from using last epoch's cached features in relation to the current one?             
+    '''
+    def CosineClusterIndexPerClass(self, xb, yb, cached_features):
+        # Gather the image batch from the cache
+        # For every k in K:
+        #   assign each image to its respective centroids (for every c_i in k)
+        #   for each pair in the batch (image features, cluster assignment)
+        #   compute the cosine similarity to its nearest centroid
+        #   c results from the summation of every cosine similarity  
+
+#        S_scores = {}
+#        for cls in range(self.nb_classes):
+#            S_score = torch.zeros(len(self.k_range))
+#            target_K_Means = self.n_kmeans[cls]
+#            for k_i in range(len(self.k_range)):
+#                centroids = target_K_Means[k_i].centroids
+#                print('Centroids for class', cls, 'K=', (k_i+2), centroids)
+                # Computes the cosine similarity between every distinct pair of centroids within a cluster for each k in K
+#                for pair in combination_list[k_i]:
+#                    S_score[k_i] += F.cosine_similarity(centroids[pair[0]], centroids[pair[1]]) 
+#            S_scores[cls] = S_score
+
+
+        for target in yb: 
+            CCI_scores = torch.zeros(len(self.k_range)) # e.g., [2, 3, 4, 5]
+            S_scores = torch.zeros(len(self.k_range))
+            target_K_Means = self.n_kmeans[target]
+            for k in range(len(self.k_range)):
+                K = self.k_range[k]
+                centroids = target_K_Means[k].centroids
+                for c_i in range(len(centroids)):
+                    S = F.cosine_similarity()
+
         return 0
 
     def initialize_centroids(self, batch_x, class_id, resources, rank, device, config, cached_features):
-        def augment(x, n_samples): # Built as a helper function for development TODO: remove
+        def augment(x, n_samples): # Built as a helper function for development
             # Workaround to handle faiss centroid initialization with a single sample.
             # We built upon Mathilde Caron's idea of adding perturbations to the data, but we do it randomly instead.
             augmented_data = x.repeat((n_samples, 1))
@@ -87,8 +128,11 @@ class KMeansModule:
             index_flat = self.n_kmeans[class_id][k].index
             gpu_index_flat = faiss.index_cpu_to_gpu(self.resources, rank, index_flat)
             self.n_kmeans[class_id][k].index = gpu_index_flat
-            
-    
+        val = self.inter_cluster_separation_per_class(class_id)
+        print('S-Score:', val)
+        print('Exitting')
+        exit(0)
+
     def init(self, resources, rank, device, config, cached_features):
         # Initialize the centroids for each class
         for key in cached_features.keys():
@@ -135,14 +179,13 @@ class KMeansModule:
         I_batch = torch.stack((I_batch))
         return D_batch, I_batch
 
-    def update(self, cached_features, device, empty_clusters_per_epoch, empty_clusters_per_k_per_epoch):
+    def update(self, cached_features, device, empty_clusters_per_epoch):
         means = [[] for k in self.k_range]
         for key in cached_features.keys():
             xb = torch.stack(cached_features[key]) # Form an image batch
             if xb.get_device() == -1:
                 xb = xb.to(device, dtype=torch.float32)
-            _, batch_k_means_loss = self.iterative_kmeans(xb, key, device, empty_clusters_per_epoch, empty_clusters_per_k_per_epoch) # TODO: sum and average across dataset length
-            # log_loss.update(batch_k_means_loss.mean())
+            _, batch_k_means_loss = self.iterative_kmeans(xb, key, device, empty_clusters_per_epoch) # TODO: sum and average across dataset length
             # For each "batch" append the losses (average distances) for each K value.
             for k in range(len(self.k_range)):
                 means[k].append(batch_k_means_loss[k])
@@ -151,9 +194,9 @@ class KMeansModule:
         for k in range(len(self.k_range)):
             stack = torch.stack(means[k])
             losses.append(stack.mean())
-        return losses, empty_clusters_per_epoch, empty_clusters_per_k_per_epoch
+        return losses
 
-    def iterative_kmeans(self, xb, class_index, device, empty_clusters_per_epoch, empty_clusters_per_k_per_epoch):
+    def iterative_kmeans(self, xb, class_index, device, empty_clusters_per_epoch):
         empty_clusters = []
         D_per_K_value = torch.zeros(len(self.k_range)) # e.g., [2, 3, 4, 5]
         for k in range(len(self.k_range)):
@@ -218,7 +261,8 @@ class KMeansModule:
                             new_centroids[j] += op 
                             non_empty_cluster -= op
                             non_empty.append((k,j))
-                            empty_clusters.append(K)                        
+                            empty_clusters.append(K)        
+
                 # Update the centroids in the FAISS index
                 self.n_kmeans[class_index][k].centroids = new_centroids
                 self.n_kmeans[class_index][k].index.reset()
@@ -226,10 +270,4 @@ class KMeansModule:
                 D_per_K_value[k] = torch.mean(D)
         if len(empty_clusters) > 0:
             empty_clusters_per_epoch.update(len(empty_clusters))
-            for entry in empty_clusters:
-                empty_clusters_per_k_per_epoch[(entry - 2)].update(1)
-            # TODO: remove
-            #print('Empty Clusters per k value for class id:', class_index)
-            #print(empty_clusters)
-            #print('################# ################# #################')
         return self.n_kmeans, D_per_K_value

@@ -2426,3 +2426,4 @@ Traceback (most recent call last):
     VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=, std_coeff=, cov_coeff=)
                                                                  ^^^^^^^^^^
 SyntaxError: expected argument value expression
+slurmstepd: error: *** JOB 2603 ON hgx CANCELLED AT 2024-07-11T19:30:41 ***

@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC.py", line 16, in <module>
+    from engine_FGDCC import main as app_main
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 47, in <module>
+    from src.helper import (
+ImportError: cannot import name 'configure_finetuning' from 'src.helper' (/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/helper.py)
