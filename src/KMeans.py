@@ -36,26 +36,20 @@ class KMeansModule:
             for _ in range(nb_classes):
                 self.n_kmeans.append([faiss.Kmeans(d=dimensionality, k=k, niter=1, verbose=False, min_points_per_centroid = 1) for k in k_range])                                                            
 
-    '''
-        TODO speedup: create a 1081 length batch and compute all at once?
-    '''
-    def InterClusterSeparationPerClass(self, cls):
+    def inter_cluster_separation(self, cls, device):
         # Generates a list containing the combinations of the centroid indexes for a K-Means cluster
         def two_by_two_combinations(values):
             return list(itertools.combinations(values, 2)) # Returns the centroids index for all pairs of distinct clusters        
         combination_list = [two_by_two_combinations(range(k)) for k in self.k_range]
             
-        S_score = torch.zeros(len(self.k_range))
+        S_score = torch.zeros(len(self.k_range), device=device)
         target_K_Means = self.n_kmeans[cls]
         for k_i in range(len(self.k_range)):
             centroids = target_K_Means[k_i].centroids
             # Computes the cosine similarity between every distinct pair of centroids within a cluster for each k in K
             for pair in combination_list[k_i]:
-                centroid_0 = torch.from_numpy(centroids[pair[0]])
-                centroid_1 = torch.from_numpy(centroids[pair[1]])
-                S_score[k_i] += F.cosine_similarity(centroid_0, centroid_1, dim=0)  
+                S_score[k_i] += F.cosine_similarity(centroids[pair[0]], centroids[pair[1]], dim=0)  
         return S_score
-
 
     '''
         TODO (Robustness/Consistency):
@@ -64,39 +58,47 @@ class KMeansModule:
 
             Which problems arises from using last epoch's cached features in relation to the current one?             
     '''
-    def CosineClusterIndexPerClass(self, xb, yb, cached_features):
-        # Gather the image batch from the cache
-        # For every k in K:
-        #   assign each image to its respective centroids (for every c_i in k)
-        #   for each pair in the batch (image features, cluster assignment)
-        #   compute the cosine similarity to its nearest centroid
-        #   c results from the summation of every cosine similarity  
+    def cosine_cluster_index(self, xb, yb, k_means_assignments, current_cache, last_epoch_cache, device):    
+        best_K_values = torch.zeros(xb.size(0), dtype=torch.int32, device=device)
+        for i in range(xb.size(0)):
+            class_id = yb[i].item()
+            sample = xb[i]
+            if current_cache.get(class_id, None) == None:
+                image_list = last_epoch_cache[class_id]
+            else:
+                image_list = current_cache[class_id]
 
-#        S_scores = {}
-#        for cls in range(self.nb_classes):
-#            S_score = torch.zeros(len(self.k_range))
-#            target_K_Means = self.n_kmeans[cls]
-#            for k_i in range(len(self.k_range)):
-#                centroids = target_K_Means[k_i].centroids
-#                print('Centroids for class', cls, 'K=', (k_i+2), centroids)
-                # Computes the cosine similarity between every distinct pair of centroids within a cluster for each k in K
-#                for pair in combination_list[k_i]:
-#                    S_score[k_i] += F.cosine_similarity(centroids[pair[0]], centroids[pair[1]]) 
-#            S_scores[cls] = S_score
+            batch_x = torch.stack(image_list)
+            batch_x = batch_x.to(device)
+ 
+            _, batch_assignments = self.assign(x=batch_x, y=yb[i].repeat((batch_x.size(0))))
+            
+            batch_assignments = batch_assignments.to(device)
 
+            batch_assignments = torch.cat((batch_assignments, k_means_assignments[i, :, :].unsqueeze(0)), dim=0)
+            batch_assignments = batch_assignments.squeeze(-1) # assignments has shape: [batch_size,  k_range, 1]. We therefore squeeze it to remove singleton dimension
+            
+            batch_x = torch.cat((batch_x, sample.unsqueeze(0)), dim=0)
 
-        for target in yb: 
-            CCI_scores = torch.zeros(len(self.k_range)) # e.g., [2, 3, 4, 5]
-            S_scores = torch.zeros(len(self.k_range))
-            target_K_Means = self.n_kmeans[target]
-            for k in range(len(self.k_range)):
-                K = self.k_range[k]
-                centroids = target_K_Means[k].centroids
-                for c_i in range(len(centroids)):
-                    S = F.cosine_similarity()
+            C_scores = torch.zeros(len(self.k_range), device=device)
+            S_scores = self.inter_cluster_separation(class_id, device=device)
+            target_K_Means = self.n_kmeans[class_id]
 
-        return 0
+            for k_i in range(len(self.k_range)):
+                centroids = target_K_Means[k_i].centroids
+                assignments = batch_assignments[:, k_i] # Shape: [cache_size]
 
+                centroid_list = [centroids[assignment] for assignment in assignments]
+                centroid_list = torch.stack(centroid_list, dim=0)#torch.as_tensor(np.asarray(centroid_list), device=device)
+                
+                # Computes the cosine similarity between every image and the cluster centroid to which is associated to
+                C_score = F.cosine_similarity(batch_x, centroid_list)                 
+                C_scores[k_i] = C_score.sum()
+            
+            CCI = S_scores / (C_scores + S_scores)            
+            best_K_values[i] = CCI.argmax().item()
+        return best_K_values
+    
     def initialize_centroids(self, batch_x, class_id, resources, rank, device, config, cached_features):
         def augment(x, n_samples): # Built as a helper function for development
             # Workaround to handle faiss centroid initialization with a single sample.
@@ -128,11 +130,7 @@ class KMeansModule:
             index_flat = self.n_kmeans[class_id][k].index
             gpu_index_flat = faiss.index_cpu_to_gpu(self.resources, rank, index_flat)
             self.n_kmeans[class_id][k].index = gpu_index_flat
-        val = self.inter_cluster_separation_per_class(class_id)
-        print('S-Score:', val)
-        print('Exitting')
-        exit(0)
-
+        
     def init(self, resources, rank, device, config, cached_features):
         # Initialize the centroids for each class
         for key in cached_features.keys():
@@ -156,7 +154,7 @@ class KMeansModule:
         centroids after every N epochs. (Another ablation parameter).  
 
     '''
-    def assign(self, x, y, resources, rank, device, cached_features=None):
+    def assign(self, x, y, resources=None, rank=None, device=None, cached_features=None):
         D_batch = []
         I_batch = []        
         for i in range(len(x)):
@@ -250,6 +248,11 @@ class KMeansModule:
                             non_empty.append((k,j))
                             empty_clusters.append(K)
                         else:
+                            # TODO FIX: gather the list of images from the correspondent class index 
+                            # in the cached features, then assign some elements in order to find the 
+                            # non-empty centroid. 
+                            #
+
                             # If the first centroid is empty, select one randomly hoping that it is not empty. 
                             if ((j+1) <  (K-1)):
                                 idx = np.random.randint(j+1, K)

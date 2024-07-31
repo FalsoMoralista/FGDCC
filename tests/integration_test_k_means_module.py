@@ -8,3 +8,10 @@
 # (1) - create two faiss objects with gpu environment setup .
 # (2) - load cached features and call both methods. 
 # 
+
+
+# TODO:
+# Rodar 5x cada método (FAISS vs nosso) e comparar resultados para centroids aleatórias.
+#
+#
+

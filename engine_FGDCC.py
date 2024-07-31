@@ -362,7 +362,7 @@ def main(args, resume_preempt=False):
     target_encoder = target_encoder.module 
 
     proj_embed_dim = 1024
-    VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=12.5, std_coeff=25.0, cov_coeff=1.0) 
+    VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=1.0, std_coeff=25.0, cov_coeff=1.0) 
     
     fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
                       drop_path=drop_path,
@@ -451,6 +451,7 @@ def main(args, resume_preempt=False):
     logger.info('Done.')
     logger.info('M - Step...')
     
+    #print('Warning: uncomment module update')
     M_losses = k_means_module.update(cached_features_last_epoch, device, empty_clusters_per_epoch) # M-step
     
     #print("S:", k_means_module.inter_cluster_separation())
@@ -507,7 +508,9 @@ def main(args, resume_preempt=False):
                     #-- Compute K-Means assignments with disabled autocast as faiss requires float32
                     with torch.cuda.amp.autocast(enabled=False): 
                         k_means_losses, k_means_assignments = k_means_module.assign(x=bottleneck_output, y=target, resources=resources, rank=rank, device=device, cached_features=cached_features_last_epoch)  
-
+                    
+                    best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, k_means_assignments, cached_features, cached_features_last_epoch, device)
+        
                     loss = loss_fn(parent_logits, targets)
                     parent_cls_loss_meter.update(loss)
 
@@ -518,7 +521,7 @@ def main(args, resume_preempt=False):
                         # Model selection: Iterate through every K classifier computing the loss then select the ones with smallest values 
                         subclass_losses = []
                         for k in range(len(K_range)):
-                            k_means_target = k_means_assignments[:,k,:]
+                            k_means_target = k_means_assignments[:,k,:] # [batch_size, 1]
                             k_means_target = k_means_target.squeeze(1)
                             subclass_loss = CEL_no_reduction(child_logits[k], k_means_target) 
                             #print('Subclass loss shape', subclass_loss.size())
@@ -532,17 +535,35 @@ def main(args, resume_preempt=False):
 
                         #print('Best K index by datapoint:', best_k_indexes)
                         #print(best_k_indexes.size())
-                    #############################################################################################################################
-                    #############################################################################################################################
-
+                        #############################################################################################################################
+                        #############################################################################################################################
+                    
+                        #Compute CCI
+                    
+                    # TODO FIXME: Instead of classifying over all K-Means assignments for all K values, 
+                    # classify only across the selected best indexes.
+                    
+                    #print('best_K_classifiers Size:', best_K_classifiers.size())
+                    #print('best_K_classifiers:', best_K_classifiers)
+                    #print('best_K_indexes Size:', best_k_indexes.size())
+                    #print('best_K_indexes:', best_k_indexes)
+                        
                     # -- Setup losses
                     subclass_loss = 0
                     k_means_loss = 0
                     consistency_loss = 0
 
                     k_means_losses = k_means_losses.squeeze(2).transpose(0,1)
-                    subclass_loss = subclass_losses[best_k_indexes, torch.arange(best_k_indexes.size(0))].mean()
-                    k_means_loss = k_means_losses[best_k_indexes, torch.arange(best_k_indexes.size(0))].mean()
+
+                    # best_K_classifiers: CCI k values indexes 
+                    # best_k_indexes: argmin over the classifiers loss (terrible criterion)
+
+                    #subclass_loss = subclass_losses[best_k_indexes, torch.arange(best_k_indexes.size(0))].mean()
+                    #k_means_loss = k_means_losses[best_k_indexes, torch.arange(best_k_indexes.size(0))].mean()
+                    
+                    # CCI score...
+                    subclass_loss = subclass_losses[best_K_classifiers, torch.arange(best_K_classifiers.size(0))].mean()
+                    k_means_loss = k_means_losses[best_K_classifiers, torch.arange(best_K_classifiers.size(0))].mean()
                     
                     vicreg_loss = VICReg_loss(parent_proj_embed, child_proj_embed)
 
