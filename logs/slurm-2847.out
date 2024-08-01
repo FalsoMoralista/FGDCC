@@ -109,3 +109,27 @@ INFO:root:Done.
 INFO:root:M - Step...
 /home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/faiss/contrib/torch_utils.py:51: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
   x.storage().data_ptr() + x.storage_offset() * 4)
+WARNING clustering 10 points to 2 centroids: please provide at least 78 training points
+WARNING clustering 10 points to 3 centroids: please provide at least 117 training points
+WARNING clustering 10 points to 4 centroids: please provide at least 156 training points
+WARNING clustering 10 points to 5 centroids: please provide at least 195 training points
+Xb Current device: -1
+FAISS K-MEANS (on CPU execution): -1.9089481830596924 seconds
+OUR K-MEANS (on GPU execution): -4.736517906188965 seconds
+GPU runtime gain: 2.4812186879777944
+Qualitative Results:
+Difference (centroid 0):
+tensor(-4.4626e-09)
+-------------------------------------------------
+Difference (centroid 1):
+tensor(1.1952e-08)
+Xb Current device: -1
+FAISS K-MEANS (on CPU execution): -141.77135682106018 seconds
+OUR K-MEANS (on GPU execution): -0.0066776275634765625 seconds
+GPU runtime gain: 4.710138714341908e-05
+Qualitative Results:
+Difference (centroid 0):
+tensor(0.)
+-------------------------------------------------
+Difference (centroid 1):
+tensor(2.7940e-09)

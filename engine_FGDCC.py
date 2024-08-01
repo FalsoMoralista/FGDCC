@@ -362,7 +362,7 @@ def main(args, resume_preempt=False):
     target_encoder = target_encoder.module 
 
     proj_embed_dim = 1024
-    VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=1.0, std_coeff=25.0, cov_coeff=1.0) 
+    VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=12.5, std_coeff=25.0, cov_coeff=1.0) 
     
     fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
                       drop_path=drop_path,
@@ -509,7 +509,7 @@ def main(args, resume_preempt=False):
                     with torch.cuda.amp.autocast(enabled=False): 
                         k_means_losses, k_means_assignments = k_means_module.assign(x=bottleneck_output, y=target, resources=resources, rank=rank, device=device, cached_features=cached_features_last_epoch)  
                     
-                    best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, k_means_assignments, cached_features, cached_features_last_epoch, device)
+                    best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
         
                     loss = loss_fn(parent_logits, targets)
                     parent_cls_loss_meter.update(loss)

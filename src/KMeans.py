@@ -11,6 +11,8 @@ import torch.nn.functional as F
 import numpy as np
 np.random.seed(0) # TODO: modify
 
+import time
+
 from src.utils.logging import (
     CSVLogger,
     AverageMeter)
@@ -37,18 +39,24 @@ class KMeansModule:
                 self.n_kmeans.append([faiss.Kmeans(d=dimensionality, k=k, niter=1, verbose=False, min_points_per_centroid = 1) for k in k_range])                                                            
 
     def inter_cluster_separation(self, cls, device):
-        # Generates a list containing the combinations of the centroid indexes for a K-Means cluster
         def two_by_two_combinations(values):
-            return list(itertools.combinations(values, 2)) # Returns the centroids index for all pairs of distinct clusters        
-        combination_list = [two_by_two_combinations(range(k)) for k in self.k_range]
-            
+            return list(itertools.combinations(values, 2))
+
         S_score = torch.zeros(len(self.k_range), device=device)
         target_K_Means = self.n_kmeans[cls]
-        for k_i in range(len(self.k_range)):
+
+        for k_i, k in enumerate(self.k_range):
             centroids = target_K_Means[k_i].centroids
-            # Computes the cosine similarity between every distinct pair of centroids within a cluster for each k in K
-            for pair in combination_list[k_i]:
-                S_score[k_i] += F.cosine_similarity(centroids[pair[0]], centroids[pair[1]], dim=0)  
+            pairs = torch.tensor(two_by_two_combinations(range(k)), device=device)
+
+            # Extract the centroid pairs in a single operation
+            centroid_pairs = centroids[pairs] # TODO: VERIFY IF WORKS
+            
+            # Compute cosine similarity in a vectorized way
+            cosine_similarities = F.cosine_similarity(centroid_pairs[:, 0], centroid_pairs[:, 1], dim=1)
+            
+            # Accumulate the sum of cosine similarities
+            S_score[k_i] = cosine_similarities.sum()
         return S_score
 
     '''
@@ -58,48 +66,43 @@ class KMeansModule:
 
             Which problems arises from using last epoch's cached features in relation to the current one?             
     '''
-    def cosine_cluster_index(self, xb, yb, k_means_assignments, current_cache, last_epoch_cache, device):    
-        best_K_values = torch.zeros(xb.size(0), dtype=torch.int32, device=device)
-        for i in range(xb.size(0)):
+    def cosine_cluster_index(self, xb, yb, current_cache, last_epoch_cache, device):
+
+        batch_size = xb.size(0)
+        best_K_values = torch.zeros(batch_size, dtype=torch.int32, device=device)
+        for i in range(batch_size):
             class_id = yb[i].item()
             sample = xb[i]
-            if current_cache.get(class_id, None) == None:
-                image_list = last_epoch_cache[class_id]
-            else:
-                image_list = current_cache[class_id]
 
-            batch_x = torch.stack(image_list)
-            batch_x = batch_x.to(device)
- 
-            _, batch_assignments = self.assign(x=batch_x, y=yb[i].repeat((batch_x.size(0))))
-            
-            batch_assignments = batch_assignments.to(device)
+            image_list = current_cache.get(class_id, last_epoch_cache.get(class_id))
+            batch_x = torch.stack(image_list).to(device)
 
-            batch_assignments = torch.cat((batch_assignments, k_means_assignments[i, :, :].unsqueeze(0)), dim=0)
-            batch_assignments = batch_assignments.squeeze(-1) # assignments has shape: [batch_size,  k_range, 1]. We therefore squeeze it to remove singleton dimension
-            
-            batch_x = torch.cat((batch_x, sample.unsqueeze(0)), dim=0)
+            batch_x = torch.cat((batch_x, sample.unsqueeze(0)), dim=0) # TODO verify how to do without expanding dims
 
-            C_scores = torch.zeros(len(self.k_range), device=device)
             S_scores = self.inter_cluster_separation(class_id, device=device)
             target_K_Means = self.n_kmeans[class_id]
 
-            for k_i in range(len(self.k_range)):
-                centroids = target_K_Means[k_i].centroids
-                assignments = batch_assignments[:, k_i] # Shape: [cache_size]
+            C_scores = torch.zeros(len(self.k_range), device=device)
+            for k_i, k_range in enumerate(self.k_range):
 
-                centroid_list = [centroids[assignment] for assignment in assignments]
-                centroid_list = torch.stack(centroid_list, dim=0)#torch.as_tensor(np.asarray(centroid_list), device=device)
+                _, batch_assignments = target_K_Means[k_i].index.search(batch_x, 1)
+                batch_assignments = batch_assignments.squeeze(-1)
+
+                centroids = target_K_Means[k_i].centroids
+                #assignments = batch_assignments[:, k_i] # TODO: VERIFY IF THIS WORKS (i don't think so)
+                centroid_list = centroids[batch_assignments] 
                 
                 # Computes the cosine similarity between every image and the cluster centroid to which is associated to
-                C_score = F.cosine_similarity(batch_x, centroid_list)                 
+                C_score = F.cosine_similarity(batch_x, centroid_list)
                 C_scores[k_i] = C_score.sum()
-            
-            CCI = S_scores / (C_scores + S_scores)            
+
+            CCI = S_scores / (C_scores + S_scores)
             best_K_values[i] = CCI.argmax().item()
+
         return best_K_values
-    
+
     def initialize_centroids(self, batch_x, class_id, resources, rank, device, config, cached_features):
+        
         def augment(x, n_samples): # Built as a helper function for development
             # Workaround to handle faiss centroid initialization with a single sample.
             # We built upon Mathilde Caron's idea of adding perturbations to the data, but we do it randomly instead.
@@ -141,6 +144,21 @@ class KMeansModule:
                                       device=device,
                                       config=config,
                                       cached_features=cached_features)             
+    
+    def batch_assignment(self, xb, y):
+        # Assign the vectors to the nearest centroid
+        D_k, I_k = [], []
+        for k in range(len(self.k_range)):
+            D, I = self.n_kmeans[y][k].index.search(xb, 1)
+            D_k.append(D[:, 0])
+            I_k.append(I[:, 0])            
+        D_batch = torch.stack(D_k)
+        I_batch = torch.stack(I_k)
+
+        #D_batch = torch.stack((D_batch))
+        #I_batch = torch.stack((I_batch))
+        return D_batch, I_batch    
+    
     '''
         Assigns a single data point to the set of clusters correspondent to the y target.
 
@@ -180,10 +198,12 @@ class KMeansModule:
     def update(self, cached_features, device, empty_clusters_per_epoch):
         means = [[] for k in self.k_range]
         for key in cached_features.keys():
+
             xb = torch.stack(cached_features[key]) # Form an image batch
             if xb.get_device() == -1:
                 xb = xb.to(device, dtype=torch.float32)
             _, batch_k_means_loss = self.iterative_kmeans(xb, key, device, empty_clusters_per_epoch) # TODO: sum and average across dataset length
+
             # For each "batch" append the losses (average distances) for each K value.
             for k in range(len(self.k_range)):
                 means[k].append(batch_k_means_loss[k])
@@ -196,81 +216,62 @@ class KMeansModule:
 
     def iterative_kmeans(self, xb, class_index, device, empty_clusters_per_epoch):
         empty_clusters = []
-        D_per_K_value = torch.zeros(len(self.k_range)) # e.g., [2, 3, 4, 5]
+        D_per_K_value = torch.zeros(len(self.k_range), device=device)  # Allocate on device
         for k in range(len(self.k_range)):
             K = self.k_range[k]
             previous_inertia = 0
-            non_empty = []
-            # n_iter-1 because we already did one iteration    
-            for itr in range(self.max_iter - 1):  
+            
+            # Initialize tensors to store centroids and counts outside the loop
+            new_centroids = torch.zeros((K, self.d), dtype=torch.float32, device=device)
+            counts = torch.zeros(K, dtype=torch.int64, device=device)
+
+            for itr in range(self.max_iter - 1):
                 # Compute the assignments
                 D, I = self.n_kmeans[class_index][k].index.search(xb, 1)
-            
+                
                 inertia = torch.sum(D)
-                if not previous_inertia == 0 and abs(previous_inertia - inertia) < self.tol:
+                if previous_inertia != 0 and abs(previous_inertia - inertia) < self.tol:
                     D_per_K_value[k] = torch.mean(D)
                     break
                 previous_inertia = inertia
 
-                new_centroids = []
-                counts = []
+                # Reset centroids and counts to zero
+                new_centroids.zero_()
+                counts.zero_()
                 
-                # Initialize tensors to store new centroids and counts
-                new_centroids = torch.zeros((K, self.d), dtype=torch.float32, device=device)
-                counts = torch.zeros(K, dtype=torch.int64, device=device)
+                # Sum up all points in each cluster using vectorized operations
+                counts.index_add_(0, I.squeeze(), torch.ones(len(xb), device=device, dtype=torch.int64))
+                new_centroids.index_add_(0, I.squeeze(), xb)
+                
+                # Avoid looping by using boolean masks to handle non-empty clusters
+                non_empty_mask = counts > 0
+                empty_mask = ~non_empty_mask
+                new_centroids[non_empty_mask] /= counts[non_empty_mask].unsqueeze(1).float()
+                
+                non_empty = torch.nonzero(non_empty_mask).squeeze().tolist()
 
-                # Sum up all points in each cluster
-                for i in range(len(xb)):
-                    cluster_id = I[i][0].item()
-                    new_centroids[cluster_id] += xb[i] 
-                    counts[cluster_id] += 1
+                if empty_mask.any():
+                    eps = torch.full((K, self.d), 1e-7, device=device)
+                    sign = (torch.randint(0, 3, (K, self.d), device=device) - 1).float()
+                    perturbations = sign * eps
 
-                # Compute the mean for each cluster
-                for j in range(K):
-                    if counts[j] > 0:
-                        new_centroids[j] /= counts[j]
-                        non_empty.append((k,j))
+                    if non_empty:
+                        non_empty_idx = torch.tensor(non_empty, device=device)
+                        selected_idx = non_empty_idx[torch.randint(0, len(non_empty), (empty_mask.sum(),), device=device)]
+                        new_centroids[empty_mask] = new_centroids[selected_idx] + perturbations[empty_mask]
+                        empty_clusters.extend([K] * empty_mask.sum().item())
                     else:
-                        sign = (torch.randint(0, 3, size=(self.d,), device=device) - 1)
-                        eps = torch.tensor(1e-7, dtype=torch.float32, device=device)   
-                        op = sign * eps 
-                        if len(non_empty) > 0:                        
-                            if len(non_empty) > 1:
-                                idx = np.random.randint(0, len(non_empty)) 
-                            else:
-                                idx = 0
-                            cluster_id = non_empty[idx][1] # choose a random cluster from the set of non empty clusters
-                            non_empty_cluster = new_centroids[cluster_id]
-                            new_centroids[j] = torch.clone(non_empty_cluster)
-                            # Replace empty centroid by a non empty one with a perturbation
-                            new_centroids[j] += op 
-                            non_empty_cluster -= op
-                            non_empty.append((k,j))
-                            empty_clusters.append(K)
-                        else:
-                            # TODO FIX: gather the list of images from the correspondent class index 
-                            # in the cached features, then assign some elements in order to find the 
-                            # non-empty centroid. 
-                            #
-
-                            # If the first centroid is empty, select one randomly hoping that it is not empty. 
-                            if ((j+1) <  (K-1)):
-                                idx = np.random.randint(j+1, K)
-                            else:
-                                idx = j+1
-                            non_empty_cluster = self.n_kmeans[class_index][k].centroids[idx]
-                            new_centroids[j] = torch.clone(non_empty_cluster)
-                            # Replace empty centroid by a possibly non-empty one with a perturbation
-                            new_centroids[j] += op 
-                            non_empty_cluster -= op
-                            non_empty.append((k,j))
-                            empty_clusters.append(K)        
-
+                        selected_idx = torch.randint(0, K, (empty_mask.sum(),), device=device)
+                        new_centroids[empty_mask] = self.n_kmeans[class_index][k].centroids[selected_idx] + perturbations[empty_mask]
+                        empty_clusters.extend([K] * empty_mask.sum().item())
+                
                 # Update the centroids in the FAISS index
                 self.n_kmeans[class_index][k].centroids = new_centroids
                 self.n_kmeans[class_index][k].index.reset()
-                self.n_kmeans[class_index][k].index.add(new_centroids)    
+                self.n_kmeans[class_index][k].index.add(new_centroids)
                 D_per_K_value[k] = torch.mean(D)
-        if len(empty_clusters) > 0:
+                
+        if empty_clusters:
             empty_clusters_per_epoch.update(len(empty_clusters))
+        
         return self.n_kmeans, D_per_K_value
