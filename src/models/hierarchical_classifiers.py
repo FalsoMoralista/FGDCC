@@ -166,7 +166,7 @@ class JEHierarchicalClassifier(nn.Module):
                 child_logits[i][j] = logits
         return parent_logits, child_logits, parent_proj_emb, child_proj_emb
 
-# TODO: FIXME colocar as projeções no target encoder (isso não faz sentido algum aqui!) 
+# TODO: FIXME colocar as projeções no target encoder?
 class JEParentClassifier(nn.Module):
     def __init__(self, input_dim ,num_parents):
         super(JEParentClassifier, self).__init__()

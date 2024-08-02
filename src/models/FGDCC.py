@@ -1,4 +1,5 @@
 
+# Author: Luciano Filho
 
 import torch
 import torch.nn  as nn
@@ -6,10 +7,12 @@ import torch.nn.functional as F
 from src.models.autoencoder import MaskedAutoEncoder
 from src.models.hierarchical_classifiers import JEHierarchicalClassifier
 from src.models.joint_embedding_classifier import JointEmbeddingClassifier
+
 class FGDCC(nn.Module):
 
-    def __init__(self, vit_backbone, classifier):
+    def __init__(self, vit_backbone, classifier, backbone_patch_mean=True):
         super(FGDCC, self).__init__()        
+        self.backbone_patch_mean = backbone_patch_mean
         self.vit_encoder = vit_backbone
         self.autoencoder = MaskedAutoEncoder()
         self.classifier = classifier
@@ -18,6 +21,7 @@ class FGDCC(nn.Module):
     def forward(self, imgs, targets, device):
         # Step 1. Forward into the encoder
         h = self.vit_encoder(imgs)
+        # if self.backbone_patch_mean: TODO[]
         h = torch.mean(h, dim=1) # Take the mean over patch-level representation and squeeze
         h = torch.squeeze(h, dim=1) 
         h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 

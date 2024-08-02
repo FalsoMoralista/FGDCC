@@ -362,7 +362,7 @@ def main(args, resume_preempt=False):
     target_encoder = target_encoder.module 
 
     proj_embed_dim = 1024
-    VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=12.5, std_coeff=25.0, cov_coeff=1.0) 
+    VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=1.0, std_coeff=0.0, cov_coeff=0.0) 
     
     fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
                       drop_path=drop_path,

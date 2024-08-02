@@ -1,3 +1,5 @@
+# Author: Luciano Filho
+
 import torch
 import torch.distributed as dist
 
@@ -250,20 +252,25 @@ class KMeansModule:
                 
                 non_empty = torch.nonzero(non_empty_mask).squeeze().tolist()
 
+                # Ensure non_empty is a list
+                if isinstance(non_empty, int):
+                    non_empty = [non_empty]
+
                 if empty_mask.any():
-                    eps = torch.full((K, self.d), 1e-7, device=device)
-                    sign = (torch.randint(0, 3, (K, self.d), device=device) - 1).float()
+                    num_empty_clusters = empty_mask.sum().item()
+                    eps = torch.full((num_empty_clusters, self.d), 1e-7, device=device)
+                    sign = (torch.randint(0, 3, (num_empty_clusters, self.d), device=device) - 1).float()
                     perturbations = sign * eps
 
-                    if non_empty:
-                        non_empty_idx = torch.tensor(non_empty, device=device)
-                        selected_idx = non_empty_idx[torch.randint(0, len(non_empty), (empty_mask.sum(),), device=device)]
-                        new_centroids[empty_mask] = new_centroids[selected_idx] + perturbations[empty_mask]
-                        empty_clusters.extend([K] * empty_mask.sum().item())
+                    if len(non_empty) > 0:  # Check if non_empty is actually non-empty
+                        non_empty_idx = torch.tensor(non_empty, device=device, dtype=torch.int64)
+                        selected_idx = non_empty_idx[torch.randint(0, non_empty_idx.size(0), (num_empty_clusters,), device=device)]
+                        new_centroids[empty_mask] = new_centroids[selected_idx] + perturbations
+                        empty_clusters.extend([K] * num_empty_clusters)
                     else:
-                        selected_idx = torch.randint(0, K, (empty_mask.sum(),), device=device)
-                        new_centroids[empty_mask] = self.n_kmeans[class_index][k].centroids[selected_idx] + perturbations[empty_mask]
-                        empty_clusters.extend([K] * empty_mask.sum().item())
+                        selected_idx = torch.randint(0, K, (num_empty_clusters,), device=device)
+                        new_centroids[empty_mask] = self.n_kmeans[class_index][k].centroids[selected_idx] + perturbations
+                        empty_clusters.extend([K] * num_empty_clusters)
                 
                 # Update the centroids in the FAISS index
                 self.n_kmeans[class_index][k].centroids = new_centroids
@@ -275,3 +282,5 @@ class KMeansModule:
             empty_clusters_per_epoch.update(len(empty_clusters))
         
         return self.n_kmeans, D_per_K_value
+
+
