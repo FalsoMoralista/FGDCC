@@ -361,8 +361,8 @@ def main(args, resume_preempt=False):
         p.requires_grad = True
     target_encoder = target_encoder.module 
 
-    proj_embed_dim = 1024
-    VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=1.0, std_coeff=0.0, cov_coeff=0.0) 
+    proj_embed_dim = 1280
+    #VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=1.0, std_coeff=0.0, cov_coeff=0.0) 
     
     fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
                       drop_path=drop_path,
@@ -371,6 +371,7 @@ def main(args, resume_preempt=False):
                       proj_embed_dim=proj_embed_dim,
                       pretrained_model=target_encoder,
                       device=device)
+    logger.info(fgdcc.classifier)
 
     # -- Override previously loaded optimization configs.
     # Create one optimizer that takes into account both encoder and its classifier parameters.
@@ -425,11 +426,6 @@ def main(args, resume_preempt=False):
     k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=384, k_range=K_range, resources=resources, config=config)
     #k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=256, k_range=K_range, resources=resources, config=configs)
 
-    # TODO: track empty clusters per class?
-    # TODO FIXME: this logging is actually implemented incorrectly. 
-    # K-Means runs several iterations (until convergence) and from the way this is currently implemented
-    # the code is logging empty clusters per iteration. This way the same cluster can be logged many times across iterations.
-    # We will keep it as it is for now.
     empty_clusters_per_epoch = AverageMeter() # Tracks the number of empty clusters per epoch and class 
     
     model_noddp = fgdcc.module
@@ -443,13 +439,11 @@ def main(args, resume_preempt=False):
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]    
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
     
-    logger.info('Done.')
     logger.info('Initializing centroids...')
     
     k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device) # E-step
     
-    logger.info('Done.')
-    logger.info('M - Step...')
+    logger.info('Update Step...')
     
     #print('Warning: uncomment module update')
     M_losses = k_means_module.update(cached_features_last_epoch, device, empty_clusters_per_epoch) # M-step
@@ -528,50 +522,32 @@ def main(args, resume_preempt=False):
                             #print('Subclass loss', subclass_loss)
                             subclass_losses.append(subclass_loss)
 
-                        #print(subclass_losses)
-                        #print(subclass_losses.size())
                         subclass_losses = torch.vstack(subclass_losses)
-                        best_k_indexes = torch.argmin(subclass_losses, dim=0)
 
-                        #print('Best K index by datapoint:', best_k_indexes)
-                        #print(best_k_indexes.size())
-                        #############################################################################################################################
-                        #############################################################################################################################
+                    #############################################################################################################################
+                    #############################################################################################################################
                     
-                        #Compute CCI
-                    
-                    # TODO FIXME: Instead of classifying over all K-Means assignments for all K values, 
-                    # classify only across the selected best indexes.
-                    
-                    #print('best_K_classifiers Size:', best_K_classifiers.size())
-                    #print('best_K_classifiers:', best_K_classifiers)
-                    #print('best_K_indexes Size:', best_k_indexes.size())
-                    #print('best_K_indexes:', best_k_indexes)
-                        
+                    # TODO: Instead of classifying over all K-Means assignments for all K values, 
+                                            
                     # -- Setup losses
                     subclass_loss = 0
                     k_means_loss = 0
                     consistency_loss = 0
+                    vicreg_loss = 0
 
                     k_means_losses = k_means_losses.squeeze(2).transpose(0,1)
-
-                    # best_K_classifiers: CCI k values indexes 
-                    # best_k_indexes: argmin over the classifiers loss (terrible criterion)
-
-                    #subclass_loss = subclass_losses[best_k_indexes, torch.arange(best_k_indexes.size(0))].mean()
-                    #k_means_loss = k_means_losses[best_k_indexes, torch.arange(best_k_indexes.size(0))].mean()
                     
                     # CCI score...
                     subclass_loss = subclass_losses[best_K_classifiers, torch.arange(best_K_classifiers.size(0))].mean()
                     k_means_loss = k_means_losses[best_K_classifiers, torch.arange(best_K_classifiers.size(0))].mean()
                     
-                    vicreg_loss = VICReg_loss(parent_proj_embed, child_proj_embed)
+                    #vicreg_loss = VICReg_loss(parent_proj_embed, child_proj_embed)
 
                     children_cls_loss_meter.update(subclass_loss)
                     
                     consistency_loss_meter.update(consistency_loss)
                     
-                    vicreg_loss_meter.update(vicreg_loss)
+                    #vicreg_loss_meter.update(vicreg_loss)
 
                     # Sum parent and subclass loss + Regularizers
                     loss += subclass_loss + vicreg_loss + consistency_loss

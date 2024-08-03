@@ -48,7 +48,7 @@ class MultiHeadCrossAttention(nn.Module):
         self.key = nn.Linear(embed_dim, embed_dim)
         self.value = nn.Linear(embed_dim, embed_dim)
         self.out = nn.Linear(embed_dim, embed_dim)
-        
+
     def forward(self, query, key, value):
         B, N, _ = query.shape
         
@@ -66,7 +66,7 @@ class MultiHeadCrossAttention(nn.Module):
 
 class MultiHeadAttentionHierarchicalCls(nn.Module):
 
-    def __init__(self, input_dim, proj_embed_dim, nb_classes, drop_path, nb_subclasses_per_parent, num_heads):
+    def __init__(self, input_dim, proj_embed_dim, nb_classes, drop_path, nb_subclasses_per_parent, num_heads=4):
         super(MultiHeadAttentionHierarchicalCls, self).__init__()
         self.proj_embed_dim = proj_embed_dim
         self.nb_classes = nb_classes
@@ -76,48 +76,56 @@ class MultiHeadAttentionHierarchicalCls(nn.Module):
         self.act = nn.GELU()
         
         # -- Classifier Embeddings
-        self.parent_proj = nn.Linear(in_features=input_dim, out_features=num_heads * proj_embed_dim)
-        self.subclass_proj = nn.Linear(in_features=input_dim, out_features=num_heads * proj_embed_dim)
+        self.parent_proj = nn.Sequential(
+            nn.LayerNorm(input_dim),  # Normalize input before projection
+            nn.Linear(input_dim, num_heads * proj_embed_dim),
+            nn.GELU()  # Apply GELU after projection
+        )
+
+        self.subclass_proj = nn.Sequential(
+            nn.LayerNorm(input_dim),
+            nn.Linear(input_dim, num_heads * proj_embed_dim),
+            nn.GELU()
+        )
 
         self.cross_attention = MultiHeadCrossAttention(num_heads * proj_embed_dim, num_heads)
 
-        trunc_normal_(self.parent_proj.weight, std=2e-5)
-        trunc_normal_(self.subclass_proj.weight, std=2e-5)
-        if self.subclass_proj.bias is not None and self.parent_proj.bias is not None:
-            torch.nn.init.constant_(self.parent_proj.bias, 0)
-            torch.nn.init.constant_(self.subclass_proj.bias, 0)
+        trunc_normal_(self.parent_proj[1].weight, std=2e-5)
+        trunc_normal_(self.subclass_proj[1].weight, std=2e-5)
+        if self.subclass_proj[1].bias is not None and self.parent_proj[1].bias is not None:
+            torch.nn.init.constant_(self.parent_proj[1].bias, 0)
+            torch.nn.init.constant_(self.subclass_proj[1].bias, 0)
 
         self.head_drop = nn.Dropout(drop_path)
 
-        self.parent_classifier = ParentClassifier(proj_embed_dim, nb_classes) # TODO: sequential
+        self.parent_classifier = ParentClassifier(proj_embed_dim, nb_classes)
         self.child_classifiers = nn.ModuleList(
             [nn.ModuleList(
                 [SubClassClassifier(proj_embed_dim, nb_subclasses=nb_subclasses) for _ in range(nb_classes)]
             ) for nb_subclasses in nb_subclasses_per_parent]    
         )
 
-        self.parent_feature_selection = nn.Linear((num_heads + 1) * proj_embed_dim, input_dim)
-
-        self.subclass_feature_selection = nn.Linear(num_heads * proj_embed_dim, input_dim)
+        self.parent_feature_selection = nn.Sequential(
+            nn.LayerNorm((num_heads + 1) * proj_embed_dim),
+            nn.Linear((num_heads + 1) * proj_embed_dim, input_dim)
+        )
         
+        self.subclass_feature_selection = nn.Sequential(
+            nn.LayerNorm(num_heads * proj_embed_dim),
+            nn.Linear(num_heads * proj_embed_dim, input_dim)
+        )        
 
-
-    # TODO check where to apply layer norm[]
     def forward(self, h, device):
         
         B, N, C = h.size() # [batch_size, num_patches, embed_dim]
 
         parent_proj_embed = self.parent_proj(h) # output shape [B, 256, 5120]
-        parent_proj_embed = self.act(parent_proj_embed) 
-        
-        # Learns features tailored to sub-class classification
-        subclass_proj_embed = self.subclass_proj(h)
+        subclass_proj_embed = self.subclass_proj(h) # output shape [B, 256, 5120]
 
         # Cross-attention to integrate subclass features into parent features
         integrated_features = self.cross_attention(parent_proj_embed, subclass_proj_embed, subclass_proj_embed)
         
         parent_proj_embed = torch.cat((h, integrated_features), dim=-1)
-
         parent_proj_embed = self.parent_feature_selection(parent_proj_embed)
         parent_proj_embed = torch.mean(parent_proj_embed, dim=1).squeeze(dim=1) # Take the mean over patch-level representation and squeeze
         parent_proj_embed = F.layer_norm(parent_proj_embed, (parent_proj_embed.size(-1),)) # Normalize over feature-dim 
@@ -156,5 +164,5 @@ class MultiHeadAttentionHierarchicalCls(nn.Module):
 
     After Linear Projections: The GELU activation is typically placed after linear projection layers (e.g., parent_proj, subclass_proj) to introduce non-linearity. This is important for capturing complex relationships.
     After Cross-Attention: Applying GELU after the cross-attention layer’s output can help in enhancing non-linearity further.
-    
+
 '''

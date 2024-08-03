@@ -252,7 +252,7 @@ def build_cache(data_loader, device, target_encoder, hierarchical_classifier, au
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=True):            
                     h = target_encoder(imgs)        
                     _, _, _, child_proj_emb = hierarchical_classifier(h, device)                    
-                    _, bottleneck_output = autoencoder(child_proj_emb)
+                    _, bottleneck_output = autoencoder(child_proj_emb, device)
                     items.append((bottleneck_output, target))
            
     def build_cache():

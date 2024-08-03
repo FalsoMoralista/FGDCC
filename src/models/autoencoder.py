@@ -8,6 +8,8 @@ class MaskedAutoEncoder(nn.Module):
         super().__init__()
 
         self.encoder = nn.Sequential(
+            nn.Linear(1280, 1024),
+            nn.GELU(),
             nn.Linear(1024, 768),
             nn.GELU(),
             nn.Linear(768, 512),
@@ -22,6 +24,8 @@ class MaskedAutoEncoder(nn.Module):
             torch.nn.Linear(512, 768),
             nn.GELU(),
             torch.nn.Linear(768, 1024), 
+            nn.GELU(),
+            torch.nn.Linear(1024, 1280), 
         )
 
     def generate_mask(self, batch_size, feature_dim, device, mask_fraction=0.25):
@@ -44,7 +48,7 @@ class MaskedAutoEncoder(nn.Module):
         return mask
 
     def forward(self, x, device):
-        mask = self.generate_mask(x.size(0), 1024, device=device)
+        mask = self.generate_mask(x.size(0), 1280, device=device)
         masked_input = x * (~mask) # Mask input    
 
         bottleneck_output = self.encoder(masked_input)
