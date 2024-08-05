@@ -1,8 +1,4 @@
 
-
-#from src.models.hierarchical_classifiers import (
-#
-#)
 from src.utils.tensors import trunc_normal_
 import torch
 import torch.nn as nn
@@ -47,8 +43,7 @@ class MultiHeadCrossAttention(nn.Module):
         self.query = nn.Linear(embed_dim, embed_dim)
         self.key = nn.Linear(embed_dim, embed_dim)
         self.value = nn.Linear(embed_dim, embed_dim)
-        self.out = nn.Linear(embed_dim, embed_dim)
-
+        
     def forward(self, query, key, value):
         B, N, _ = query.shape
         
@@ -60,9 +55,8 @@ class MultiHeadCrossAttention(nn.Module):
         attn_weights = F.softmax(attn_scores, dim=-1)
         
         attn_output = (attn_weights @ V).transpose(1, 2).contiguous().view(B, N, self.num_heads * self.head_dim)
-        output = self.out(attn_output)
         
-        return output
+        return attn_output
 
 class MultiHeadAttentionHierarchicalCls(nn.Module):
 
@@ -72,29 +66,29 @@ class MultiHeadAttentionHierarchicalCls(nn.Module):
         self.nb_classes = nb_classes
         self.nb_subclasses_per_parent = nb_subclasses_per_parent
         self.num_heads = num_heads
+        
+        self.proj_times = 4
 
         self.act = nn.GELU()
         
         # -- Classifier Embeddings
         self.parent_proj = nn.Sequential(
-            nn.LayerNorm(input_dim),  # Normalize input before projection
-            nn.Linear(input_dim, num_heads * proj_embed_dim),
+            nn.Linear(input_dim, self.proj_times * proj_embed_dim),
             nn.GELU()  # Apply GELU after projection
         )
 
         self.subclass_proj = nn.Sequential(
-            nn.LayerNorm(input_dim),
-            nn.Linear(input_dim, num_heads * proj_embed_dim),
+            nn.Linear(input_dim, self.proj_times * proj_embed_dim),
             nn.GELU()
         )
 
-        self.cross_attention = MultiHeadCrossAttention(num_heads * proj_embed_dim, num_heads)
+        self.cross_attention = MultiHeadCrossAttention(self.proj_times * proj_embed_dim, num_heads)
 
-        trunc_normal_(self.parent_proj[1].weight, std=2e-5)
-        trunc_normal_(self.subclass_proj[1].weight, std=2e-5)
-        if self.subclass_proj[1].bias is not None and self.parent_proj[1].bias is not None:
-            torch.nn.init.constant_(self.parent_proj[1].bias, 0)
-            torch.nn.init.constant_(self.subclass_proj[1].bias, 0)
+        trunc_normal_(self.parent_proj[0].weight, std=2e-5)
+        trunc_normal_(self.subclass_proj[0].weight, std=2e-5)
+        if self.subclass_proj[0].bias is not None and self.parent_proj[0].bias is not None:
+            torch.nn.init.constant_(self.parent_proj[0].bias, 0)
+            torch.nn.init.constant_(self.subclass_proj[0].bias, 0)
 
         self.head_drop = nn.Dropout(drop_path)
 
@@ -106,13 +100,13 @@ class MultiHeadAttentionHierarchicalCls(nn.Module):
         )
 
         self.parent_feature_selection = nn.Sequential(
-            nn.LayerNorm((num_heads + 1) * proj_embed_dim),
-            nn.Linear((num_heads + 1) * proj_embed_dim, input_dim)
+            nn.LayerNorm((self.proj_times + 1) * proj_embed_dim),
+            nn.Linear((self.proj_times + 1) * proj_embed_dim, input_dim)
         )
         
         self.subclass_feature_selection = nn.Sequential(
-            nn.LayerNorm(num_heads * proj_embed_dim),
-            nn.Linear(num_heads * proj_embed_dim, input_dim)
+            nn.LayerNorm(self.proj_times * proj_embed_dim),
+            nn.Linear(self.proj_times * proj_embed_dim, input_dim)
         )        
 
     def forward(self, h, device):
@@ -124,11 +118,12 @@ class MultiHeadAttentionHierarchicalCls(nn.Module):
 
         # Cross-attention to integrate subclass features into parent features
         integrated_features = self.cross_attention(parent_proj_embed, subclass_proj_embed, subclass_proj_embed)
+        integrated_features = F.layer_norm(integrated_features, (integrated_features.size(-1),)) # Normalize over feature-dim 
         
         parent_proj_embed = torch.cat((h, integrated_features), dim=-1)
         parent_proj_embed = self.parent_feature_selection(parent_proj_embed)
         parent_proj_embed = torch.mean(parent_proj_embed, dim=1).squeeze(dim=1) # Take the mean over patch-level representation and squeeze
-        parent_proj_embed = F.layer_norm(parent_proj_embed, (parent_proj_embed.size(-1),)) # Normalize over feature-dim 
+        parent_proj_embed = F.layer_norm(parent_proj_embed, (parent_proj_embed.size(-1),))
         parent_proj_embed = self.head_drop(parent_proj_embed)
 
         subclass_proj_embed = self.subclass_feature_selection(subclass_proj_embed)
@@ -144,9 +139,9 @@ class MultiHeadAttentionHierarchicalCls(nn.Module):
 
         # TODO: vectorize
         # Use the predicted parent class to select the corresponding child classifier
-        child_logits = [torch.zeros(h.size(0), num, device=device) for num in self.nb_subclasses_per_parent] # Each element within child_logits is associated to a classifier with K outputs.
+        child_logits = [torch.zeros(B, num, device=device) for num in self.nb_subclasses_per_parent] # Each element within child_logits is associated to a classifier with K outputs.
         for i in range(len(self.nb_subclasses_per_parent)):
-            for j in range(h.size(0)): # Iterate over each sample in the batch                   
+            for j in range(B): # Iterate over each sample in the batch                   
                 # We will make predictions for each value of K belonging to num_children_per_parent (e.g., [2,3,4,5]) 
                 logits = self.child_classifiers[i][y_hat[j]](subclass_proj_embed[j]) 
                 child_logits[i][j] = logits        

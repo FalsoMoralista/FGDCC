@@ -41,14 +41,13 @@ class FGDCC(nn.Module):
          
         return reconstruction_loss, bottleneck_output, parent_logits, child_logits, parent_proj_embed, child_proj_embed
 
-
 def get_model(embed_dim, drop_path, nb_classes, K_range, proj_embed_dim, pretrained_model ,device):
     
     cls = MultiHeadAttentionHierarchicalCls(input_dim=embed_dim,
                                       nb_classes=nb_classes,
                                       proj_embed_dim=proj_embed_dim,
                                       drop_path=drop_path,
-                                      num_heads=4,
+                                      num_heads=32,
                                       nb_subclasses_per_parent=K_range)
        
     model = FGDCC(vit_backbone=pretrained_model, classifier=cls, backbone_patch_mean=False)
