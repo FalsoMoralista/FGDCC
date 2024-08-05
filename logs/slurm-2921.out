@@ -21,7 +21,7 @@ INFO:root:loaded params...
                 'use_color_distortion': False,
                 'use_gaussian_blur': False,
                 'use_horizontal_flip': False},
-    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp23',
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp26',
                    'write_tag': 'jepa'},
     'mask': {   'allow_overlap': False,
                 'aspect_ratio': [0.75, 1.5],
@@ -80,7 +80,7 @@ Val dataset, length: 31200
 INFO:root:Using AdamW
 ['encoder', 'predictor', 'opt', 'scaler', 'target_encoder', 'epoch', 'loss', 'batch_size', 'world_size', 'lr']
 INFO:root:loaded pretrained encoder from epoch 66 with msg: <All keys matched successfully>
-INFO:root:MultiHeadAttentionHierarchicalCls(
+INFO:root:MultiHeadAttentionClassifier(
   (act): GELU(approximate='none')
   (parent_proj): Sequential(
     (0): Linear(in_features=1280, out_features=5120, bias=True)
@@ -95,32 +95,8 @@ INFO:root:MultiHeadAttentionHierarchicalCls(
     (key): Linear(in_features=5120, out_features=5120, bias=True)
     (value): Linear(in_features=5120, out_features=5120, bias=True)
   )
-  (head_drop): Dropout(p=0.25, inplace=False)
-  (parent_classifier): ParentClassifier(
-    (fc): Linear(in_features=1280, out_features=1081, bias=True)
-  )
-  (child_classifiers): ModuleList(
-    (0): ModuleList(
-      (0-1080): 1081 x SubClassClassifier(
-        (fc): Linear(in_features=1280, out_features=2, bias=True)
-      )
-    )
-    (1): ModuleList(
-      (0-1080): 1081 x SubClassClassifier(
-        (fc): Linear(in_features=1280, out_features=3, bias=True)
-      )
-    )
-    (2): ModuleList(
-      (0-1080): 1081 x SubClassClassifier(
-        (fc): Linear(in_features=1280, out_features=4, bias=True)
-      )
-    )
-    (3): ModuleList(
-      (0-1080): 1081 x SubClassClassifier(
-        (fc): Linear(in_features=1280, out_features=5, bias=True)
-      )
-    )
-  )
+  (parent_classifier): Linear(in_features=1280, out_features=1081, bias=True)
+  (subclass_classifier): Linear(in_features=1280, out_features=4324, bias=True)
   (parent_feature_selection): Sequential(
     (0): LayerNorm((6400,), eps=1e-05, elementwise_affine=True)
     (1): Linear(in_features=6400, out_features=1280, bias=True)
@@ -129,6 +105,7 @@ INFO:root:MultiHeadAttentionHierarchicalCls(
     (0): LayerNorm((5120,), eps=1e-05, elementwise_affine=True)
     (1): Linear(in_features=5120, out_features=1280, bias=True)
   )
+  (head_drop): Dropout(p=0.25, inplace=False)
 )
 INFO:root:Using AdamW
 INFO:root:VisionTransformer(
@@ -178,19 +155,40 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:root:[1,     0/ 2562] - train_losses - Parent Class: 6.9856 - Children class: 1.6093 -Autoencoder Loss (total): 707.6604 - Reconstruction/K-Means Loss: [2.3407 / 705.3197] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.00e-04] [autoencoder lr: 1.00e-04][mem: 6.59e+04] (3438.7 ms)
-INFO:root:[1,     0] grad_stats: [6.27e-04 3.83e-03] (0.00e+00, 4.52e+00)
-INFO:root:[1,    50/ 2562] - train_losses - Parent Class: 5.9848 - Children class: 1.0184 -Autoencoder Loss (total): 737.6399 - Reconstruction/K-Means Loss: [0.8271 / 736.8128] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.01e-04] [autoencoder lr: 1.03e-04][mem: 7.16e+04] (1549.7 ms)
-INFO:root:[1,    50] grad_stats: [2.81e-05 4.40e-04] (1.69e-08, 3.80e+00)
-INFO:root:[1,   100/ 2562] - train_losses - Parent Class: 5.8533 - Children class: 1.0623 -Autoencoder Loss (total): 745.7308 - Reconstruction/K-Means Loss: [0.6072 / 745.1236] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.02e-04] [autoencoder lr: 1.05e-04][mem: 7.16e+04] (1532.2 ms)
-INFO:root:[1,   100] grad_stats: [3.25e-05 4.07e-04] (0.00e+00, 3.84e+00)
-INFO:root:[1,   150/ 2562] - train_losses - Parent Class: 5.7925 - Children class: 1.0583 -Autoencoder Loss (total): 748.9167 - Reconstruction/K-Means Loss: [0.5229 / 748.3939] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.02e-04] [autoencoder lr: 1.08e-04][mem: 7.16e+04] (1524.0 ms)
-INFO:root:[1,   150] grad_stats: [1.74e-05 5.83e-04] (2.72e-09, 3.88e+00)
-INFO:root:[1,   200/ 2562] - train_losses - Parent Class: 5.7688 - Children class: 1.0399 -Autoencoder Loss (total): 749.6599 - Reconstruction/K-Means Loss: [0.4779 / 749.1820] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.03e-04] [autoencoder lr: 1.10e-04][mem: 7.16e+04] (1521.8 ms)
-INFO:root:[1,   200] grad_stats: [3.93e-05 4.84e-04] (8.31e-09, 3.61e+00)
-INFO:root:[1,   250/ 2562] - train_losses - Parent Class: 5.7484 - Children class: 1.0222 -Autoencoder Loss (total): 750.2939 - Reconstruction/K-Means Loss: [0.4506 / 749.8434] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.04e-04] [autoencoder lr: 1.13e-04][mem: 7.16e+04] (1520.8 ms)
-INFO:root:[1,   250] grad_stats: [3.88e-05 3.37e-04] (6.70e-09, 3.86e+00)
-INFO:root:[1,   300/ 2562] - train_losses - Parent Class: 5.7348 - Children class: 1.0046 -Autoencoder Loss (total): 751.0656 - Reconstruction/K-Means Loss: [0.4327 / 750.6328] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.05e-04] [autoencoder lr: 1.15e-04][mem: 7.16e+04] (1521.8 ms)
-INFO:root:[1,   300] grad_stats: [1.90e-05 3.09e-04] (6.43e-09, 5.12e+00)
-INFO:root:[1,   350/ 2562] - train_losses - Parent Class: 5.7293 - Children class: 0.9893 -Autoencoder Loss (total): 751.2006 - Reconstruction/K-Means Loss: [0.4191 / 750.7815] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.05e-04] [autoencoder lr: 1.18e-04][mem: 7.16e+04] (1523.2 ms)
-INFO:root:[1,   350] grad_stats: [1.52e-05 2.53e-04] (0.00e+00, 3.77e+00)
+INFO:root:[1,     0/ 2562] - train_losses - Parent Class: 6.9856 - Children class: 0.0000 -Autoencoder Loss (total): 703.7082 - Reconstruction/K-Means Loss: [1.0630 / 702.6452] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.00e-04] [autoencoder lr: 1.00e-04][mem: 6.58e+04] (3230.7 ms)
+INFO:root:[1,     0] grad_stats: [8.34e-05 5.03e-04] (4.53e-08, 1.90e+00)
+terminate called without an active exception
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC.py", line 52, in process_main
+    app_main(args=params)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 631, in main
+    (loss, k_means_loss, ae_lr, _new_lr, _new_wd, grad_stats, bottleneck_output), etime = gpu_timer(train_step)
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/utils/logging.py", line 21, in gpu_timer
+    result = closure()
+             ^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 518, in train_step
+    reconstruction_loss, bottleneck_output, parent_logits, child_logits, parent_proj_embed, child_proj_embed = fgdcc(imgs, device)
+                                                                                                               ^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/parallel/distributed.py", line 1589, in forward
+    inputs, kwargs = self._pre_forward(*inputs, **kwargs)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/parallel/distributed.py", line 1480, in _pre_forward
+    if torch.is_grad_enabled() and self.reducer._rebuild_buckets():
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Expected to have finished reduction in the prior iteration before starting a new one. This error indicates that your module has parameters that were not used in producing loss. You can enable unused parameter detection by passing the keyword argument `find_unused_parameters=True` to `torch.nn.parallel.DistributedDataParallel`, and by 
+making sure all `forward` function outputs participate in calculating loss. 
+If you already have done the above, then the distributed data parallel module wasn't able to locate the output tensors in the return value of your module's `forward` function. Please include the loss function and the structure of the return value of `forward` of your module when reporting this issue (e.g. list, dict, iterable).
+Parameters which did not receive grad for rank 0: classifier.subclass_feature_selection.1.bias, classifier.subclass_feature_selection.1.weight, classifier.subclass_feature_selection.0.bias, classifier.subclass_feature_selection.0.weight, classifier.subclass_classifier.bias, classifier.subclass_classifier.weight
+Parameter indices which did not receive grad for rank 0: 417 418 423 424 425 426

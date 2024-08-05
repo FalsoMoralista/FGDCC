@@ -21,7 +21,7 @@ INFO:root:loaded params...
                 'use_color_distortion': False,
                 'use_gaussian_blur': False,
                 'use_horizontal_flip': False},
-    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp24',
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp26',
                    'write_tag': 'jepa'},
     'mask': {   'allow_overlap': False,
                 'aspect_ratio': [0.75, 1.5],
@@ -178,13 +178,24 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:root:[1,     0/ 2562] - train_losses - Parent Class: 6.9856 - Children class: 1.6093 -Autoencoder Loss (total): 707.6603 - Reconstruction/K-Means Loss: [2.3407 / 705.3196] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.00e-04] [autoencoder lr: 1.00e-04][mem: 6.61e+04] (3421.4 ms)
-INFO:root:[1,     0] grad_stats: [6.30e-04 3.83e-03] (0.00e+00, 4.52e+00)
-INFO:root:[1,    50/ 2562] - train_losses - Parent Class: 5.9836 - Children class: 1.0643 -Autoencoder Loss (total): 749.5916 - Reconstruction/K-Means Loss: [0.8960 / 748.6955] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.01e-04] [autoencoder lr: 1.03e-04][mem: 7.18e+04] (1558.9 ms)
-INFO:root:[1,    50] grad_stats: [6.90e-05 6.36e-04] (6.68e-10, 3.79e+00)
-INFO:root:[1,   100/ 2562] - train_losses - Parent Class: 5.8805 - Children class: 1.0939 -Autoencoder Loss (total): 756.0809 - Reconstruction/K-Means Loss: [0.6617 / 755.4193] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.02e-04] [autoencoder lr: 1.05e-04][mem: 7.18e+04] (1536.2 ms)
-INFO:root:[1,   100] grad_stats: [1.82e-04 9.45e-04] (3.62e-08, 3.88e+00)
-INFO:root:[1,   150/ 2562] - train_losses - Parent Class: 5.8108 - Children class: 1.0756 -Autoencoder Loss (total): 759.1638 - Reconstruction/K-Means Loss: [0.5577 / 758.6062] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.02e-04] [autoencoder lr: 1.08e-04][mem: 7.18e+04] (1529.0 ms)
-INFO:root:[1,   150] grad_stats: [4.98e-05 4.17e-04] (1.50e-08, 3.88e+00)
-INFO:root:[1,   200/ 2562] - train_losses - Parent Class: 5.7828 - Children class: 1.0449 -Autoencoder Loss (total): 760.1608 - Reconstruction/K-Means Loss: [0.5040 / 759.6567] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.03e-04] [autoencoder lr: 1.10e-04][mem: 7.18e+04] (1527.6 ms)
-INFO:root:[1,   200] grad_stats: [8.65e-05 7.08e-04] (3.08e-08, 3.61e+00)
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC.py", line 52, in process_main
+    app_main(args=params)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 634, in main
+    (loss, k_means_loss, ae_lr, _new_lr, _new_wd, grad_stats, bottleneck_output), etime = gpu_timer(train_step)
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/utils/logging.py", line 21, in gpu_timer
+    result = closure()
+             ^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 544, in train_step
+    k_means_idx_targets[i] = k_means_idx[class_id][str(K_range[k])]
+                             ~~~~~~~~~~~^^^^^^^^^^
+KeyError: '573'
+k_means assignments torch.Size([96, 4, 1])
+k_means assignments torch.Size([96, 4, 1])
+Class id 573

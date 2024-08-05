@@ -260,10 +260,10 @@ def build_cache(data_loader, device, target_encoder, hierarchical_classifier, au
         for bottleneck_output, target in items:
             bottleneck_output = bottleneck_output.to(device=torch.device('cpu'), dtype=torch.float32)
             for x, y in zip(bottleneck_output, target):
-                y = y.item()
+                class_id = y.item()
                 if not y in cache:
-                    cache[y] = []                    
-                cache[y].append(x)
+                    cache[class_id] = []                    
+                cache[class_id].append(x)
         return cache
     if not os.path.exists(path + '/cached_features_epoch_0.pt'):
         forward_inputs()

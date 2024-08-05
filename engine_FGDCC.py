@@ -14,6 +14,8 @@ try:
     # --          THAT YOUR JOBS ARE LAUNCHED WITH ONLY 1 DEVICE VISIBLE
     # --          TO EACH PROCESS
     os.environ['CUDA_VISIBLE_DEVICES'] = os.environ['SLURM_LOCALID']
+    os.environ['TORCH_DISTRIBUTED_DEBUG'] = 'DETAIL'
+
 except Exception:
     pass
 
@@ -246,7 +248,7 @@ def main(args, resume_preempt=False):
         color_jitter=color_jitter)
 
     # -- init data-loaders/samplers
-    _, supervised_loader_train, supervised_sampler_train = make_GenericDataset(
+    train_dataset, supervised_loader_train, supervised_sampler_train = make_GenericDataset(
             transform=training_transform,
             batch_size=batch_size,
             collator=None,
@@ -391,7 +393,8 @@ def main(args, resume_preempt=False):
         use_bfloat16=use_bfloat16)
     
     # Hierarchical classifier requires both static_graph=False and to find unused parameters to work.
-    fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=True) 
+    #fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=True) 
+    fgdcc = DistributedDataParallel(fgdcc, static_graph=False) 
 
     #autoencoder = DistributedDataParallel(autoencoder, static_graph=True)
     #target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Static Graph: the set of used and unused parameters will not change during the whole training loop.    
@@ -424,7 +427,22 @@ def main(args, resume_preempt=False):
 
     K_range = [2,3,4,5]
     k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=384, k_range=K_range, resources=resources, config=config)
-    #k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=256, k_range=K_range, resources=resources, config=configs)
+
+    class_idx_map = train_dataset.class_to_idx
+
+    def build_new_idx(class_idx_map):
+        new_idx = {}
+        global_index = 0
+        for key in class_idx_map.keys():
+            key = class_idx_map[key]
+            for k in K_range:
+                if new_idx.get(key, None) is None:
+                    new_idx[key] = {}
+                new_idx[key][str(k)] = global_index
+                global_index += 1
+        return new_idx
+    
+    k_means_idx = build_new_idx(class_idx_map)
 
     empty_clusters_per_epoch = AverageMeter() # Tracks the number of empty clusters per epoch and class 
     
@@ -497,50 +515,54 @@ def main(args, resume_preempt=False):
 
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
 
-                    reconstruction_loss, bottleneck_output, parent_logits, child_logits, parent_proj_embed, child_proj_embed = fgdcc(imgs, targets, device)
+                    reconstruction_loss, bottleneck_output, parent_logits, child_logits, parent_proj_embed, child_proj_embed = fgdcc(imgs, device)
 
                     #-- Compute K-Means assignments with disabled autocast as faiss requires float32
                     with torch.cuda.amp.autocast(enabled=False): 
+                        # -- TODO:
+                        # remove assignment line below (it has being only used to compute k-means loss)
                         k_means_losses, k_means_assignments = k_means_module.assign(x=bottleneck_output, y=target, resources=resources, rank=rank, device=device, cached_features=cached_features_last_epoch)  
-                    
-                    best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
+                        best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
         
                     loss = loss_fn(parent_logits, targets)
                     parent_cls_loss_meter.update(loss)
-
+                    
+                    k_means_assignments = k_means_assignments.squeeze(-1)
+                    
+                    # both k-means assignemnts and best_k_classifiers are located on gpu
+                    
                     ################################################## To be Replaced ###########################################################
                     #############################################################################################################################
-                    classifier_selection = True
+                    classifier_selection = False
                     if classifier_selection:
                         # Model selection: Iterate through every K classifier computing the loss then select the ones with smallest values 
                         subclass_losses = []
                         for k in range(len(K_range)):
-                            k_means_target = k_means_assignments[:,k,:] # [batch_size, 1]
-                            k_means_target = k_means_target.squeeze(1)
-                            subclass_loss = CEL_no_reduction(child_logits[k], k_means_target) 
-                            #print('Subclass loss shape', subclass_loss.size())
-                            #print('Subclass loss', subclass_loss)
+                            k_means_target = k_means_assignments[:,k] # shape [batch_size]
+                            subclass_loss = CEL_no_reduction(child_logits[k], k_means_target)
                             subclass_losses.append(subclass_loss)
-
                         subclass_losses = torch.vstack(subclass_losses)
-
                     #############################################################################################################################
                     #############################################################################################################################
+                    else:
+                        k_means_idx_targets = torch.zeros_like(targets)
+                        for i in range(targets.size(0)):
+                            class_id = targets[i].item()
+                            best_k_id = best_K_classifiers[i].item()
+                            k_means_idx_targets[i] = k_means_idx[class_id][str(best_k_id+2)]
+                        subclass_loss = criterion(child_logits, k_means_idx_targets)
                     
-                    # TODO: Instead of classifying over all K-Means assignments for all K values, 
-                                            
                     # -- Setup losses
-                    subclass_loss = 0
                     k_means_loss = 0
                     consistency_loss = 0
                     vicreg_loss = 0
-
+                    
                     k_means_losses = k_means_losses.squeeze(2).transpose(0,1)
-                    
-                    # CCI score...
-                    subclass_loss = subclass_losses[best_K_classifiers, torch.arange(best_K_classifiers.size(0))].mean()
                     k_means_loss = k_means_losses[best_K_classifiers, torch.arange(best_K_classifiers.size(0))].mean()
-                    
+
+                    # CCI score...
+                    #subclass_loss = subclass_losses[best_K_classifiers, torch.arange(best_K_classifiers.size(0))].mean()
+                                        
                     #vicreg_loss = VICReg_loss(parent_proj_embed, child_proj_embed)
 
                     children_cls_loss_meter.update(subclass_loss)
@@ -550,7 +572,7 @@ def main(args, resume_preempt=False):
                     #vicreg_loss_meter.update(vicreg_loss)
 
                     # Sum parent and subclass loss + Regularizers
-                    loss += subclass_loss + vicreg_loss + consistency_loss
+                    loss += subclass_loss # + vicreg_loss + consistency_loss
                     #reconstruction_loss = AllReduce.apply(reconstruction_loss).clone()
                     reconstruction_loss_meter.update(reconstruction_loss)
 
@@ -606,7 +628,7 @@ def main(args, resume_preempt=False):
                 return (float(loss), float(k_means_loss), _new_AE_lr, _new_lr, _new_wd, grad_stats, bottleneck_output)
 
             (loss, k_means_loss, ae_lr, _new_lr, _new_wd, grad_stats, bottleneck_output), etime = gpu_timer(train_step)
-                       
+
             total_loss_meter.update(loss)
             k_means_loss_meter.update(k_means_loss)
             time_meter.update(etime)

@@ -52,7 +52,7 @@ class KMeansModule:
             pairs = torch.tensor(two_by_two_combinations(range(k)), device=device)
 
             # Extract the centroid pairs in a single operation
-            centroid_pairs = centroids[pairs] # TODO: VERIFY IF WORKS
+            centroid_pairs = centroids[pairs]
             
             # Compute cosine similarity in a vectorized way
             cosine_similarities = F.cosine_similarity(centroid_pairs[:, 0], centroid_pairs[:, 1], dim=1)
@@ -180,19 +180,19 @@ class KMeansModule:
         for i in range(len(x)):
             # Expand dims
             batch_x = x[i].unsqueeze(0)
+            class_id = y[i].item()
             # Initialize the centroids if it haven't already been initialized
             if self.n_kmeans[y[i]][0].centroids is None:
                 # FIXME this won't work inside the training loop because inside it batch_x is not on cpu but since this isn't expected to be called should be safe for now
-                self.initialize_centroids(batch_x, y[i].item(), resources, rank, device, cached_features)                
+                self.initialize_centroids(batch_x, class_id, resources, rank, device, cached_features)                
             # Assign the vectors to the nearest centroid
             D_k, I_k = [], []
             for k in range(len(self.k_range)):
-                D, I = self.n_kmeans[y[i]][k].index.search(x[i].unsqueeze(0), 1)
+                D, I = self.n_kmeans[class_id][k].index.search(batch_x, 1)
                 D_k.append(D[0])
-                I_k.append(I[0])            
+                I_k.append(I[0])
             D_batch.append(torch.stack(D_k))
             I_batch.append(torch.stack(I_k))
-
         D_batch = torch.stack((D_batch))
         I_batch = torch.stack((I_batch))
         return D_batch, I_batch
