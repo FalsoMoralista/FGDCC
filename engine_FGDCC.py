@@ -393,7 +393,7 @@ def main(args, resume_preempt=False):
         use_bfloat16=use_bfloat16)
     
     # Hierarchical classifier requires both static_graph=False and to find unused parameters to work.
-    fgdcc = DistributedDataParallel(fgdcc, static_graph=True) #  static_graph=False, find_unused_parameters=True
+    fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=True) #  static_graph=False, find_unused_parameters=True
 
     #autoencoder = DistributedDataParallel(autoencoder, static_graph=True)
     #target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Static Graph: the set of used and unused parameters will not change during the whole training loop.    
@@ -453,7 +453,7 @@ def main(args, resume_preempt=False):
                                              hierarchical_classifier=model_noddp.classifier, 
                                              path=root_path+'/DeepCluster/cache')
     
-    cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]    
+    cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
     
     logger.info('Initializing centroids...')
@@ -462,10 +462,8 @@ def main(args, resume_preempt=False):
     
     logger.info('Update Step...')
     
-    #print('Warning: uncomment module update')
     M_losses = k_means_module.update(cached_features_last_epoch, device, empty_clusters_per_epoch) # M-step
     
-    #print("S:", k_means_module.inter_cluster_separation())
     accum_iter = 1
     start_epoch = resume_epoch
 
@@ -509,7 +507,7 @@ def main(args, resume_preempt=False):
                 
                 def loss_fn(h, targets):
                     loss = criterion(h, targets)
-                    loss = AllReduce.apply(loss).clone()
+                    loss = AllReduce.apply(loss)
                     return loss 
 
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
@@ -517,13 +515,12 @@ def main(args, resume_preempt=False):
                     reconstruction_loss, bottleneck_output, parent_logits, child_logits = fgdcc(imgs, device)
 
                     #-- Compute K-Means assignments with disabled autocast as faiss requires float32
-                    with torch.cuda.amp.autocast(enabled=False): 
-                        # -- TODO:
-                        # remove assignment line below (it has being only used to compute k-means loss)
-                        k_means_losses, k_means_assignments = k_means_module.assign(x=bottleneck_output, y=target, resources=resources, rank=rank, device=device, cached_features=cached_features_last_epoch)  
-                    best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
-        
-                    loss = loss_fn(parent_logits, targets)
+                    #with torch.cuda.amp.autocast(enabled=False): 
+                        #k_means_losses, k_means_assignments = k_means_module.assign(x=bottleneck_output, y=target, resources=resources, rank=rank, device=device, cached_features=cached_features_last_epoch)  
+                    
+                    k_means_losses, best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
+
+                    loss = criterion(parent_logits, targets)
                     parent_cls_loss_meter.update(loss)
                                         
                     ################################################## To be Replaced ###########################################################
@@ -552,24 +549,15 @@ def main(args, resume_preempt=False):
                     k_means_loss = 0
                     consistency_loss = 0
                     vicreg_loss = 0
-                    
+                                        
                     k_means_losses = k_means_losses.squeeze(2).transpose(0,1)
                     k_means_loss = k_means_losses[best_K_classifiers, torch.arange(best_K_classifiers.size(0))].mean()
 
-                    # CCI score...
-                    #subclass_loss = subclass_losses[best_K_classifiers, torch.arange(best_K_classifiers.size(0))].mean()
-                                        
-                    #vicreg_loss = VICReg_loss(parent_proj_embed, child_proj_embed)
-
                     children_cls_loss_meter.update(subclass_loss)
-                    
-                    consistency_loss_meter.update(consistency_loss)
-                    
-                    #vicreg_loss_meter.update(vicreg_loss)
-
+                                        
                     # Sum parent and subclass loss + Regularizers
-                    loss += subclass_loss # + vicreg_loss + consistency_loss
-                    #reconstruction_loss = AllReduce.apply(reconstruction_loss).clone()
+                    loss += subclass_loss
+                    
                     reconstruction_loss_meter.update(reconstruction_loss)
 
                     # FIXME: this won't work as expected since its a constant
@@ -582,12 +570,7 @@ def main(args, resume_preempt=False):
                         
                         - When you need to aggregate or synchronize values (e.g., summing gradients, averaging losses, etc.) across all processes.
                         - Typically used in model parameter synchronization during distributed training.
-                    '''
-                    #loss = AllReduce.apply(loss).clone()
-                    
-                    #k_means_loss = AllReduce.apply(k_means_loss).clone()
-                    #subclass_loss = AllReduce.apply(subclass_loss).clone()
-                    
+                    '''                    
                 # FIXME
                 if accum_iter > 1: 
                     loss_value = loss.item()
@@ -720,8 +703,6 @@ def main(args, resume_preempt=False):
         M_losses = k_means_module.update(cached_features, device, empty_clusters_per_epoch)
         print('Avg no of empty clusters:', empty_clusters_per_epoch.avg)
     
-        #for k in range(len(K_range)):            
-        #    logger.info('Average K-Means Loss after M step: [K=',K_range[k],', value:', M_losses[k],']')
         cached_features_last_epoch = copy.deepcopy(cached_features)
 
         testAcc1 = AverageMeter()

@@ -16,8 +16,8 @@ class FGDCC(nn.Module):
         super(FGDCC, self).__init__()        
         self.backbone_patch_mean = backbone_patch_mean
         self.vit_encoder = vit_backbone
-        self.autoencoder = MaskedAutoEncoder()
         self.classifier = classifier
+        self.autoencoder = MaskedAutoEncoder()
         self.l2_norm = torch.nn.MSELoss()
     
     def forward(self, imgs, device):
@@ -46,9 +46,9 @@ def get_model(embed_dim, drop_path, nb_classes, K_range, proj_embed_dim, pretrai
                                       nb_classes=nb_classes,
                                       proj_embed_dim=proj_embed_dim,
                                       drop_path=drop_path,
-                                      num_heads=4,
+                                      num_heads=16,
                                       nb_subclasses_per_parent=K_range)
     
-    model = FGDCC(vit_backbone=pretrained_model, classifier=cls, backbone_patch_mean=False)
+    model = FGDCC(vit_backbone=pretrained_model, classifier=cls)
     model.to(device)
     return model                 

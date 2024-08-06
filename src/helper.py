@@ -250,18 +250,21 @@ def build_cache(data_loader, device, target_encoder, hierarchical_classifier, au
                     return (samples, targets)
                 imgs, _ = load_imgs()            
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=True):            
-                    h = target_encoder(imgs)        
-                    _, _, _, child_proj_emb = hierarchical_classifier(h, device)                    
-                    _, bottleneck_output = autoencoder(child_proj_emb, device)
+                    h = target_encoder(imgs)
+                    h = torch.mean(h, dim=1) # Mean over patch-level representation and squeeze
+                    h = torch.squeeze(h, dim=1) 
+                    h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
+                    #_, _, _, child_proj_emb = hierarchical_classifier(h, device)                    
+                    # We performed this modification such that the clustering feature s 
+                    _, bottleneck_output = autoencoder(h, device) 
                     items.append((bottleneck_output, target))
-           
     def build_cache():
         cache = {}        
         for bottleneck_output, target in items:
             bottleneck_output = bottleneck_output.to(device=torch.device('cpu'), dtype=torch.float32)
             for x, y in zip(bottleneck_output, target):
                 class_id = y.item()
-                if not y in cache:
+                if not class_id in cache:
                     cache[class_id] = []                    
                 cache[class_id].append(x)
         return cache

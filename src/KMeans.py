@@ -61,16 +61,10 @@ class KMeansModule:
             S_score[k_i] = cosine_similarities.sum()
         return S_score
 
-    '''
-        TODO (Robustness/Consistency):
-            - Check if the updated cache has more than K samples, if so use it
-            otherwise use the previous epoch's one. 
-
-            Which problems arises from using last epoch's cached features in relation to the current one?             
-    '''
     def cosine_cluster_index(self, xb, yb, current_cache, last_epoch_cache, device):
 
         batch_size = xb.size(0)
+        D_batch = []
         best_K_values = torch.zeros(batch_size, dtype=torch.int32, device=device)
         for i in range(batch_size):
             class_id = yb[i].item()
@@ -78,31 +72,29 @@ class KMeansModule:
 
             image_list = current_cache.get(class_id, last_epoch_cache.get(class_id))
             batch_x = torch.stack(image_list).to(device, dtype=torch.bfloat16)
-            batch_x = torch.cat((batch_x, sample), dim=0)
+            batch_x = torch.cat((batch_x, sample), dim=0).detach()
 
             S_scores = self.inter_cluster_separation(class_id, device=device)
             target_K_Means = self.n_kmeans[class_id]
-
+            
+            D_k = [] 
             C_scores = torch.zeros(len(self.k_range), device=device)
             for k_i, k_range in enumerate(self.k_range):
 
-                _, batch_assignments = target_K_Means[k_i].index.search(batch_x, 1)
+                D, batch_assignments = target_K_Means[k_i].index.search(batch_x, 1)
                 batch_assignments = batch_assignments.squeeze(-1)
-
+                D_k.append(D[0])
                 centroids = target_K_Means[k_i].centroids
             
                 centroid_list = centroids[batch_assignments] 
-                
                 # Computes the cosine similarity between every image and the cluster centroid to which is associated to
                 C_score = F.cosine_similarity(batch_x, centroid_list)
                 C_scores[k_i] = C_score.sum()
-
+            D_batch.append(torch.stack(D_k))
             CCI = S_scores / (C_scores + S_scores)
-            best_K_values[i] = CCI.argmax().item()
-            del batch_x
-        torch.cuda.empty_cache()
-                    
-        return best_K_values
+            best_K_values[i] = CCI.argmax().item()                    
+        D_batch = torch.stack(D_batch)
+        return D_batch, best_K_values
 
     def initialize_centroids(self, batch_x, class_id, resources, rank, device, config, cached_features):
         
@@ -203,8 +195,8 @@ class KMeansModule:
             xb = torch.stack(cached_features[key]) # Form an image batch
             if xb.get_device() == -1:
                 xb = xb.to(device, dtype=torch.float32)
-            _, batch_k_means_loss = self.iterative_kmeans(xb, key, device, empty_clusters_per_epoch) # TODO: sum and average across dataset length
-
+            _, batch_k_means_loss = self.iterative_kmeans(xb, key, device, empty_clusters_per_epoch)
+        
             # For each "batch" append the losses (average distances) for each K value.
             for k in range(len(self.k_range)):
                 means[k].append(batch_k_means_loss[k])

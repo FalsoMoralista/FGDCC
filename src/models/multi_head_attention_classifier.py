@@ -56,23 +56,36 @@ class MultiHeadAttentionClassifier(nn.Module):
         
         self.parent_classifier = nn.Linear(proj_embed_dim, nb_classes)
         self.subclass_classifier = nn.Linear(proj_embed_dim, len(nb_subclasses_per_parent) * nb_classes)        
-        
+
         self.head_drop = nn.Dropout(drop_path)
+        
+        self.init_weight()
+
+    def init_weight(self):
 
         trunc_normal_(self.subclass_proj[0].weight, std=2e-5)
 
         trunc_normal_(self.parent_feature_selection.weight, std=2e-5)
+
+        trunc_normal_(self.cross_attention.key.weight, std=2e-5)
+        trunc_normal_(self.cross_attention.query.weight, std=2e-5)
+        trunc_normal_(self.cross_attention.value.weight, std=2e-5)
 
         trunc_normal_(self.parent_classifier.weight, std=2e-5)
         trunc_normal_(self.subclass_classifier.weight, std=2e-5)
 
         if self.subclass_proj[0].bias is not None:
             torch.nn.init.constant_(self.subclass_proj[0].bias, 0)
+
+            torch.nn.init.constant_(self.cross_attention.key.bias, 0)
+            torch.nn.init.constant_(self.cross_attention.query.bias, 0)
+            torch.nn.init.constant_(self.cross_attention.value.bias, 0)
             
             torch.nn.init.constant_(self.parent_feature_selection.bias, 0)
 
             torch.nn.init.constant_(self.parent_classifier.bias, 0)
             torch.nn.init.constant_(self.subclass_classifier.bias, 0)
+
 
     def forward(self, h):
         
