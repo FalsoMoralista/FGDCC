@@ -40,16 +40,11 @@ class MultiHeadAttentionClassifier(nn.Module):
         self.nb_subclasses_per_parent = nb_subclasses_per_parent
         self.num_heads = num_heads
         
-        self.proj_times = 4
+        self.proj_times = 1
 
         self.act = nn.GELU()
         
         # -- Classifier Embeddings
-        self.parent_proj = nn.Sequential(
-            nn.Linear(input_dim, self.proj_times * proj_embed_dim),
-            nn.GELU()
-        )
-
         self.subclass_proj = nn.Sequential(
             nn.Linear(input_dim, self.proj_times * proj_embed_dim),
             nn.GELU()
@@ -57,36 +52,24 @@ class MultiHeadAttentionClassifier(nn.Module):
 
         self.cross_attention = MultiHeadCrossAttention(self.proj_times * proj_embed_dim, num_heads)
 
+        self.parent_feature_selection = nn.Linear((self.proj_times + 1) * proj_embed_dim, input_dim)
+        
         self.parent_classifier = nn.Linear(proj_embed_dim, nb_classes)
         self.subclass_classifier = nn.Linear(proj_embed_dim, len(nb_subclasses_per_parent) * nb_classes)        
-
-        self.parent_feature_selection = nn.Sequential(
-            nn.LayerNorm((self.proj_times + 1) * proj_embed_dim),
-            nn.Linear((self.proj_times + 1) * proj_embed_dim, input_dim),
-        )
         
-        self.subclass_feature_selection = nn.Sequential(
-            nn.LayerNorm(self.proj_times * proj_embed_dim),
-            nn.Linear(self.proj_times * proj_embed_dim, input_dim),
-        )        
-
         self.head_drop = nn.Dropout(drop_path)
 
-        trunc_normal_(self.parent_proj[0].weight, std=2e-5)
         trunc_normal_(self.subclass_proj[0].weight, std=2e-5)
 
-        trunc_normal_(self.parent_feature_selection[1].weight, std=2e-5)
-        trunc_normal_(self.subclass_feature_selection[1].weight, std=2e-5)
+        trunc_normal_(self.parent_feature_selection.weight, std=2e-5)
 
         trunc_normal_(self.parent_classifier.weight, std=2e-5)
         trunc_normal_(self.subclass_classifier.weight, std=2e-5)
 
-        if self.subclass_proj[0].bias is not None and self.parent_proj[0].bias is not None:
-            torch.nn.init.constant_(self.parent_proj[0].bias, 0)
+        if self.subclass_proj[0].bias is not None:
             torch.nn.init.constant_(self.subclass_proj[0].bias, 0)
             
-            torch.nn.init.constant_(self.parent_feature_selection[1].bias, 0)
-            torch.nn.init.constant_(self.subclass_feature_selection[1].bias, 0)
+            torch.nn.init.constant_(self.parent_feature_selection.bias, 0)
 
             torch.nn.init.constant_(self.parent_classifier.bias, 0)
             torch.nn.init.constant_(self.subclass_classifier.bias, 0)
@@ -95,11 +78,10 @@ class MultiHeadAttentionClassifier(nn.Module):
         
         B, N, C = h.size() # [batch_size, num_patches, embed_dim]
 
-        parent_proj_embed = self.parent_proj(h) # output shape [B, 256, 5120]
-        subclass_proj_embed = self.subclass_proj(h) # output shape [B, 256, 5120]
+        subclass_proj_embed = self.subclass_proj(h) # output shape [B, 256, 1280]
 
         # Cross-attention to integrate subclass features into parent features
-        integrated_features = self.cross_attention(parent_proj_embed, subclass_proj_embed, subclass_proj_embed)
+        integrated_features = self.cross_attention(h, subclass_proj_embed, subclass_proj_embed)
         integrated_features = F.layer_norm(integrated_features, (integrated_features.size(-1),)) # Normalize over feature-dim 
         
         parent_proj_embed = torch.cat((h, integrated_features), dim=-1)
@@ -108,7 +90,6 @@ class MultiHeadAttentionClassifier(nn.Module):
         parent_proj_embed = F.layer_norm(parent_proj_embed, (parent_proj_embed.size(-1),))
         parent_proj_embed = self.head_drop(parent_proj_embed)
 
-        subclass_proj_embed = self.subclass_feature_selection(subclass_proj_embed)
         subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
         subclass_proj_embed = F.layer_norm(subclass_proj_embed, (subclass_proj_embed.size(-1),))
         subclass_proj_embed = self.head_drop(subclass_proj_embed)
@@ -117,4 +98,4 @@ class MultiHeadAttentionClassifier(nn.Module):
         
         subclass_logits = self.subclass_classifier(subclass_proj_embed) # Shape (batch_size, num_parents * num_subclasses)
 
-        return parent_logits, subclass_logits, parent_proj_embed, subclass_proj_embed
+        return parent_logits, subclass_logits, subclass_proj_embed

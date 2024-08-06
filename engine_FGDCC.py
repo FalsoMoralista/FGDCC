@@ -393,8 +393,7 @@ def main(args, resume_preempt=False):
         use_bfloat16=use_bfloat16)
     
     # Hierarchical classifier requires both static_graph=False and to find unused parameters to work.
-    #fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=True) 
-    fgdcc = DistributedDataParallel(fgdcc, static_graph=False) 
+    fgdcc = DistributedDataParallel(fgdcc, static_graph=True) #  static_graph=False, find_unused_parameters=True
 
     #autoencoder = DistributedDataParallel(autoencoder, static_graph=True)
     #target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Static Graph: the set of used and unused parameters will not change during the whole training loop.    
@@ -515,26 +514,23 @@ def main(args, resume_preempt=False):
 
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
 
-                    reconstruction_loss, bottleneck_output, parent_logits, child_logits, parent_proj_embed, child_proj_embed = fgdcc(imgs, device)
+                    reconstruction_loss, bottleneck_output, parent_logits, child_logits = fgdcc(imgs, device)
 
                     #-- Compute K-Means assignments with disabled autocast as faiss requires float32
                     with torch.cuda.amp.autocast(enabled=False): 
                         # -- TODO:
                         # remove assignment line below (it has being only used to compute k-means loss)
                         k_means_losses, k_means_assignments = k_means_module.assign(x=bottleneck_output, y=target, resources=resources, rank=rank, device=device, cached_features=cached_features_last_epoch)  
-                        best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
+                    best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
         
                     loss = loss_fn(parent_logits, targets)
                     parent_cls_loss_meter.update(loss)
-                    
-                    k_means_assignments = k_means_assignments.squeeze(-1)
-                    
-                    # both k-means assignemnts and best_k_classifiers are located on gpu
-                    
+                                        
                     ################################################## To be Replaced ###########################################################
                     #############################################################################################################################
                     classifier_selection = False
                     if classifier_selection:
+                        k_means_assignments = k_means_assignments.squeeze(-1)
                         # Model selection: Iterate through every K classifier computing the loss then select the ones with smallest values 
                         subclass_losses = []
                         for k in range(len(K_range)):
@@ -668,10 +664,10 @@ def main(args, resume_preempt=False):
             bottleneck_output = bottleneck_output.to(device=torch.device('cpu'), dtype=torch.float32).detach() # Verify if apply dist.barrier
             def update_cache(cache):
                 for x, y in zip(bottleneck_output, target):
-                    y = y.item()
-                    if not y in cache:
-                        cache[y] = []                    
-                    cache[y].append(x)
+                    class_id = y.item()
+                    if not class_id in cache:
+                        cache[class_id] = []                    
+                    cache[class_id].append(x)
                 return cache
             
             '''

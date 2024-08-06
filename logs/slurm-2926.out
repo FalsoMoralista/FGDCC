@@ -21,7 +21,7 @@ INFO:root:loaded params...
                 'use_color_distortion': False,
                 'use_gaussian_blur': False,
                 'use_horizontal_flip': False},
-    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp23',
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp24',
                    'write_tag': 'jepa'},
     'mask': {   'allow_overlap': False,
                 'aspect_ratio': [0.75, 1.5],
@@ -155,5 +155,62 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:root:[1,     0/ 2562] - train_losses - Parent Class: 6.9856 - Children class: 8.3719 -Autoencoder Loss (total): 703.7083 - Reconstruction/K-Means Loss: [1.0630 / 702.6453] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.00e-04] [autoencoder lr: 1.00e-04][mem: 6.58e+04] (3299.1 ms)
-INFO:root:[1,     0] grad_stats: [4.39e-04 6.34e-04] (4.53e-08, 1.90e+00)
+INFO:root:[1,     0/ 2562] - train_losses - Parent Class: 6.9856 - Children class: 8.3719 -Autoencoder Loss (total): 703.7083 - Reconstruction/K-Means Loss: [1.0630 / 702.6453] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.00e-04] [autoencoder lr: 1.00e-04][mem: 6.59e+04] (3163.8 ms)
+INFO:root:[1,     0] grad_stats: [4.39e-04 6.34e-04] (3.75e-08, 1.90e+00)
+INFO:root:[1,    50/ 2562] - train_losses - Parent Class: 5.9958 - Children class: 7.1585 -Autoencoder Loss (total): 686.5825 - Reconstruction/K-Means Loss: [0.5899 / 685.9926] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.01e-04] [autoencoder lr: 1.03e-04][mem: 7.23e+04] (1312.0 ms)
+INFO:root:[1,    50] grad_stats: [1.00e-04 2.00e-03] (2.36e-08, 3.95e+00)
+INFO:root:[1,   100/ 2562] - train_losses - Parent Class: 5.8590 - Children class: 6.6550 -Autoencoder Loss (total): 692.7041 - Reconstruction/K-Means Loss: [0.4749 / 692.2292] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.02e-04] [autoencoder lr: 1.05e-04][mem: 7.29e+04] (1285.2 ms)
+INFO:root:[1,   100] grad_stats: [4.90e-05 6.70e-04] (1.54e-07, 3.91e+00)
+INFO:root:[1,   150/ 2562] - train_losses - Parent Class: 5.7963 - Children class: 6.4800 -Autoencoder Loss (total): 693.7817 - Reconstruction/K-Means Loss: [0.4327 / 693.3491] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.02e-04] [autoencoder lr: 1.08e-04][mem: 7.34e+04] (1279.0 ms)
+INFO:root:[1,   150] grad_stats: [2.25e-03 1.38e-03] (5.74e-07, 4.00e+00)
+INFO:root:[1,   200/ 2562] - train_losses - Parent Class: 5.7714 - Children class: 6.3912 -Autoencoder Loss (total): 692.1453 - Reconstruction/K-Means Loss: [0.4104 / 691.7349] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.03e-04] [autoencoder lr: 1.10e-04][mem: 7.40e+04] (1276.3 ms)
+INFO:root:[1,   200] grad_stats: [1.99e-03 1.53e-03] (2.36e-06, 3.70e+00)
+INFO:root:[1,   250/ 2562] - train_losses - Parent Class: 5.7509 - Children class: 6.3157 -Autoencoder Loss (total): 685.8233 - Reconstruction/K-Means Loss: [0.4004 / 685.4229] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.04e-04] [autoencoder lr: 1.13e-04][mem: 7.46e+04] (1275.1 ms)
+INFO:root:[1,   250] grad_stats: [2.69e-04 5.43e-04] (2.14e-07, 3.87e+00)
+INFO:root:[1,   300/ 2562] - train_losses - Parent Class: 5.7367 - Children class: 6.2578 -Autoencoder Loss (total): 682.6832 - Reconstruction/K-Means Loss: [0.3905 / 682.2927] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.05e-04] [autoencoder lr: 1.15e-04][mem: 7.52e+04] (1274.6 ms)
+INFO:root:[1,   300] grad_stats: [2.81e-04 6.53e-04] (1.10e-07, 3.83e+00)
+INFO:root:[1,   350/ 2562] - train_losses - Parent Class: 5.7310 - Children class: 6.2190 -Autoencoder Loss (total): 681.1278 - Reconstruction/K-Means Loss: [0.3832 / 680.7446] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 1.05e-04] [autoencoder lr: 1.18e-04][mem: 7.58e+04] (1275.2 ms)
+INFO:root:[1,   350] grad_stats: [1.63e-04 1.73e-04] (4.98e-08, 3.80e+00)
+terminate called without an active exception
+Exception ignored in: <function _MultiProcessingDataLoaderIter.__del__ at 0x7fdee26380e0>
+Traceback (most recent call last):
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1479, in __del__
+    self._shutdown_workers()
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1443, in _shutdown_workers
+    w.join(timeout=_utils.MP_STATUS_CHECK_INTERVAL)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/popen_fork.py", line 40, in wait
+    if not wait([self.sentinel], timeout):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/connection.py", line 1136, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/_utils/signal_handling.py", line 66, in handler
+    _error_if_any_worker_fails()
+RuntimeError: DataLoader worker (pid 384250) is killed by signal: Aborted. 
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC.py", line 52, in process_main
+    app_main(args=params)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 627, in main
+    (loss, k_means_loss, ae_lr, _new_lr, _new_wd, grad_stats, bottleneck_output), etime = gpu_timer(train_step)
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/utils/logging.py", line 21, in gpu_timer
+    result = closure()
+             ^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 525, in train_step
+    best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/KMeans.py", line 98, in cosine_cluster_index
+    C_score = F.cosine_similarity(batch_x, centroid_list)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 MiB. GPU 

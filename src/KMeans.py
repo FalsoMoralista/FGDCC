@@ -74,12 +74,11 @@ class KMeansModule:
         best_K_values = torch.zeros(batch_size, dtype=torch.int32, device=device)
         for i in range(batch_size):
             class_id = yb[i].item()
-            sample = xb[i]
+            sample = xb[i].unsqueeze(0)
 
             image_list = current_cache.get(class_id, last_epoch_cache.get(class_id))
-            batch_x = torch.stack(image_list).to(device)
-
-            batch_x = torch.cat((batch_x, sample.unsqueeze(0)), dim=0) # TODO verify how to do without expanding dims
+            batch_x = torch.stack(image_list).to(device, dtype=torch.bfloat16)
+            batch_x = torch.cat((batch_x, sample), dim=0)
 
             S_scores = self.inter_cluster_separation(class_id, device=device)
             target_K_Means = self.n_kmeans[class_id]
@@ -91,7 +90,7 @@ class KMeansModule:
                 batch_assignments = batch_assignments.squeeze(-1)
 
                 centroids = target_K_Means[k_i].centroids
-                #assignments = batch_assignments[:, k_i] # TODO: VERIFY IF THIS WORKS (i don't think so)
+            
                 centroid_list = centroids[batch_assignments] 
                 
                 # Computes the cosine similarity between every image and the cluster centroid to which is associated to
@@ -100,7 +99,9 @@ class KMeansModule:
 
             CCI = S_scores / (C_scores + S_scores)
             best_K_values[i] = CCI.argmax().item()
-
+            del batch_x
+        torch.cuda.empty_cache()
+                    
         return best_K_values
 
     def initialize_centroids(self, batch_x, class_id, resources, rank, device, config, cached_features):
@@ -157,8 +158,6 @@ class KMeansModule:
         D_batch = torch.stack(D_k)
         I_batch = torch.stack(I_k)
 
-        #D_batch = torch.stack((D_batch))
-        #I_batch = torch.stack((I_batch))
         return D_batch, I_batch    
     
     '''

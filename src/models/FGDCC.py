@@ -29,7 +29,7 @@ class FGDCC(nn.Module):
         h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
 
         # Step 2. Forward into the hierarchical classifier
-        parent_logits, child_logits, parent_proj_embed, child_proj_embed = self.classifier(h) 
+        parent_logits, child_logits, child_proj_embed = self.classifier(h) 
 
         # Detach from the graph
         child_proj_detatched = child_proj_embed.detach()
@@ -38,7 +38,7 @@ class FGDCC(nn.Module):
         reconstructed_input, bottleneck_output = self.autoencoder(child_proj_detatched, device)
         reconstruction_loss = self.l2_norm(reconstructed_input, child_proj_detatched)
          
-        return reconstruction_loss, bottleneck_output, parent_logits, child_logits, parent_proj_embed, child_proj_embed
+        return reconstruction_loss, bottleneck_output, parent_logits, child_logits
 
 def get_model(embed_dim, drop_path, nb_classes, K_range, proj_embed_dim, pretrained_model ,device):
     
@@ -52,19 +52,3 @@ def get_model(embed_dim, drop_path, nb_classes, K_range, proj_embed_dim, pretrai
     model = FGDCC(vit_backbone=pretrained_model, classifier=cls, backbone_patch_mean=False)
     model.to(device)
     return model                 
-
-'''
-    # -- Consistency Regularization with KL Divergence
-    #size = imgs.size(0) # This allows handling cases when the number of points is different from batch size (due to drop_last=False)
-    #gathered_child_embed = []
-    #for i in range(size):
-    #    gathered_child_embed.append(child_proj_embed[best_k_indexes[i]][i])
-    #gathered_child_embed = torch.stack(gathered_child_embed)
-    #subclass_probs = F.log_softmax(gathered_child_embed, dim=1)
-
-    #subclass_probs = F.log_softmax(child_proj_embed, dim=1)
-    #parent_probs = F.log_softmax(parent_proj_embed, dim=1) # Log target perhaps is not necessary
-    # TODO: verify divergence direction
-    #consistency_loss = F.kl_div(subclass_probs, parent_probs, log_target=True,  reduction='batchmean')
-
-'''
