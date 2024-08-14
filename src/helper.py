@@ -234,6 +234,47 @@ def init_model(
     
     return encoder, predictor, autoencoder
 
+
+def build_cache_v2(data_loader, device, target_encoder, hierarchical_classifier, path):   
+
+    target_encoder.eval()
+    hierarchical_classifier.eval()
+
+    items = []
+    def forward_inputs():
+        with torch.no_grad():
+            for itr, (sample, target) in enumerate(data_loader):
+                def load_imgs():
+                    samples = sample.to(device, non_blocking=True)
+                    targets = target.to(device, non_blocking=True)
+                    return (samples, targets)
+                imgs, _ = load_imgs()            
+                with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=True):            
+                    h = target_encoder(imgs)
+                    h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
+                    h = torch.mean(h, dim=1) # Mean over patch-level representation and squeeze
+                    h = torch.squeeze(h, dim=1)  
+                    items.append((h, target))
+    def build_feature_cache():
+        cache = {}        
+        for output, target in items:
+            output = output.to(device=torch.device('cpu'), dtype=torch.float32)
+            for x, y in zip(output, target):
+                class_id = y.item()
+                if not class_id in cache:
+                    cache[class_id] = []                    
+                cache[class_id].append(x)
+        return cache
+    if not os.path.exists(path + '/integral_cached_features_epoch_0.pt'):
+        forward_inputs()
+        cache = build_feature_cache()
+        torch.save(cache, path + '/integral_cached_features_epoch_0.pt')
+    else:
+        cache = torch.load(path + '/integral_cached_features_epoch_0.pt')        
+    target_encoder.train(True)
+    hierarchical_classifier.train(True)
+    return cache
+
 def build_cache(data_loader, device, target_encoder, hierarchical_classifier, autoencoder, path):   
 
     target_encoder.eval()

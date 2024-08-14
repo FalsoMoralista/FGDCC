@@ -54,7 +54,7 @@ class MultiHeadAttentionClassifier(nn.Module):
 
         self.parent_feature_selection = nn.Linear((self.proj_times + 1) * proj_embed_dim, input_dim)
         
-        self.parent_classifier = nn.Linear(proj_embed_dim, nb_classes)
+        self.parent_classifier = nn.Linear((self.proj_times + 1) * proj_embed_dim, nb_classes)
         self.subclass_classifier = nn.Linear(proj_embed_dim, len(nb_subclasses_per_parent) * nb_classes)        
 
         self.head_drop = nn.Dropout(drop_path)
@@ -87,7 +87,7 @@ class MultiHeadAttentionClassifier(nn.Module):
             torch.nn.init.constant_(self.subclass_classifier.bias, 0)
 
 
-    def forward(self, h):
+    def forward_1(self, h):
         
         B, N, C = h.size() # [batch_size, num_patches, embed_dim]
 
@@ -98,9 +98,9 @@ class MultiHeadAttentionClassifier(nn.Module):
         integrated_features = F.layer_norm(integrated_features, (integrated_features.size(-1),)) # Normalize over feature-dim 
         
         parent_proj_embed = torch.cat((h, integrated_features), dim=-1)
-        parent_proj_embed = self.parent_feature_selection(parent_proj_embed)
         parent_proj_embed = torch.mean(parent_proj_embed, dim=1).squeeze(dim=1) # Take the mean over patch-level representation and squeeze
         parent_proj_embed = F.layer_norm(parent_proj_embed, (parent_proj_embed.size(-1),))
+        parent_proj_embed = self.parent_feature_selection(parent_proj_embed)
         parent_proj_embed = self.head_drop(parent_proj_embed)
 
         subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
@@ -110,5 +110,30 @@ class MultiHeadAttentionClassifier(nn.Module):
         parent_logits = self.parent_classifier(parent_proj_embed)  # Shape (batch_size, num_parents)
         
         subclass_logits = self.subclass_classifier(subclass_proj_embed) # Shape (batch_size, num_parents * num_subclasses)
+
+        return parent_logits, subclass_logits, subclass_proj_embed
+
+
+    def forward(self, h):
+        
+        B, N, C = h.size() # [batch_size, num_patches, embed_dim]
+
+        subclass_proj_embed = self.subclass_proj(h) # output shape [B, 256, 1280]
+        subclass_proj_embed = F.layer_norm(subclass_proj_embed, (subclass_proj_embed.size(-1),))
+
+        # Cross-attention to integrate subclass features into parent features
+        integrated_features = self.cross_attention(h, subclass_proj_embed, subclass_proj_embed)
+        integrated_features = F.layer_norm(integrated_features, (integrated_features.size(-1),)) # Normalize over feature-dim 
+        integrated_features = torch.mean(integrated_features, dim=1).squeeze(dim=1)
+        
+        subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
+        h = torch.mean(h, dim=1).squeeze(dim=1)
+
+        parent_proj_embed = torch.cat((h, integrated_features), dim=-1)
+        parent_proj_embed = self.head_drop(parent_proj_embed)
+
+        parent_logits = self.parent_classifier(parent_proj_embed)  # Shape (batch_size, num_parents)
+        
+        subclass_logits = self.subclass_classifier(self.head_drop(subclass_proj_embed)) # Shape (batch_size, num_parents * num_subclasses)
 
         return parent_logits, subclass_logits, subclass_proj_embed

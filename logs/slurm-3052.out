@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "/home/rtcalumby/miniconda3/lib/python3.8/site-packages/torch/__init__.py", line 168, in _load_global_deps
+    ctypes.CDLL(lib_path, mode=ctypes.RTLD_GLOBAL)
+  File "/home/rtcalumby/miniconda3/lib/python3.8/ctypes/__init__.py", line 373, in __init__
+    self._handle = _dlopen(self._name, mode)
+OSError: libcufft.so.10: cannot open shared object file: No such file or directory
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "main_FGDCC.py", line 15, in <module>
+    from src.utils.distributed import init_distributed
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/utils/distributed.py", line 10, in <module>
+    import torch
+  File "/home/rtcalumby/miniconda3/lib/python3.8/site-packages/torch/__init__.py", line 228, in <module>
+    _load_global_deps()
+  File "/home/rtcalumby/miniconda3/lib/python3.8/site-packages/torch/__init__.py", line 189, in _load_global_deps
+    _preload_cuda_deps(lib_folder, lib_name)
+  File "/home/rtcalumby/miniconda3/lib/python3.8/site-packages/torch/__init__.py", line 154, in _preload_cuda_deps
+    raise ValueError(f"{lib_name} not found in the system path {sys.path}")
+ValueError: libnvrtc.so.*[0-9].*[0-9] not found in the system path ['/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster', '/home/rtcalumby/miniconda3/lib/python38.zip', '/home/rtcalumby/miniconda3/lib/python3.8', '/home/rtcalumby/miniconda3/lib/python3.8/lib-dynload', '/home/rtcalumby/.local/lib/python3.8/site-packages', '/home/rtcalumby/miniconda3/lib/python3.8/site-packages']

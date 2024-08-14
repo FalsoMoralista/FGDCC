@@ -52,7 +52,7 @@ from src.helper import (
     init_model,
     init_opt,
     init_DC_opt,
-    build_cache,
+    build_cache_v2,
     VICReg
     )
 
@@ -200,7 +200,6 @@ def main(args, resume_preempt=False):
     stats_logger = CSVLogger(folder + '/experiment_log.csv',
                            ('%d', 'epoch'),
                            ('%.5f', 'backbone lr'),
-                           ('%.5f', 'autoencoder lr'),
                            ('%.5f', 'Total Train loss'),
                            ('%.5f', 'Parent Train loss'),
                            ('%.5f', 'Parent Test loss'),
@@ -225,7 +224,7 @@ def main(args, resume_preempt=False):
     target_encoder = copy.deepcopy(encoder)
     target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Wrap around ddp. to make state dict compatible?
 
-    logger.info(autoencoder)
+    del autoencoder
 
     training_transform = make_transforms( 
         crop_size=crop_size,
@@ -336,7 +335,6 @@ def main(args, resume_preempt=False):
             'target_encoder': fgdcc.module.vit_encoder.state_dict(),
             'classification_head': fgdcc.module.classifier.state_dict(),
             'opt_1': optimizer.state_dict(),
-            'opt_2': AE_optimizer.state_dict(),
             'scaler': None if scaler is None else scaler.state_dict(),
             'epoch': epoch,
             'loss': total_loss_meter.avg,
@@ -377,7 +375,7 @@ def main(args, resume_preempt=False):
 
     # -- Override previously loaded optimization configs.
     # Create one optimizer that takes into account both encoder and its classifier parameters.
-    optimizer, AE_optimizer, AE_scheduler, scaler, scheduler, wd_scheduler = init_DC_opt(
+    optimizer, _, _, scaler, scheduler, wd_scheduler = init_DC_opt(
         encoder=fgdcc.vit_encoder,
         classifier=fgdcc.classifier,
         autoencoder=fgdcc.autoencoder,
@@ -393,11 +391,7 @@ def main(args, resume_preempt=False):
         use_bfloat16=use_bfloat16)
     
     # Hierarchical classifier requires both static_graph=False and to find unused parameters to work.
-    fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=True) #  static_graph=False, find_unused_parameters=True
-
-    #autoencoder = DistributedDataParallel(autoencoder, static_graph=True)
-    #target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Static Graph: the set of used and unused parameters will not change during the whole training loop.    
-    #hierarchical_classifier = DistributedDataParallel(hierarchical_classifier, static_graph=False, find_unused_parameters=True) # Static Graph: the set of used and unused parameters will not change during the whole training loop.
+    fgdcc = DistributedDataParallel(fgdcc, static_graph=True)
     
     # TODO: ADJUST THIS later!
     if resume_epoch != 0:
@@ -425,7 +419,7 @@ def main(args, resume_preempt=False):
     #configs[rank].useFloat16 = False
 
     K_range = [2,3,4,5]
-    k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=384, k_range=K_range, resources=resources, config=config)
+    k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=1280, k_range=K_range, resources=resources, config=config)
 
     class_idx_map = train_dataset.class_to_idx
 
@@ -447,22 +441,16 @@ def main(args, resume_preempt=False):
     
     model_noddp = fgdcc.module
     logger.info('Building cache...')
-    cached_features_last_epoch = build_cache(data_loader=supervised_loader_train,
+    cached_features_last_epoch = build_cache_v2(data_loader=supervised_loader_train,
                                              device=device, target_encoder=model_noddp.vit_encoder,
-                                             autoencoder=model_noddp.autoencoder,
                                              hierarchical_classifier=model_noddp.classifier, 
                                              path=root_path+'/DeepCluster/cache')
     
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
     
-    logger.info('Initializing centroids...')
-    
-    k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device) # E-step
-    
-    logger.info('Update Step...')
-    
-    M_losses = k_means_module.update(cached_features_last_epoch, device, empty_clusters_per_epoch) # M-step
+    logger.info('Initializing and updating centroids...')
+    k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device)
     
     accum_iter = 1
     start_epoch = resume_epoch
@@ -500,8 +488,7 @@ def main(args, resume_preempt=False):
             
             imgs, targets = load_imgs()
 
-            def train_step():
-                _new_AE_lr = AE_scheduler.step()    
+            def train_step():    
                 _new_lr = scheduler.step() 
                 _new_wd = wd_scheduler.step()
                 
@@ -514,9 +501,7 @@ def main(args, resume_preempt=False):
 
                     reconstruction_loss, bottleneck_output, parent_logits, child_logits = fgdcc(imgs, device)
 
-                    #-- Compute K-Means assignments with disabled autocast for better precision
                     with torch.cuda.amp.autocast(enabled=False): 
-                        #k_means_losses, k_means_assignments = k_means_module.assign(x=bottleneck_output, y=target, resources=resources, rank=rank, device=device, cached_features=cached_features_last_epoch)  
                         k_means_losses, best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
 
                     loss = criterion(parent_logits, targets)
@@ -582,30 +567,24 @@ def main(args, resume_preempt=False):
                     reconstruction_loss_value = reconstruction_loss 
 
                 #  Step 2. Backward & step
-                if use_bfloat16:
-                    scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
-                                parameters=fgdcc.module.autoencoder.parameters(), create_graph=False, retain_graph=True,
-                                update_grad=(itr + 1) % accum_iter == 0)
-                    
+                if use_bfloat16:                    
                     scaler(loss, optimizer, clip_grad=None,
                                 parameters=(list(fgdcc.module.vit_encoder.parameters())+ list(fgdcc.module.classifier.parameters())),
                                 create_graph=False, retain_graph=False,
                                 update_grad=(itr + 1) % accum_iter == 0) # Scaling is only necessary when using bfloat16.   
                 else:
-                    reconstruction_loss.backward()
                     loss.backward()
                     optimizer.step()
-                    AE_optimizer.step()
+                    
 
                 grad_stats = grad_logger(list(fgdcc.module.vit_encoder.named_parameters())+ list(fgdcc.module.classifier.named_parameters()))
                 
                 if (itr + 1) % accum_iter == 0:
                     optimizer.zero_grad()
-                    AE_optimizer.zero_grad()
 
-                return (float(loss), float(k_means_loss), _new_AE_lr, _new_lr, _new_wd, grad_stats, bottleneck_output)
+                return (float(loss), float(k_means_loss), _new_lr, _new_wd, grad_stats, bottleneck_output)
 
-            (loss, k_means_loss, ae_lr, _new_lr, _new_wd, grad_stats, bottleneck_output), etime = gpu_timer(train_step)
+            (loss, k_means_loss, _new_lr, _new_wd, grad_stats, bottleneck_output), etime = gpu_timer(train_step)
 
             total_loss_meter.update(loss)
             k_means_loss_meter.update(k_means_loss)
@@ -631,7 +610,6 @@ def main(args, resume_preempt=False):
                                     vicreg_loss_meter.avg,
                                     _new_wd,
                                     _new_lr,
-                                    ae_lr,
                                     torch.cuda.max_memory_allocated() / 1024.**2,
                                     time_meter.avg))
                     
@@ -734,8 +712,7 @@ def main(args, resume_preempt=False):
         vtime = gpu_timer(evaluate)
 
         stats_logger.log(epoch + 1,
-                        lr,
-                        ae_lr, 
+                        lr, 
                         total_loss_meter.avg,
                         parent_cls_loss_meter.avg,
                         test_loss.avg,

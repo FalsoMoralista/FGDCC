@@ -20,7 +20,7 @@ class FGDCC(nn.Module):
         self.autoencoder = MaskedAutoEncoder()
         self.l2_norm = torch.nn.MSELoss()
     
-    def forward(self, imgs, device):
+    def forward_with_autoencoder(self, imgs, device):
         # Step 1. Forward into the encoder
         h = self.vit_encoder(imgs)
         if self.backbone_patch_mean: 
@@ -40,13 +40,26 @@ class FGDCC(nn.Module):
          
         return reconstruction_loss, bottleneck_output, parent_logits, child_logits
 
+    def forward(self, imgs):
+        # Step 1. Forward into the encoder
+        h = self.vit_encoder(imgs)
+        if self.backbone_patch_mean: 
+            h = torch.mean(h, dim=1) # Mean over patch-level representation and squeeze
+            h = torch.squeeze(h, dim=1) 
+        h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
+
+        # Step 2. Forward into the classifier
+        parent_logits, child_logits, child_proj_embed = self.classifier(h) 
+
+        return 0, torch.mean(h, dim=1).squeeze(dim=1), parent_logits, child_logits
+
 def get_model(embed_dim, drop_path, nb_classes, K_range, proj_embed_dim, pretrained_model ,device):
     
     cls = MultiHeadAttentionClassifier(input_dim=embed_dim,
                                       nb_classes=nb_classes,
                                       proj_embed_dim=proj_embed_dim,
                                       drop_path=drop_path,
-                                      num_heads=16,
+                                      num_heads=4,
                                       nb_subclasses_per_parent=K_range)
     
     model = FGDCC(vit_backbone=pretrained_model, classifier=cls)
