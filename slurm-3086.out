@@ -102,22 +102,6 @@ INFO:root:VisionTransformer(
   (norm): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
 )
 INFO:root:Building cache...
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:root:Initializing and updating centroids...
 INFO:root:Epoch 1
 INFO:faiss.loader:Loading faiss with AVX2 support.
@@ -136,33 +120,6 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-terminate called without an active exception
-terminate called without an active exception
-terminate called without an active exception
-terminate called without an active exception
-terminate called without an active exception
-terminate called without an active exception
-Exception ignored in: <function _MultiProcessingDataLoaderIter.__del__ at 0x7effb25e80e0>
-Traceback (most recent call last):
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1479, in __del__
-    self._shutdown_workers()
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1443, in _shutdown_workers
-    w.join(timeout=_utils.MP_STATUS_CHECK_INTERVAL)
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 149, in join
-    res = self._popen.wait(timeout)
-          ^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/popen_fork.py", line 40, in wait
-    if not wait([self.sentinel], timeout):
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/connection.py", line 1136, in wait
-    ready = selector.select(timeout)
-            ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/selectors.py", line 415, in select
-    fd_event_list = self._selector.poll(timeout)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/_utils/signal_handling.py", line 66, in handler
-    _error_if_any_worker_fails()
-RuntimeError: DataLoader worker (pid 1127369) is killed by signal: Aborted. 
 Process Process-1:
 Traceback (most recent call last):
   File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
@@ -177,25 +134,16 @@ Traceback (most recent call last):
   File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/utils/logging.py", line 21, in gpu_timer
     result = closure()
              ^^^^^^^^^
-  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/new_engine_FGDCC.py", line 502, in train_step
-    reconstruction_loss, bottleneck_output, parent_logits, child_logits = fgdcc(imgs, device)
-                                                                          ^^^^^^^^^^^^^^^^^^^
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/parallel/distributed.py", line 1593, in forward
-    else self._run_ddp_forward(*inputs, **kwargs)
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/parallel/distributed.py", line 1411, in _run_ddp_forward
-    return self.module(*inputs, **kwargs)  # type: ignore[index]
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
-    return self._call_impl(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
-    return forward_call(*args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-TypeError: FGDCC.forward() takes 2 positional arguments but 3 were given
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/new_engine_FGDCC.py", line 505, in train_step
+    k_means_losses, best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/KMeans.py", line 77, in cosine_cluster_index
+    S_scores = self.inter_cluster_separation(class_id, device=device)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/KMeans.py", line 55, in inter_cluster_separation
+    centroid_pairs = centroids[pairs]
+                     ~~~~~~~~~^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/_tensor.py", line 1087, in __array__
+    return self.numpy()
+           ^^^^^^^^^^^^
+TypeError: can't convert cuda:0 device type tensor to numpy. Use Tensor.cpu() to copy the tensor to host memory first.

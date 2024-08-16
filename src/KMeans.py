@@ -49,6 +49,10 @@ class KMeansModule:
 
         for k_i, k in enumerate(self.k_range):
             centroids = target_K_Means[k_i].centroids
+            
+            if isinstance(centroids, np.ndarray):
+                centroids = torch.tensor(centroids, dtype=torch.float32, device=device)
+
             pairs = torch.tensor(two_by_two_combinations(range(k)), device=device)
 
             # Extract the centroid pairs in a single operation

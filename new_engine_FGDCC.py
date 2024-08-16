@@ -499,7 +499,7 @@ def main(args, resume_preempt=False):
 
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
 
-                    reconstruction_loss, bottleneck_output, parent_logits, child_logits = fgdcc(imgs, device)
+                    reconstruction_loss, bottleneck_output, parent_logits, child_logits = fgdcc(imgs)
 
                     with torch.cuda.amp.autocast(enabled=False): 
                         k_means_losses, best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
@@ -700,7 +700,7 @@ def main(args, resume_preempt=False):
                 labels = targets.to(device, non_blocking=True)
                                  
                 with torch.cuda.amp.autocast():
-                    _, _, parent_logits, _, = fgdcc(images, device)                    
+                    _, _, parent_logits, _, = fgdcc(images)                    
                     loss = crossentropy(parent_logits, labels)
                 
                 acc1, acc5 = accuracy(parent_logits, labels, topk=(1, 5))
