@@ -69,6 +69,8 @@ from timm.utils import accuracy
 from src import KMeans
 import faiss
 
+#torch.autograd.set_detect_anomaly(True)
+
 # --
 log_timings = True
 log_freq = 50
@@ -392,12 +394,7 @@ def main(args, resume_preempt=False):
         ipe_scale=ipe_scale,
         use_bfloat16=use_bfloat16)
     
-    # Hierarchical classifier requires both static_graph=False and to find unused parameters to work.
-    fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=True) #  static_graph=False, find_unused_parameters=True
-
-    #autoencoder = DistributedDataParallel(autoencoder, static_graph=True)
-    #target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Static Graph: the set of used and unused parameters will not change during the whole training loop.    
-    #hierarchical_classifier = DistributedDataParallel(hierarchical_classifier, static_graph=False, find_unused_parameters=True) # Static Graph: the set of used and unused parameters will not change during the whole training loop.
+    fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=True)
     
     # TODO: ADJUST THIS later!
     if resume_epoch != 0:
@@ -458,7 +455,7 @@ def main(args, resume_preempt=False):
     
     logger.info('Initializing centroids...')
     
-    k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device) # E-step
+    k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device)
     
     logger.info('Update Step...')
     
@@ -466,6 +463,7 @@ def main(args, resume_preempt=False):
     
     accum_iter = 1
     start_epoch = resume_epoch
+    T = 1
 
     # -- TRAINING LOOP
     for epoch in range(start_epoch, num_epochs):
@@ -588,7 +586,7 @@ def main(args, resume_preempt=False):
                                 update_grad=(itr + 1) % accum_iter == 0)
                     
                     scaler(loss, optimizer, clip_grad=None,
-                                parameters=(list(fgdcc.module.vit_encoder.parameters())+ list(fgdcc.module.classifier.parameters())),
+                                parameters=(list(fgdcc.module.vit_encoder.parameters()) + list(fgdcc.module.classifier.parameters())),
                                 create_graph=False, retain_graph=False,
                                 update_grad=(itr + 1) % accum_iter == 0) # Scaling is only necessary when using bfloat16.   
                 else:
@@ -660,8 +658,8 @@ def main(args, resume_preempt=False):
                  TODO: implement broadcasting solution.
             '''
             cached_features = update_cache(cached_features)
-        # -- End of Epoch      
 
+        # -- End of Epoch      
         if world_size > 1:
             # Convert cache to list format for gathering
             cache_list = [(key, torch.stack(value)) for key, value in cached_features.items()]
@@ -691,6 +689,11 @@ def main(args, resume_preempt=False):
         # Assert everything went fine
         cnt = [len(cached_features[key]) for key in cached_features.keys()]    
         assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
+
+        if (epoch + 1) % T == 0:
+            logger.info('Reinitializing centroids')
+            k_means_module.restart()
+            k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device)
 
         # TODO: same cache problem happens over here.
         # Each centroid replica is been updated according to the subset of the dataset

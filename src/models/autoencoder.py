@@ -9,23 +9,23 @@ class MaskedAutoEncoder(nn.Module):
 
         self.encoder = nn.Sequential(
             nn.Linear(1280, 1024),
+            #nn.LayerNorm(1024),
             nn.GELU(),
             nn.Linear(1024, 768),
+            #nn.LayerNorm(768),
             nn.GELU(),
-            nn.Linear(768, 512),
-            nn.GELU(),
-            nn.Linear(512, 384),
-            nn.GELU(),
+            nn.Linear(768, 384),
+            #nn.LayerNorm(384)
         )
 
         self.decoder = torch.nn.Sequential(
-            torch.nn.Linear(384, 512),
+            nn.Linear(384, 768), 
+            #nn.LayerNorm(768),
             nn.GELU(),
-            torch.nn.Linear(512, 768),
+            nn.Linear(768, 1024), 
+            #nn.LayerNorm(1024),
             nn.GELU(),
-            torch.nn.Linear(768, 1024), 
-            nn.GELU(),
-            torch.nn.Linear(1024, 1280), 
+            nn.Linear(1024, 1280)
         )
 
     def generate_mask(self, batch_size, feature_dim, device, mask_fraction=0.25):
@@ -48,12 +48,12 @@ class MaskedAutoEncoder(nn.Module):
         return mask
 
     def forward(self, x, device):
-        mask = self.generate_mask(x.size(0), 1280, device=device)
+        mask = self.generate_mask(x.size(0), feature_dim=1280, device=device)
         masked_input = x * (~mask) # Mask input    
+        masked_input = F.layer_norm(masked_input, (masked_input.size(-1),))
 
         bottleneck_output = self.encoder(masked_input)
-        bottleneck_output = F.layer_norm(bottleneck_output, (bottleneck_output.size(-1),))  # normalize over feature-dim 
-
+        
         reconstructed_input = self.decoder(bottleneck_output)
         reconstructed_input = F.layer_norm(reconstructed_input, (reconstructed_input.size(-1),))  # normalize over feature-dim 
 

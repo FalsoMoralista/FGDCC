@@ -370,6 +370,7 @@ def main(args, resume_preempt=False):
                       K_range = [2,3,4,5],
                       proj_embed_dim=proj_embed_dim,
                       pretrained_model=target_encoder,
+                      raw_features=True,
                       device=device)
     logger.info(fgdcc.classifier)
 
@@ -449,9 +450,14 @@ def main(args, resume_preempt=False):
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
     
-    logger.info('Initializing and updating centroids...')
+    logger.info('Initializing centroids...')
     k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device)
-    
+
+    logger.info('Update Step...')    
+    M_losses = k_means_module.update(cached_features_last_epoch, device, empty_clusters_per_epoch) # M-step
+
+
+    T = 1
     accum_iter = 1
     start_epoch = resume_epoch
 
@@ -499,7 +505,7 @@ def main(args, resume_preempt=False):
 
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
 
-                    reconstruction_loss, bottleneck_output, parent_logits, child_logits = fgdcc(imgs)
+                    reconstruction_loss, bottleneck_output, parent_logits, child_logits = fgdcc(imgs, device)
 
                     with torch.cuda.amp.autocast(enabled=False): 
                         k_means_losses, best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
@@ -598,7 +604,7 @@ def main(args, resume_preempt=False):
                                 ' Children class: %.4f -'
                                 'Autoencoder Loss (total): %.4f - Reconstruction/K-Means Loss: [%.4f / %.4f] - Consistency Loss: [%.4f]'
                                 ' - VICReg Loss: [%.4f]'
-                                '[wd: %.2e] [lr: %.2e] [autoencoder lr: %.2e]'
+                                '[wd: %.2e] [lr: %.2e]'
                                 '[mem: %.2e] '
                                 '(%.1f ms)'
 
@@ -670,6 +676,11 @@ def main(args, resume_preempt=False):
         cnt = [len(cached_features[key]) for key in cached_features.keys()]    
         assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
 
+        if (epoch + 1) % T == 0:
+            logger.info('Reinitializing centroids')
+            k_means_module.restart()
+            k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device)
+
         # TODO: same cache problem happens over here.
         # Each centroid replica is been updated according to the subset of the dataset
         # that is being handled from DDP. This means that each centroid will be updated differently if the cache 
@@ -700,7 +711,7 @@ def main(args, resume_preempt=False):
                 labels = targets.to(device, non_blocking=True)
                                  
                 with torch.cuda.amp.autocast():
-                    _, _, parent_logits, _, = fgdcc(images)                    
+                    _, _, parent_logits, _, = fgdcc(images, device)                    
                     loss = crossentropy(parent_logits, labels)
                 
                 acc1, acc5 = accuracy(parent_logits, labels, topk=(1, 5))

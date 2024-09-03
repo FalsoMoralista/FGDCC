@@ -38,7 +38,7 @@ class KMeansModule:
         else:
             self.n_kmeans = []   
             for _ in range(nb_classes):
-                self.n_kmeans.append([faiss.Kmeans(d=dimensionality, k=k, niter=n_iter, verbose=False, min_points_per_centroid = 1) for k in k_range])                                                            
+                self.n_kmeans.append([faiss.Kmeans(d=dimensionality, k=k, niter=1, verbose=False, min_points_per_centroid = 1) for k in k_range])                                                            
 
     def inter_cluster_separation(self, cls, device):
         def two_by_two_combinations(values):
@@ -49,9 +49,6 @@ class KMeansModule:
 
         for k_i, k in enumerate(self.k_range):
             centroids = target_K_Means[k_i].centroids
-            
-            if isinstance(centroids, np.ndarray):
-                centroids = torch.tensor(centroids, dtype=torch.float32, device=device)
 
             pairs = torch.tensor(two_by_two_combinations(range(k)), device=device)
 
@@ -75,7 +72,7 @@ class KMeansModule:
             sample = xb[i].unsqueeze(0)
 
             image_list = current_cache.get(class_id, last_epoch_cache.get(class_id))
-            batch_x = torch.stack(image_list).to(device, dtype=torch.bfloat16)
+            batch_x = torch.stack(image_list).to(device, dtype=torch.float32)
             batch_x = torch.cat((batch_x, sample), dim=0).detach()
 
             S_scores = self.inter_cluster_separation(class_id, device=device)
@@ -84,12 +81,11 @@ class KMeansModule:
             D_k = [] 
             C_scores = torch.zeros(len(self.k_range), device=device)
             for k_i, k_range in enumerate(self.k_range):
-
                 D, batch_assignments = target_K_Means[k_i].index.search(batch_x, 1)
                 batch_assignments = batch_assignments.squeeze(-1)
                 D_k.append(D[0])
-                centroids = target_K_Means[k_i].centroids
-            
+                centroids = target_K_Means[k_i].centroids                
+                        
                 centroid_list = centroids[batch_assignments] 
                 # Computes the cosine similarity between every image and the cluster centroid to which is associated to
                 C_score = F.cosine_similarity(batch_x, centroid_list)
@@ -100,11 +96,20 @@ class KMeansModule:
         D_batch = torch.stack(D_batch)
         return D_batch, best_K_values
 
+    def restart(self):
+            self.n_kmeans = []   
+            for _ in range(self.nb_classes):
+                self.n_kmeans.append([faiss.Kmeans(d=self.d, k=k, niter=1, verbose=False, min_points_per_centroid = 1) for k in self.k_range])         
+
     def initialize_centroids(self, batch_x, class_id, resources, rank, device, config, cached_features):
         
-        def augment(x, n_samples): # Built as a helper function for development
-            # Workaround to handle faiss centroid initialization with a single sample.
-            # We built upon Mathilde Caron's idea of adding perturbations to the data, but we do it randomly instead.
+        # TODO: cleanup (remove)
+        def augment(x, n_samples): 
+            ''' 
+                Built as a helper function for development
+                Workaround to handle faiss centroid initialization with a single sample.
+                We built upon Mathilde Caron's idea of adding perturbations to the data, but we do it randomly instead.
+            '''
             augmented_data = x.repeat((n_samples, 1))
             for i in range((n_samples)):
                 sign = (torch.randint(0, 3, size=(self.d,)) - 1)
@@ -119,19 +124,20 @@ class KMeansModule:
             batch_x = augment(batch_x, self.k_range[len(self.k_range)-1]) # Create additional synthetic points to meet the minimum requirement for the number of clusters.             
         else:
             image_list = cached_features[class_id] # Otherwise use the features cached from the previous epoch                
-            batch_x = torch.stack(image_list)
-        for k in range(len(self.k_range)):
-            self.n_kmeans[class_id][k].train(batch_x.detach().cpu()) # Then train K-means model for one iteration to initialize centroids
+            batch_x = torch.stack(image_list).to(device)
+        for k in range(len(self.k_range)):    
+            # Then train K-means model for one iteration to initialize centroids (kmeans++ init)
+            self.n_kmeans[class_id][k].train(batch_x.detach().cpu()) 
+            # Replace the regular index by a gpu one     
+            index_flat = self.n_kmeans[class_id][k].index
+            gpu_index_flat = faiss.index_cpu_to_gpu(self.resources, rank, index_flat)
+            self.n_kmeans[class_id][k].index = gpu_index_flat
 
             #gpu_index_flat = faiss.GpuIndexFlatL2(resources, self.d, config)
             #gpu_index_flat = faiss.index_cpu_to_gpu_multiple(resources, devices=[rank],index=index_flat)
             #gpu_index_flat = faiss.GpuIndexFlatL2(resources[rank], self.d, config[rank])
             #gpu_index_flat = self.my_index_cpu_to_gpu_multiple(resources, index_flat, gpu_nos=[0,1,2,3,4,5,6,7])
             
-            # Replace the regular index by a gpu one            
-            index_flat = self.n_kmeans[class_id][k].index
-            gpu_index_flat = faiss.index_cpu_to_gpu(self.resources, rank, index_flat)
-            self.n_kmeans[class_id][k].index = gpu_index_flat
         
     def init(self, resources, rank, device, config, cached_features):
         # Initialize the centroids for each class

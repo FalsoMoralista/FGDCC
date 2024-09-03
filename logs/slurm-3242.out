@@ -21,7 +21,7 @@ INFO:root:loaded params...
                 'use_color_distortion': False,
                 'use_gaussian_blur': False,
                 'use_horizontal_flip': False},
-    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp30',
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp33',
                    'write_tag': 'jepa'},
     'mask': {   'allow_overlap': False,
                 'aspect_ratio': [0.75, 1.5],
@@ -39,7 +39,7 @@ INFO:root:loaded params...
                 'read_checkpoint': None,
                 'use_bfloat16': True},
     'optimization': {   'ema': [0.9, 0.999],
-                        'epochs': 75,
+                        'epochs': 300,
                         'final_lr': 1e-05,
                         'final_weight_decay': 0.4,
                         'ipe_scale': 1.0,
@@ -102,4 +102,5 @@ INFO:root:VisionTransformer(
   (norm): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
 )
 INFO:root:Building cache...
-INFO:root:Initializing and updating centroids...
+INFO:root:Initializing centroids...
+slurmstepd: error: *** JOB 3242 ON hgx CANCELLED AT 2024-08-30T19:36:05 ***

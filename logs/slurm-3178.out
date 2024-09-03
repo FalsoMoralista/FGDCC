@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC.py", line 16, in <module>
+    from engine_FGDCC import main as app_main
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 47, in <module>
+    from src.datasets.FineTuningDataset import make_GenericDataset
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/datasets/FineTuningDataset.py", line 11, in <module>
+    import torchvision
+  File "/home/rtcalumby/miniconda3/envs/luciano/lib/python3.10/site-packages/torchvision/__init__.py", line 6, in <module>
+    from torchvision import _meta_registrations, datasets, io, models, ops, transforms, utils
+  File "/home/rtcalumby/miniconda3/envs/luciano/lib/python3.10/site-packages/torchvision/_meta_registrations.py", line 164, in <module>
+    def meta_nms(dets, scores, iou_threshold):
+  File "/home/rtcalumby/miniconda3/envs/luciano/lib/python3.10/site-packages/torch/library.py", line 467, in inner
+    handle = entry.abstract_impl.register(func_to_register, source)
+  File "/home/rtcalumby/miniconda3/envs/luciano/lib/python3.10/site-packages/torch/_library/abstract_impl.py", line 30, in register
+    if torch._C._dispatch_has_kernel_for_dispatch_key(self.qualname, "Meta"):
+RuntimeError: operator torchvision::nms does not exist
