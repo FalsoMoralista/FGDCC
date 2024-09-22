@@ -9,21 +9,28 @@ class MaskedAutoEncoder(nn.Module):
 
         self.encoder = nn.Sequential(
             nn.Linear(1280, 1024),
-            #nn.LayerNorm(1024),
             nn.GELU(),
             nn.Linear(1024, 768),
-            #nn.LayerNorm(768),
             nn.GELU(),
-            nn.Linear(768, 384),
-            #nn.LayerNorm(384)
+            nn.Linear(768, 512),
+            nn.GELU(),
+            nn.Linear(512, 384),
+            nn.GELU(),                        
+            nn.Linear(384, 256),
+            nn.GELU(),          
+            nn.Linear(256, 128),
         )
 
         self.decoder = torch.nn.Sequential(
-            nn.Linear(384, 768), 
-            #nn.LayerNorm(768),
+            nn.Linear(128, 256), 
+            nn.GELU(),
+            nn.Linear(256, 384), 
+            nn.GELU(),
+            nn.Linear(384, 512), 
+            nn.GELU(),
+            nn.Linear(512, 768), 
             nn.GELU(),
             nn.Linear(768, 1024), 
-            #nn.LayerNorm(1024),
             nn.GELU(),
             nn.Linear(1024, 1280)
         )

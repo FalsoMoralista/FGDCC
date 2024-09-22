@@ -422,7 +422,7 @@ def main(args, resume_preempt=False):
     #configs[rank].useFloat16 = False
 
     K_range = [2,3,4,5]
-    k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=384, k_range=K_range, resources=resources, config=config)
+    k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=128, k_range=K_range, resources=resources, config=config)
 
     class_idx_map = train_dataset.class_to_idx
 
