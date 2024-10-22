@@ -12,24 +12,24 @@ class MaskedAutoEncoder(nn.Module):
             nn.GELU(),
             nn.Linear(1024, 768),
             nn.GELU(),
-            nn.Linear(768, 512),
-            nn.GELU(),
-            nn.Linear(512, 384),
-            nn.GELU(),                        
-            nn.Linear(384, 256),
-            nn.GELU(),          
-            nn.Linear(256, 128),
+            #nn.Linear(768, 512),
+            #nn.GELU(),
+            #nn.Linear(512, 384),
+            #nn.GELU(),                        
+            #nn.Linear(384, 256),
+            #nn.GELU(),          
+            #nn.Linear(256, 128),
         )
 
         self.decoder = torch.nn.Sequential(
-            nn.Linear(128, 256), 
-            nn.GELU(),
-            nn.Linear(256, 384), 
-            nn.GELU(),
-            nn.Linear(384, 512), 
-            nn.GELU(),
-            nn.Linear(512, 768), 
-            nn.GELU(),
+            #nn.Linear(128, 256), 
+            #nn.GELU(),
+            #nn.Linear(256, 384), 
+            #nn.GELU(),
+            #nn.Linear(384, 512), 
+            #nn.GELU(),
+            #nn.Linear(512, 768), 
+            #nn.GELU(),
             nn.Linear(768, 1024), 
             nn.GELU(),
             nn.Linear(1024, 1280)
@@ -65,7 +65,6 @@ class MaskedAutoEncoder(nn.Module):
         reconstructed_input = F.layer_norm(reconstructed_input, (reconstructed_input.size(-1),))  # normalize over feature-dim 
 
         return reconstructed_input, bottleneck_output
-
 
 def vanilla_autoencoder():
     return MaskedAutoEncoder()

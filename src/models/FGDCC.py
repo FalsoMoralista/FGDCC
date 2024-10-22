@@ -10,6 +10,7 @@ from src.models.joint_embedding_classifier import JointEmbeddingClassifier
 from src.models.multi_head_attention_hierarchical_cls import MultiHeadAttentionHierarchicalCls
 from src.models.multi_head_attention_classifier import MultiHeadAttentionClassifier
 from src.models.paired_multi_head_attention_classifier import PairedCrossAttentionClassifier
+
 class FGDCC(nn.Module):
 
     def __init__(self, vit_backbone, classifier, backbone_patch_mean=False, raw_features=False):
@@ -21,7 +22,6 @@ class FGDCC(nn.Module):
         self.l2_norm = torch.nn.MSELoss()
         self.raw_features = raw_features
     
-
     def forward(self, imgs, device):
        if self.raw_features:
            return self.forward_raw_features(imgs)
@@ -59,9 +59,9 @@ class FGDCC(nn.Module):
         h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
 
         # Step 2. Forward into the classifier
-        parent_logits, child_logits, subclass_proj_embed = self.classifier(h) 
+        parent_logits, subclass_logits, subclass_proj_embed = self.classifier(h) 
         
-        return 0, subclass_proj_embed, parent_logits, child_logits # torch.mean(h, dim=1).squeeze(dim=1)
+        return 0, subclass_proj_embed, parent_logits, subclass_logits
 
 def get_model(embed_dim, drop_path, nb_classes, K_range, proj_embed_dim, pretrained_model, device, raw_features=False):
 #    cls = MultiHeadAttentionClassifier(input_dim=embed_dim,

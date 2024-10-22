@@ -354,19 +354,12 @@ def main(args, resume_preempt=False):
             torch.save(save_dict, latest_path)
             if (epoch + 1) % checkpoint_freq == 0:
                 torch.save(save_dict, save_path.format(epoch=f'{epoch + 1}'))
-
-    #n_blocks = 12
-    #total_blocks = len(target_encoder.module.blocks)
-    #for i in range((total_blocks - n_blocks), total_blocks):
-    #    for p in target_encoder.module.blocks[i].parameters():
-    #        p.requires_grad = True
     
     for p in target_encoder.parameters():
         p.requires_grad = True
     target_encoder = target_encoder.module 
 
     proj_embed_dim = 1280
-    #VICReg_loss = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=1.0, std_coeff=0.0, cov_coeff=0.0) 
     
     fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
                       drop_path=drop_path,
@@ -422,7 +415,7 @@ def main(args, resume_preempt=False):
     #configs[rank].useFloat16 = False
 
     K_range = [2,3,4,5]
-    k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=128, k_range=K_range, resources=resources, config=config)
+    k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=768, k_range=K_range, resources=resources, config=config)
 
     class_idx_map = train_dataset.class_to_idx
 
@@ -443,6 +436,55 @@ def main(args, resume_preempt=False):
     empty_clusters_per_epoch = AverageMeter() # Tracks the number of empty clusters per epoch and class 
     
     model_noddp = fgdcc.module
+
+    accum_iter = 1
+
+    # TODO: Pre-train autoencoder for 30-50 epochs 
+    # (this has to go before building cache and/or has to update the cache upon training end)
+    # save weights []
+    # load upon usage []
+    # decide on which layer (features) to use i.e., transformer bakcbone vs transform. layer []
+    ''' 
+        Note: Backbone features are more informative but on the other hand 
+        might place the autoencoder loss landscape in a totally different
+        place. Otherwise, using compressed features resulting from a trans
+        formation of the backbone raw features may be less informative but
+        more coherent.         
+    '''
+    def train_autoencoder(autoencoder, vit_backbone, starting_epoch, data_sampler_epoch, use_bfloat16, no_epochs, train_data_loader, train_data_sampler):
+        L2 = torch.nn.MSELoss()
+        logger.info('Autoencoder Training...')
+        with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
+            for epoch_no in range(starting_epoch, no_epochs):    
+                logger.info('Epoch: %d' % (epoch_no + 1))
+                train_data_sampler.set_epoch(data_sampler_epoch)
+                # TODO: LOGGING of loss and no. epochs
+                # TODO: add reconstruction loss meter
+                # TODO: restart learning rate scheduler upon every calling for this function 
+                # TODO: modify build_cache function (by default it get the output)
+                for iteration, (x, y) in enumerate(train_data_loader):
+                    with torch.no_grad():
+                        subclass_proj_embed, _, _ = vit_backbone(x) # FIXME: this is actually not the vit_backbone but the fgdcc module
+                        subclass_proj_embed = subclass_proj_embed.detach()
+                        subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1) # Mean over patch-level representation and squeeze
+                        subclass_proj_embed = torch.squeeze(subclass_proj_embed, dim=1) 
+                        subclass_proj_embed = F.layer_norm(subclass_proj_embed, (subclass_proj_embed.size(-1),)) # Normalize over feature-dim 
+                    reconstructed_input, bottleneck_output = autoencoder(subclass_proj_embed, device)
+                    reconstruction_loss = L2(reconstructed_input, subclass_proj_embed)
+                if use_bfloat16:
+                    scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
+                                parameters=autoencoder.parameters(), create_graph=False, retain_graph=True, 
+                                update_grad=(itr + 1) % accum_iter == 0)
+
+    train_autoencoder(autoencoder=model_noddp.autoencoder,
+                      vit_backbone=model_noddp.vit_encoder,
+                      starting_epoch=0,
+                      data_sampler_epoch=0,
+                      use_bfloat16=use_bfloat16,
+                      no_epochs=50,
+                      train_data_loader=supervised_loader_train,
+                      train_data_sampler=supervised_sampler_train)
+    
     logger.info('Building cache...')
     cached_features_last_epoch = build_cache(data_loader=supervised_loader_train,
                                              device=device, target_encoder=model_noddp.vit_encoder,
@@ -461,10 +503,9 @@ def main(args, resume_preempt=False):
     
     M_losses = k_means_module.update(cached_features_last_epoch, device, empty_clusters_per_epoch) # M-step
     
-    accum_iter = 1
     start_epoch = resume_epoch
-    T = 1
 
+    T = 1
     # -- TRAINING LOOP
     for epoch in range(start_epoch, num_epochs):
 

@@ -145,7 +145,6 @@ class VICReg(nn.Module):
         )
         return loss    
 
-
 # Borrowed from MAE.
 class NativeScalerWithGradNormCount:
     state_dict_key = "amp_scaler"
