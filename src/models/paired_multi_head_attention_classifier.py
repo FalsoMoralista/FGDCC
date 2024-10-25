@@ -103,6 +103,7 @@ class PairedCrossAttentionClassifier(nn.Module):
         integrated_parent_features = torch.mean(integrated_parent_features, dim=1).squeeze(dim=1)
 
         # TODO: change naming, guess that the opposite makes more sense
+        # TODO: compute cross att between subclass_projection and parent classifier embedding 
         integrated_subclass_features = self.subclass_cross_attention(subclass_proj_embed, h, h) # compute cross-attention between sub-class and parent features
         integrated_subclass_features = F.layer_norm(integrated_subclass_features, (integrated_subclass_features.size(-1),)) # Normalize over feature-dim 
         integrated_subclass_features = torch.mean(integrated_subclass_features, dim=1).squeeze(dim=1)

@@ -451,30 +451,37 @@ def main(args, resume_preempt=False):
         formation of the backbone raw features may be less informative but
         more coherent.         
     '''
-    def train_autoencoder(autoencoder, vit_backbone, starting_epoch, data_sampler_epoch, use_bfloat16, no_epochs, train_data_loader, train_data_sampler):
-        L2 = torch.nn.MSELoss()
+    def train_autoencoder(fgdcc, starting_epoch, data_sampler_epoch, use_bfloat16, no_epochs, train_data_loader, train_data_sampler):
+        autoencoder = fgdcc.autoencoder
+        L2 = fgdcc.l2_norm
+
         logger.info('Autoencoder Training...')
         with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
             for epoch_no in range(starting_epoch, no_epochs):    
-                logger.info('Epoch: %d' % (epoch_no + 1))
+                logger.info(' - - Epoch: %d - - ' % (epoch_no + 1))
                 train_data_sampler.set_epoch(data_sampler_epoch)
                 # TODO: LOGGING of loss and no. epochs
                 # TODO: add reconstruction loss meter
                 # TODO: restart learning rate scheduler upon every calling for this function 
-                # TODO: modify build_cache function (by default it get the output)
+                # TODO:  create new build cache function:
+                # 1 - gather the outputs from the subclass_projection layer
+                # 2 - at the last epoch of autoencoder training it updates the cache
+                # 3 - at the first training, cache the autoencoder weights and extracted feature for other experiments.
+                # 4 - delete all previous extracted features. 
                 for iteration, (x, y) in enumerate(train_data_loader):
                     with torch.no_grad():
-                        subclass_proj_embed, _, _ = vit_backbone(x) # FIXME: this is actually not the vit_backbone but the fgdcc module
-                        subclass_proj_embed = subclass_proj_embed.detach()
-                        subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1) # Mean over patch-level representation and squeeze
-                        subclass_proj_embed = torch.squeeze(subclass_proj_embed, dim=1) 
-                        subclass_proj_embed = F.layer_norm(subclass_proj_embed, (subclass_proj_embed.size(-1),)) # Normalize over feature-dim 
-                    reconstructed_input, bottleneck_output = autoencoder(subclass_proj_embed, device)
+                        subclass_proj_embed = fgdcc.setup_autoencoder_features(x)
+
+                    reconstructed_input, _ = autoencoder(subclass_proj_embed, device)
                     reconstruction_loss = L2(reconstructed_input, subclass_proj_embed)
-                if use_bfloat16:
-                    scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
-                                parameters=autoencoder.parameters(), create_graph=False, retain_graph=True, 
-                                update_grad=(itr + 1) % accum_iter == 0)
+
+                    if use_bfloat16:
+                        scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
+                                    parameters=autoencoder.parameters(), create_graph=False, retain_graph=True, 
+                                    update_grad=(itr + 1) % accum_iter == 0)
+                    else:
+                        reconstruction_loss.backward()
+                        AE_optimizer.step()
 
     train_autoencoder(autoencoder=model_noddp.autoencoder,
                       vit_backbone=model_noddp.vit_encoder,
@@ -622,9 +629,9 @@ def main(args, resume_preempt=False):
 
                 #  Step 2. Backward & step
                 if use_bfloat16:
-                    scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
-                                parameters=fgdcc.module.autoencoder.parameters(), create_graph=False, retain_graph=True,
-                                update_grad=(itr + 1) % accum_iter == 0)
+                    #scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
+                    #            parameters=fgdcc.module.autoencoder.parameters(), create_graph=False, retain_graph=True,
+                    #            update_grad=(itr + 1) % accum_iter == 0)
                     
                     scaler(loss, optimizer, clip_grad=None,
                                 parameters=(list(fgdcc.module.vit_encoder.parameters()) + list(fgdcc.module.classifier.parameters())),

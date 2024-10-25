@@ -37,19 +37,20 @@ class FGDCC(nn.Module):
         h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
 
         # Step 2. Forward into the hierarchical classifier
-        parent_logits, child_logits, child_proj_embed = self.classifier(h) 
+        parent_logits, subclass_logits, subclass_proj_embed = self.classifier(h) 
 
         # Detach from the graph
-        child_proj_detatched = child_proj_embed.detach()
+        subclass_proj_detatched = subclass_proj_embed.detach()
 
-        # Step 3. Dimensionality Reduction                      
-        reconstructed_input, bottleneck_output = self.autoencoder(child_proj_detatched, device)
-        
-        reconstruction_loss = self.l2_norm(reconstructed_input, child_proj_detatched)
-         
-        return reconstruction_loss, bottleneck_output, parent_logits, child_logits
+        # Step 3. Dimensionality Reduction
+        with torch.no_grad():                      
+            reconstructed_input, bottleneck_output = self.autoencoder(subclass_proj_detatched, device)
+        #reconstruction_loss = self.l2_norm(reconstructed_input, subclass_proj_detatched)
+        reconstruction_loss = 0
 
-    # Forward Function for the FGDCC_V2 (without autoencoder)
+        return reconstruction_loss, bottleneck_output, parent_logits, subclass_logits
+
+    # TODO: remove (Forward Function for the FGDCC_V2 (without autoencoder)
     def forward_raw_features(self, imgs):
         # Step 1. Forward into the encoder
         h = self.vit_encoder(imgs)
@@ -62,6 +63,15 @@ class FGDCC(nn.Module):
         parent_logits, subclass_logits, subclass_proj_embed = self.classifier(h) 
         
         return 0, subclass_proj_embed, parent_logits, subclass_logits
+
+    def setup_autoencoder_features(self, imgs):
+        h = self.vit_encoder(imgs)
+        h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
+        # Step 2. Forward into the hierarchical classifier
+        _, _, subclass_proj_embed = self.classifier(h) 
+        # Detach from the graph
+        subclass_proj_embed = subclass_proj_embed.detach()
+        return subclass_proj_embed
 
 def get_model(embed_dim, drop_path, nb_classes, K_range, proj_embed_dim, pretrained_model, device, raw_features=False):
 #    cls = MultiHeadAttentionClassifier(input_dim=embed_dim,
