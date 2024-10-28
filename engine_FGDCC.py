@@ -203,18 +203,26 @@ def main(args, resume_preempt=False):
                            ('%d', 'epoch'),
                            ('%.5f', 'backbone lr'),
                            ('%.5f', 'autoencoder lr'),
-                           ('%.5f', 'Total Train loss'),
-                           ('%.5f', 'Parent Train loss'),
-                           ('%.5f', 'Parent Test loss'),
-                           ('%.5f', 'Children loss'),
+                           ('%.5f', 'total train loss'),
+                           ('%.5f', 'orignal label train loss'),
+                           ('%.5f', 'original label test loss'),
+                           ('%.5f', 'pseudo-label loss'),
                            ('%.5f', 'Reconstruction loss'),
                            ('%.5f', 'K-Means loss'),
                            ('%.5f', 'Consistency loss'),
-                           ('%.5f', 'VICReg loss'),
+                           ('%.5f', 'VICReg loss'), # TODO: remove
                            ('%.3f', 'Test - Acc@1'),
                            ('%.3f', 'Test - Acc@5'),
                            ('%f', 'avg_empty_clusters_per_class'),
                            ('%d', 'time (ms)'))
+
+    reconstruction_logger = CSVLogger(folder + '/autoencoder_log.csv',
+                           ('%d', 'epoch'),
+                           ('%.5f', 'lr'),
+                           ('%.5f', 'Reconstruction loss'))
+
+
+
     
     # -- init model
     encoder, predictor, autoencoder = init_model(
@@ -439,11 +447,11 @@ def main(args, resume_preempt=False):
 
     accum_iter = 1
 
-    # TODO: Pre-train autoencoder for 30-50 epochs 
-    # (this has to go before building cache and/or has to update the cache upon training end)
-    # save weights []
-    # load upon usage []
-    # decide on which layer (features) to use i.e., transformer bakcbone vs transform. layer []
+    #reconstruction_logger = CSVLogger(folder + '/autoencoder_log.csv',
+    #                       ('%d', 'epoch'),
+    #                       ('%.5f', 'lr'),
+    #                       ('%.5f', 'Reconstruction loss'))
+
     ''' 
         Note: Backbone features are more informative but on the other hand 
         might place the autoencoder loss landscape in a totally different
@@ -457,7 +465,7 @@ def main(args, resume_preempt=False):
 
         logger.info('Autoencoder Training...')
         with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
-            for epoch_no in range(starting_epoch, no_epochs):    
+            for epoch_no in range(starting_epoch, (starting_epoch + no_epochs)):    
                 logger.info(' - - Epoch: %d - - ' % (epoch_no + 1))
                 train_data_sampler.set_epoch(data_sampler_epoch)
                 # TODO: LOGGING of loss and no. epochs
@@ -470,7 +478,13 @@ def main(args, resume_preempt=False):
                 # 4 - delete all previous extracted features. 
                 for iteration, (x, y) in enumerate(train_data_loader):
                     with torch.no_grad():
-                        subclass_proj_embed = fgdcc.setup_autoencoder_features(x)
+                        if starting_epoch == 0:
+                            h = fgdcc.target_encoder(imgs)
+                            h = torch.mean(h, dim=1) # Mean over patch-level representation and squeeze
+                            h = torch.squeeze(h, dim=1) 
+                            subclass_proj_embed = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim
+                        else:
+                            subclass_proj_embed = fgdcc.setup_autoencoder_features(x)
 
                     reconstructed_input, _ = autoencoder(subclass_proj_embed, device)
                     reconstruction_loss = L2(reconstructed_input, subclass_proj_embed)
@@ -482,16 +496,16 @@ def main(args, resume_preempt=False):
                     else:
                         reconstruction_loss.backward()
                         AE_optimizer.step()
-
-    train_autoencoder(autoencoder=model_noddp.autoencoder,
-                      vit_backbone=model_noddp.vit_encoder,
+    
+    train_autoencoder(fgdcc=model_noddp,
                       starting_epoch=0,
                       data_sampler_epoch=0,
                       use_bfloat16=use_bfloat16,
                       no_epochs=50,
                       train_data_loader=supervised_loader_train,
-                      train_data_sampler=supervised_sampler_train)
-    
+                      train_data_sampler=supervised_sampler_train)                      
+    autoencoder_global_epoch_cnt = 50
+
     logger.info('Building cache...')
     cached_features_last_epoch = build_cache(data_loader=supervised_loader_train,
                                              device=device, target_encoder=model_noddp.vit_encoder,
@@ -629,9 +643,10 @@ def main(args, resume_preempt=False):
 
                 #  Step 2. Backward & step
                 if use_bfloat16:
-                    #scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
-                    #            parameters=fgdcc.module.autoencoder.parameters(), create_graph=False, retain_graph=True,
-                    #            update_grad=(itr + 1) % accum_iter == 0)
+                    scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
+                                parameters=fgdcc.module.autoencoder.parameters(), create_graph=False, retain_graph=True,
+                                update_grad=(itr + 1) % accum_iter == 0)
+                    autoencoder_global_epoch_cnt += 1
                     
                     scaler(loss, optimizer, clip_grad=None,
                                 parameters=(list(fgdcc.module.vit_encoder.parameters()) + list(fgdcc.module.classifier.parameters())),
@@ -681,6 +696,8 @@ def main(args, resume_preempt=False):
                                     torch.cuda.max_memory_allocated() / 1024.**2,
                                     time_meter.avg))
                     
+                    # TODO: LOG RECONSTRUCTION LOGGER HERE AS WELL
+
                     if grad_stats is not None:
                         logger.info('[%d, %5d] grad_stats: [%.2e %.2e] (%.2e, %.2e)'
                                     % (epoch + 1, itr,
@@ -688,7 +705,8 @@ def main(args, resume_preempt=False):
                                         grad_stats.last_layer,
                                         grad_stats.min,
                                         grad_stats.max))
-            log_stats()
+            log_stats()            
+
             bottleneck_output = bottleneck_output.to(device=torch.device('cpu'), dtype=torch.float32).detach() # Verify if apply dist.barrier
             def update_cache(cache):
                 for x, y in zip(bottleneck_output, target):
@@ -708,6 +726,15 @@ def main(args, resume_preempt=False):
             cached_features = update_cache(cached_features)
 
         # -- End of Epoch      
+        train_autoencoder(fgdcc=model_noddp,
+                        starting_epoch=autoencoder_global_epoch_cnt,
+                        data_sampler_epoch=epoch,
+                        use_bfloat16=use_bfloat16,
+                        no_epochs=20,
+                        train_data_loader=supervised_loader_train,
+                        train_data_sampler=supervised_sampler_train)
+        autoencoder_global_epoch_cnt +=  20
+
         if world_size > 1:
             # Convert cache to list format for gathering
             cache_list = [(key, torch.stack(value)) for key, value in cached_features.items()]
