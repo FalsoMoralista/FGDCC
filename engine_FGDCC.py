@@ -46,6 +46,8 @@ from src.utils.logging import (
 
 from src.datasets.FineTuningDataset import make_GenericDataset
 
+from src.utils.schedulers import WarmupCosineSchedule
+
 from src.helper import (
     load_checkpoint,
     load_DC_checkpoint,
@@ -221,9 +223,6 @@ def main(args, resume_preempt=False):
                            ('%.5f', 'lr'),
                            ('%.5f', 'Reconstruction loss'))
 
-
-
-    
     # -- init model
     encoder, predictor, autoencoder = init_model(
         device=device,
@@ -452,30 +451,37 @@ def main(args, resume_preempt=False):
     #                       ('%.5f', 'lr'),
     #                       ('%.5f', 'Reconstruction loss'))
 
-    ''' 
-        Note: Backbone features are more informative but on the other hand 
-        might place the autoencoder loss landscape in a totally different
-        place. Otherwise, using compressed features resulting from a trans
-        formation of the backbone raw features may be less informative but
-        more coherent.         
-    '''
-    def train_autoencoder(fgdcc, starting_epoch, data_sampler_epoch, use_bfloat16, no_epochs, train_data_loader, train_data_sampler):
+    reconstruction_loss_meter = AverageMeter()
+    def train_autoencoder(fgdcc, starting_epoch, data_sampler_epoch, use_bfloat16, no_epochs, train_data_loader, train_data_sampler, AE_scheduler):
         autoencoder = fgdcc.autoencoder
         L2 = fgdcc.l2_norm
+        
+        wup = 5 # Warmup epochs
+        AE_scheduler = WarmupCosineSchedule(
+            AE_optimizer,
+            warmup_steps=int(wup*ipe),
+            start_lr=1.0e-5,
+            ref_lr=5e-4,
+            final_lr=5.0e-6,
+            T_max=(int(ipe_scale*num_epochs*ipe) + 1))
 
+        def update_cache(cache, bottleneck_output, target):
+            for x, y in zip(bottleneck_output, target):
+                class_id = y.item()
+                if not class_id in cache:
+                    cache[class_id] = []                    
+                cache[class_id].append(x)
+            return cache
+        
         logger.info('Autoencoder Training...')
-        with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
-            for epoch_no in range(starting_epoch, (starting_epoch + no_epochs)):    
-                logger.info(' - - Epoch: %d - - ' % (epoch_no + 1))
-                train_data_sampler.set_epoch(data_sampler_epoch)
-                # TODO: LOGGING of loss and no. epochs
-                # TODO: add reconstruction loss meter
-                # TODO: restart learning rate scheduler upon every calling for this function 
-                # TODO:  create new build cache function:
-                # 1 - gather the outputs from the subclass_projection layer
-                # 2 - at the last epoch of autoencoder training it updates the cache
-                # 3 - at the first training, cache the autoencoder weights and extracted feature for other experiments.
-                # 4 - delete all previous extracted features. 
+        for epoch_no in range(starting_epoch, (starting_epoch + no_epochs)):    
+            
+            AE_scheduler.step()
+            logger.info(' - - Epoch: %d - - ' % (epoch_no + 1))
+            
+            # TODO:  create new build cache function: 
+            train_data_sampler.set_epoch(data_sampler_epoch)
+            with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
                 for iteration, (x, y) in enumerate(train_data_loader):
                     with torch.no_grad():
                         if starting_epoch == 0:
@@ -486,12 +492,17 @@ def main(args, resume_preempt=False):
                         else:
                             subclass_proj_embed = fgdcc.setup_autoencoder_features(x)
 
-                    reconstructed_input, _ = autoencoder(subclass_proj_embed, device)
+                    reconstructed_input, bottleneck_output = autoencoder(subclass_proj_embed, device)
                     reconstruction_loss = L2(reconstructed_input, subclass_proj_embed)
+                    reconstruction_loss_meter.update(reconstruction_loss)
+
+                    if epoch_no == (starting_epoch + no_epochs - 1):
+                        bottleneck_output = bottleneck_output.to(device=torch.device('cpu'), dtype=torch.float32).detach() # Verify if apply dist.barrier
+                        cached_features = update_cache(cached_features, bottleneck_output, y)
 
                     if use_bfloat16:
                         scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
-                                    parameters=autoencoder.parameters(), create_graph=False, retain_graph=True, 
+                                    parameters=autoencoder.parameters(), create_graph=False, retain_graph=False, 
                                     update_grad=(itr + 1) % accum_iter == 0)
                     else:
                         reconstruction_loss.backward()
@@ -503,7 +514,8 @@ def main(args, resume_preempt=False):
                       use_bfloat16=use_bfloat16,
                       no_epochs=50,
                       train_data_loader=supervised_loader_train,
-                      train_data_sampler=supervised_sampler_train)                      
+                      train_data_sampler=supervised_sampler_train,
+                      AE_scheduler=AE_scheduler)                      
     autoencoder_global_epoch_cnt = 50
 
     logger.info('Building cache...')
@@ -539,7 +551,6 @@ def main(args, resume_preempt=False):
         children_cls_loss_meter = AverageMeter()
         consistency_loss_meter = AverageMeter()
         vicreg_loss_meter = AverageMeter()
-        reconstruction_loss_meter = AverageMeter()
         k_means_loss_meter = AverageMeter()
 
         time_meter = AverageMeter()
@@ -645,9 +656,7 @@ def main(args, resume_preempt=False):
                 if use_bfloat16:
                     scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
                                 parameters=fgdcc.module.autoencoder.parameters(), create_graph=False, retain_graph=True,
-                                update_grad=(itr + 1) % accum_iter == 0)
-                    autoencoder_global_epoch_cnt += 1
-                    
+                                update_grad=(itr + 1) % accum_iter == 0)                    
                     scaler(loss, optimizer, clip_grad=None,
                                 parameters=(list(fgdcc.module.vit_encoder.parameters()) + list(fgdcc.module.classifier.parameters())),
                                 create_graph=False, retain_graph=False,
@@ -726,13 +735,15 @@ def main(args, resume_preempt=False):
             cached_features = update_cache(cached_features)
 
         # -- End of Epoch      
+        autoencoder_global_epoch_cnt += 1
         train_autoencoder(fgdcc=model_noddp,
                         starting_epoch=autoencoder_global_epoch_cnt,
                         data_sampler_epoch=epoch,
                         use_bfloat16=use_bfloat16,
                         no_epochs=20,
                         train_data_loader=supervised_loader_train,
-                        train_data_sampler=supervised_sampler_train)
+                        train_data_sampler=supervised_sampler_train,
+                        AE_scheduler=AE_scheduler)
         autoencoder_global_epoch_cnt +=  20
 
         if world_size > 1:
