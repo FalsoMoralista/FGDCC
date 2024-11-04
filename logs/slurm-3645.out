@@ -52,14 +52,26 @@ INFO:root:Running... (rank: 0/1)
 INFO:root:Initialized (rank/world-size) 0/1
 INFO:root:MaskedAutoEncoder(
   (encoder): Sequential(
-    (0): Linear(in_features=1280, out_features=1024, bias=True)
+    (0): Linear(in_features=1280, out_features=1152, bias=True)
     (1): GELU(approximate='none')
-    (2): Linear(in_features=1024, out_features=768, bias=True)
+    (2): Linear(in_features=1152, out_features=1024, bias=True)
+    (3): GELU(approximate='none')
+    (4): Linear(in_features=1024, out_features=896, bias=True)
+    (5): GELU(approximate='none')
+    (6): Linear(in_features=896, out_features=768, bias=True)
+    (7): GELU(approximate='none')
+    (8): Linear(in_features=768, out_features=512, bias=True)
   )
   (decoder): Sequential(
-    (0): Linear(in_features=768, out_features=1024, bias=True)
+    (0): Linear(in_features=512, out_features=768, bias=True)
     (1): GELU(approximate='none')
-    (2): Linear(in_features=1024, out_features=1280, bias=True)
+    (2): Linear(in_features=768, out_features=896, bias=True)
+    (3): GELU(approximate='none')
+    (4): Linear(in_features=896, out_features=1024, bias=True)
+    (5): GELU(approximate='none')
+    (6): Linear(in_features=1024, out_features=1152, bias=True)
+    (7): GELU(approximate='none')
+    (8): Linear(in_features=1152, out_features=1280, bias=True)
   )
 )
 INFO:root:making imagenet data transforms
@@ -153,68 +165,7 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:root:[1,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9795] [autoencoder lr: 1.00e-04][mem: 7.82e+03](2564.0 ms)
-INFO:root:[1,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9710] [autoencoder lr: 1.03e-04][mem: 7.91e+03](324.5 ms)
-INFO:root:[1,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9713] [autoencoder lr: 1.06e-04][mem: 7.91e+03](314.0 ms)
-INFO:root:[1,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.09e-04][mem: 7.91e+03](310.7 ms)
-INFO:root:[1,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9713] [autoencoder lr: 1.13e-04][mem: 7.91e+03](309.1 ms)
-INFO:root:[1,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9713] [autoencoder lr: 1.16e-04][mem: 7.91e+03](308.1 ms)
-INFO:root:[1,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.19e-04][mem: 7.91e+03](307.5 ms)
-INFO:root:[1,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9711] [autoencoder lr: 1.22e-04][mem: 7.91e+03](307.1 ms)
-INFO:root:[1,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.25e-04][mem: 7.91e+03](306.8 ms)
-INFO:root:[1,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.28e-04][mem: 7.91e+03](306.6 ms)
-INFO:root:[1,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9711] [autoencoder lr: 1.31e-04][mem: 7.91e+03](306.4 ms)
-INFO:root:[1,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9710] [autoencoder lr: 1.34e-04][mem: 7.91e+03](306.2 ms)
-INFO:root:[1,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9710] [autoencoder lr: 1.38e-04][mem: 7.91e+03](306.0 ms)
-INFO:root:[1,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9711] [autoencoder lr: 1.41e-04][mem: 7.91e+03](305.9 ms)
-INFO:root:[1,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9711] [autoencoder lr: 1.44e-04][mem: 7.91e+03](305.8 ms)
-INFO:root:[1,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.47e-04][mem: 7.91e+03](305.7 ms)
-INFO:root:[1,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.50e-04][mem: 7.91e+03](305.6 ms)
-INFO:root:[1,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.53e-04][mem: 7.91e+03](305.5 ms)
-INFO:root:[1,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.56e-04][mem: 7.91e+03](305.4 ms)
-INFO:root:[1,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.59e-04][mem: 7.91e+03](305.3 ms)
-INFO:root:[1,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.62e-04][mem: 7.91e+03](305.2 ms)
-INFO:root:[1,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.66e-04][mem: 7.91e+03](305.2 ms)
-INFO:root:[1,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.69e-04][mem: 7.91e+03](305.1 ms)
-INFO:root:[1,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.72e-04][mem: 7.91e+03](305.1 ms)
-INFO:root:[1,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.75e-04][mem: 7.91e+03](305.0 ms)
-INFO:root:[1,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9712] [autoencoder lr: 1.78e-04][mem: 7.91e+03](305.0 ms)
-INFO:root: - - Epoch: 2 - - 
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:faiss.loader:Loading faiss with AVX2 support.
-INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:root:[2,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9711] [autoencoder lr: 1.80e-04][mem: 7.91e+03](305.0 ms)
-INFO:root:[2,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9595] [autoencoder lr: 1.83e-04][mem: 7.91e+03](304.9 ms)
-INFO:root:[2,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9487] [autoencoder lr: 1.86e-04][mem: 7.91e+03](304.9 ms)
-INFO:root:[2,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9387] [autoencoder lr: 1.89e-04][mem: 7.91e+03](305.0 ms)
-INFO:root:[2,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9293] [autoencoder lr: 1.93e-04][mem: 7.91e+03](305.0 ms)
-INFO:root:[2,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9205] [autoencoder lr: 1.96e-04][mem: 7.91e+03](305.0 ms)
+INFO:root:[1,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9682] [autoencoder lr: 2.00e-02][mem: 7.88e+03](2058.8 ms)
+INFO:root:[1,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9671] [autoencoder lr: 2.02e-02][mem: 8.04e+03](321.8 ms)
+INFO:root:[1,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.9669] [autoencoder lr: 2.05e-02][mem: 8.04e+03](313.9 ms)
+slurmstepd: error: *** JOB 3645 ON hgx CANCELLED AT 2024-11-04T18:18:40 ***

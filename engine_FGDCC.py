@@ -445,9 +445,10 @@ def main(args, resume_preempt=False):
 
     accum_iter = 1
 
-    
     autoencoder_path = 'autoencoder_'+ str(dimensionality) + '.pth' # TODO: if exists: load, otherwise train. 
 
+
+    # TODO: review the necessity of adding positional encoders when doing cross attention...
     reconstruction_loss_meter = AverageMeter()
     def train_autoencoder(fgdcc, starting_epoch, data_sampler_epoch, use_bfloat16, no_epochs, train_data_loader, train_data_sampler, AE_scheduler):
         autoencoder = fgdcc.autoencoder
@@ -459,8 +460,8 @@ def main(args, resume_preempt=False):
             AE_optimizer,
             warmup_steps=int(wup*ipe),
             start_lr=1.0e-4,
-            ref_lr=5.0e-4,
-            final_lr=1.0e-4,
+            ref_lr=1.0e-3,
+            final_lr=1.0e-5,
             T_max=(int(ipe_scale*num_epochs*ipe) + 1))
 
         def update_cache(cache, bottleneck_output, target):
@@ -536,11 +537,11 @@ def main(args, resume_preempt=False):
                       starting_epoch=0,
                       data_sampler_epoch=0,
                       use_bfloat16=use_bfloat16,
-                      no_epochs=25,
+                      no_epochs=30,
                       train_data_loader=supervised_loader_train,
                       train_data_sampler=supervised_sampler_train,
                       AE_scheduler=AE_scheduler)                      
-    autoencoder_global_epoch_cnt = 25
+    autoencoder_global_epoch_cnt = 30
     
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'

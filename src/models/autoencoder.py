@@ -11,31 +11,23 @@ class MaskedAutoEncoder(nn.Module):
             nn.Linear(1280, 1024),
             nn.GELU(),
             nn.Linear(1024, 768),
-            #nn.GELU(),
-            #nn.Linear(768, 512),
-            #nn.GELU(),
-            #nn.Linear(512, 384),
-            #nn.GELU(),                        
-            #nn.Linear(384, 256),
-            #nn.GELU(),          
-            #nn.Linear(256, 128),
+            nn.GELU(),
+            nn.Linear(768 , 512),
+            nn.GELU(),
+            nn.Linear(512, 384),                        
         )
 
         self.decoder = torch.nn.Sequential(
-            #nn.Linear(128, 256), 
-            #nn.GELU(),
-            #nn.Linear(256, 384), 
-            #nn.GELU(),
-            #nn.Linear(384, 512), 
-            #nn.GELU(),
-            #nn.Linear(512, 768), 
-            #nn.GELU(),
+            nn.Linear(384, 512), 
+            nn.GELU(),
+            nn.Linear(512, 768), 
+            nn.GELU(),
             nn.Linear(768, 1024), 
             nn.GELU(),
-            nn.Linear(1024, 1280)
+            nn.Linear(1024, 1280), 
         )
 
-    def generate_mask(self, batch_size, feature_dim, device, mask_fraction=0.25):
+    def generate_mask(self, batch_size, feature_dim, device, mask_fraction=0.2):
         # Calculate the number of elements to mask
         total_elements = batch_size * feature_dim
         num_masked_elements = int(total_elements * mask_fraction)
