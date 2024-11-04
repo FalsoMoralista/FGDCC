@@ -11,7 +11,7 @@ data:
   cutmix: 0.0 #1.0
   reprob: 0.25
   image_folder:  /home/rtcalumby/adam/luciano/plantnet_300K/
-  num_workers: 8
+  num_workers: 16
   pin_mem: true
   root_path: /home/rtcalumby/adam/luciano/
   use_color_distortion: false
@@ -19,7 +19,7 @@ data:
   use_horizontal_flip: false
   resume_epoch: 0
 logging:
-  folder: /home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp39
+  folder: /home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp40
   write_tag: jepa
 mask:
   allow_overlap: false

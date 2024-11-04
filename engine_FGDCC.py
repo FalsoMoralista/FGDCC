@@ -421,8 +421,9 @@ def main(args, resume_preempt=False):
     #configs[rank].device = rank
     #configs[rank].useFloat16 = False
 
+    dimensionality=768
     K_range = [2,3,4,5]
-    k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=768, k_range=K_range, resources=resources, config=config)
+    k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=dimensionality, k_range=K_range, resources=resources, config=config)
 
     class_idx_map = train_dataset.class_to_idx
 
@@ -439,17 +440,13 @@ def main(args, resume_preempt=False):
         return new_idx
     
     k_means_idx = build_new_idx(class_idx_map)
-
-    empty_clusters_per_epoch = AverageMeter() # Tracks the number of empty clusters per epoch and class 
     
     model_noddp = fgdcc.module
 
     accum_iter = 1
 
-    #reconstruction_logger = CSVLogger(folder + '/autoencoder_log.csv',
-    #                       ('%d', 'epoch'),
-    #                       ('%.5f', 'lr'),
-    #                       ('%.5f', 'Reconstruction loss'))
+    
+    autoencoder_path = 'autoencoder_'+ str(dimensionality) + '.pth' # TODO: if exists: load, otherwise train. 
 
     reconstruction_loss_meter = AverageMeter()
     def train_autoencoder(fgdcc, starting_epoch, data_sampler_epoch, use_bfloat16, no_epochs, train_data_loader, train_data_sampler, AE_scheduler):
@@ -457,12 +454,13 @@ def main(args, resume_preempt=False):
         L2 = fgdcc.l2_norm
         
         wup = 5 # Warmup epochs
+
         AE_scheduler = WarmupCosineSchedule(
             AE_optimizer,
             warmup_steps=int(wup*ipe),
-            start_lr=1.0e-5,
-            ref_lr=5e-4,
-            final_lr=5.0e-6,
+            start_lr=1.0e-4,
+            ref_lr=5.0e-4,
+            final_lr=1.0e-4,
             T_max=(int(ipe_scale*num_epochs*ipe) + 1))
 
         def update_cache(cache, bottleneck_output, target):
@@ -473,71 +471,89 @@ def main(args, resume_preempt=False):
                 cache[class_id].append(x)
             return cache
         
+        time_meter = AverageMeter()
+        def log_loss(itr, epoch, ae_lr):
+            if (itr % 100 == 0):
+                logger.info('[%d, %5d/%5d] - [Autoencoder Training]'
+                                                ' [Autoencoder Loss: %.4f]'
+                                                ' [autoencoder lr: %.2e]'
+                                                '[mem: %.2e]'
+                                                '(%.1f ms)'
+
+                                                % (epoch + 1, itr, ipe,
+                                                    reconstruction_loss_meter.avg,                                                    
+                                                    ae_lr,
+                                                    torch.cuda.max_memory_allocated() / 1024.**2,
+                                                    time_meter.avg))
+
         logger.info('Autoencoder Training...')
         for epoch_no in range(starting_epoch, (starting_epoch + no_epochs)):    
             
-            AE_scheduler.step()
             logger.info(' - - Epoch: %d - - ' % (epoch_no + 1))
-            
-            # TODO:  create new build cache function: 
             train_data_sampler.set_epoch(data_sampler_epoch)
+
             with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
                 for iteration, (x, y) in enumerate(train_data_loader):
-                    with torch.no_grad():
-                        if starting_epoch == 0:
-                            h = fgdcc.target_encoder(imgs)
-                            h = torch.mean(h, dim=1) # Mean over patch-level representation and squeeze
-                            h = torch.squeeze(h, dim=1) 
-                            subclass_proj_embed = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim
+                    x = x.to(device, non_blocking=True)
+                    def train_step():
+                        ae_lr = AE_scheduler.step()
+                        with torch.no_grad():
+                            # If is the first epoch, we are going to use the representation from the pre-trained model instead
+                            if starting_epoch == 0:
+                                h = fgdcc.vit_encoder(x)
+                                h = torch.mean(h, dim=1) # Mean over patch-level representation and squeeze
+                                h = torch.squeeze(h, dim=1) 
+                                subclass_proj_embed = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim
+                            else:
+                                subclass_proj_embed = fgdcc.setup_autoencoder_features(x)
+                        reconstructed_input, bottleneck_output = autoencoder(subclass_proj_embed, device)
+                        reconstruction_loss = L2(reconstructed_input, subclass_proj_embed)
+                        reconstruction_loss_meter.update(reconstruction_loss)
+
+                        # On the last epoch of training, update the feature cache
+                        if epoch_no == (starting_epoch + no_epochs - 1):
+                            bottleneck_output = bottleneck_output.to(device=torch.device('cpu'), dtype=torch.float32).detach()
+                            cached_features = update_cache(cached_features, bottleneck_output, y)
+
+                        if use_bfloat16:
+                            scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
+                                        parameters=autoencoder.parameters(), create_graph=False, retain_graph=False, 
+                                        update_grad=(iteration + 1) % accum_iter == 0)
                         else:
-                            subclass_proj_embed = fgdcc.setup_autoencoder_features(x)
+                            reconstruction_loss.backward()
+                            AE_optimizer.step()
+                        return ae_lr, reconstruction_loss
 
-                    reconstructed_input, bottleneck_output = autoencoder(subclass_proj_embed, device)
-                    reconstruction_loss = L2(reconstructed_input, subclass_proj_embed)
-                    reconstruction_loss_meter.update(reconstruction_loss)
+                    (ae_lr, reconstruction_loss), elapsed_time = gpu_timer(train_step)
+                    
+                    time_meter.update(elapsed_time)
+                    log_loss(iteration, epoch_no, ae_lr)                     
+            # Epoch end
+            reconstruction_logger.log(epoch_no, ae_lr, reconstruction_loss_meter.avg)
+        return cached_features
 
-                    if epoch_no == (starting_epoch + no_epochs - 1):
-                        bottleneck_output = bottleneck_output.to(device=torch.device('cpu'), dtype=torch.float32).detach() # Verify if apply dist.barrier
-                        cached_features = update_cache(cached_features, bottleneck_output, y)
-
-                    if use_bfloat16:
-                        scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
-                                    parameters=autoencoder.parameters(), create_graph=False, retain_graph=False, 
-                                    update_grad=(itr + 1) % accum_iter == 0)
-                    else:
-                        reconstruction_loss.backward()
-                        AE_optimizer.step()
-    
-    train_autoencoder(fgdcc=model_noddp,
+    cached_features_last_epoch = train_autoencoder(fgdcc=model_noddp,
                       starting_epoch=0,
                       data_sampler_epoch=0,
                       use_bfloat16=use_bfloat16,
-                      no_epochs=50,
+                      no_epochs=25,
                       train_data_loader=supervised_loader_train,
                       train_data_sampler=supervised_sampler_train,
                       AE_scheduler=AE_scheduler)                      
-    autoencoder_global_epoch_cnt = 50
-
-    logger.info('Building cache...')
-    cached_features_last_epoch = build_cache(data_loader=supervised_loader_train,
-                                             device=device, target_encoder=model_noddp.vit_encoder,
-                                             autoencoder=model_noddp.autoencoder,
-                                             hierarchical_classifier=model_noddp.classifier, 
-                                             path=root_path+'/DeepCluster/cache')
+    autoencoder_global_epoch_cnt = 25
     
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
     
-    logger.info('Initializing centroids...')
+    empty_clusters_per_epoch = AverageMeter()
     
+    logger.info('Initializing centroids...')
     k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device)
     
     logger.info('Update Step...')
-    
     M_losses = k_means_module.update(cached_features_last_epoch, device, empty_clusters_per_epoch) # M-step
     
     start_epoch = resume_epoch
-
     T = 1
     # -- TRAINING LOOP
     for epoch in range(start_epoch, num_epochs):
@@ -631,7 +647,6 @@ def main(args, resume_preempt=False):
                     reconstruction_loss_meter.update(reconstruction_loss)
 
                     # FIXME: this won't work as expected since its a constant
-                    # TODO check: perhaps multiplying by the gradients of the parameters from the ViT encoder.
                     reconstruction_loss += 0.25 * k_means_loss # Add K-means distances term as penalty to enforce a "k-means friendly space" 
                     '''
                         `all_reduce`: is used to perform an element-wise reduction operation (like sum, product, max, min, etc.) 
@@ -705,7 +720,9 @@ def main(args, resume_preempt=False):
                                     torch.cuda.max_memory_allocated() / 1024.**2,
                                     time_meter.avg))
                     
-                    # TODO: LOG RECONSTRUCTION LOGGER HERE AS WELL
+                    reconstruction_logger.log(epoch + 1,
+                        ae_lr,
+                        reconstruction_loss_meter.avg)
 
                     if grad_stats is not None:
                         logger.info('[%d, %5d] grad_stats: [%.2e %.2e] (%.2e, %.2e)'
@@ -740,11 +757,11 @@ def main(args, resume_preempt=False):
                         starting_epoch=autoencoder_global_epoch_cnt,
                         data_sampler_epoch=epoch,
                         use_bfloat16=use_bfloat16,
-                        no_epochs=20,
+                        no_epochs=10,
                         train_data_loader=supervised_loader_train,
                         train_data_sampler=supervised_sampler_train,
                         AE_scheduler=AE_scheduler)
-        autoencoder_global_epoch_cnt +=  20
+        autoencoder_global_epoch_cnt +=  10
 
         if world_size > 1:
             # Convert cache to list format for gathering

@@ -11,7 +11,7 @@ class MaskedAutoEncoder(nn.Module):
             nn.Linear(1280, 1024),
             nn.GELU(),
             nn.Linear(1024, 768),
-            nn.GELU(),
+            #nn.GELU(),
             #nn.Linear(768, 512),
             #nn.GELU(),
             #nn.Linear(512, 384),
