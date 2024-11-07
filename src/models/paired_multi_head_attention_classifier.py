@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from src.utils.tensors import trunc_normal_
-
+    
 class MultiHeadCrossAttention(nn.Module):
     def __init__(self, embed_dim, num_heads):
         super(MultiHeadCrossAttention, self).__init__()
@@ -56,7 +56,7 @@ class PairedCrossAttentionClassifier(nn.Module):
         self.parent_feature_selection = nn.Linear((self.proj_times + 1) * proj_embed_dim, input_dim)
         self.subclass_feature_selection = nn.Linear((self.proj_times + 1) * proj_embed_dim, input_dim)
         
-        self.parent_classifier = nn.Linear((self.proj_times + 1) * proj_embed_dim, nb_classes)
+        self.parent_classifier = nn.Linear(proj_embed_dim, nb_classes)
         self.subclass_classifier = nn.Linear(proj_embed_dim, len(nb_subclasses_per_parent) * nb_classes)        
 
         self.head_drop = nn.Dropout(drop_path)
@@ -100,26 +100,27 @@ class PairedCrossAttentionClassifier(nn.Module):
         # Cross-attention to integrate subclass features into parent features
         integrated_parent_features = self.parent_cross_attention(h, subclass_proj_embed, subclass_proj_embed)
         integrated_parent_features = F.layer_norm(integrated_parent_features, (integrated_parent_features.size(-1),)) # Normalize over feature-dim 
-        integrated_parent_features = torch.mean(integrated_parent_features, dim=1).squeeze(dim=1)
+        # TODO: remove #integrated_parent_features = torch.mean(integrated_parent_features, dim=1).squeeze(dim=1)
 
         # TODO: change naming, guess that the opposite makes more sense
         # TODO: compute cross att between subclass_projection and parent classifier embedding 
         integrated_subclass_features = self.subclass_cross_attention(subclass_proj_embed, h, h) # compute cross-attention between sub-class and parent features
         integrated_subclass_features = F.layer_norm(integrated_subclass_features, (integrated_subclass_features.size(-1),)) # Normalize over feature-dim 
-        integrated_subclass_features = torch.mean(integrated_subclass_features, dim=1).squeeze(dim=1)
+        # TODO: remove #integrated_subclass_features = torch.mean(integrated_subclass_features, dim=1).squeeze(dim=1) 
 
-        subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
-        h = torch.mean(h, dim=1).squeeze(dim=1)
+        # TODO: remove
+        #subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
+        #h = torch.mean(h, dim=1).squeeze(dim=1)
 
         parent_proj_embed = torch.cat((h, integrated_parent_features), dim=-1)
-        #parent_proj_embed = self.parent_feature_selection(parent_proj_embed)
-        parent_proj_embed = self.head_drop(parent_proj_embed)
+        parent_proj_embed = self.parent_feature_selection(parent_proj_embed)
+        parent_proj_embed = self.head_drop(torch.mean(parent_proj_embed, dim=1).squeeze(dim=1))
         
         subclass_proj_embed = torch.cat((subclass_proj_embed, integrated_subclass_features), dim=-1)
         subclass_proj_embed = self.subclass_feature_selection(subclass_proj_embed)
 
         parent_logits = self.parent_classifier(parent_proj_embed)  # Shape (batch_size, num_parents)
         
-        subclass_logits = self.subclass_classifier(self.head_drop(subclass_proj_embed)) # Input with dropout instead of replacing the variable with a dropped-out vector
+        subclass_logits = self.subclass_classifier(self.head_drop(torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1))) # Input with dropout instead of replacing the variable with a dropped-out vector
 
         return parent_logits, subclass_logits, subclass_proj_embed

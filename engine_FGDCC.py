@@ -447,21 +447,22 @@ def main(args, resume_preempt=False):
 
     autoencoder_path = 'autoencoder_'+ str(dimensionality) + '.pth' # TODO: if exists: load, otherwise train. 
 
-
     # TODO: review the necessity of adding positional encoders when doing cross attention...
     reconstruction_loss_meter = AverageMeter()
-    def train_autoencoder(fgdcc, starting_epoch, data_sampler_epoch, use_bfloat16, no_epochs, train_data_loader, train_data_sampler, AE_scheduler):
+    def train_autoencoder(fgdcc, starting_epoch, data_sampler_epoch, use_bfloat16, no_epochs, train_data_loader, train_data_sampler, AE_scheduler, cached_features):
         autoencoder = fgdcc.autoencoder
         L2 = fgdcc.l2_norm
         
         wup = 5 # Warmup epochs
+        if starting_epoch == 0:
+            wup = 10
 
         AE_scheduler = WarmupCosineSchedule(
             AE_optimizer,
             warmup_steps=int(wup*ipe),
-            start_lr=1.0e-4,
-            ref_lr=1.0e-3,
-            final_lr=1.0e-5,
+            start_lr=1.5e-4,
+            ref_lr=5.0e-4,
+            final_lr=8.5e-5,
             T_max=(int(ipe_scale*num_epochs*ipe) + 1))
 
         def update_cache(cache, bottleneck_output, target):
@@ -502,8 +503,8 @@ def main(args, resume_preempt=False):
                             # If is the first epoch, we are going to use the representation from the pre-trained model instead
                             if starting_epoch == 0:
                                 h = fgdcc.vit_encoder(x)
-                                h = torch.mean(h, dim=1) # Mean over patch-level representation and squeeze
-                                h = torch.squeeze(h, dim=1) 
+                                #h = torch.mean(h, dim=1) # Mean over patch-level representation and squeeze
+                                #h = torch.squeeze(h, dim=1) 
                                 subclass_proj_embed = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim
                             else:
                                 subclass_proj_embed = fgdcc.setup_autoencoder_features(x)
@@ -513,8 +514,11 @@ def main(args, resume_preempt=False):
 
                         # On the last epoch of training, update the feature cache
                         if epoch_no == (starting_epoch + no_epochs - 1):
+                            bottleneck_output = torch.mean(bottleneck_output, dim=1).squeeze(dim=1)
                             bottleneck_output = bottleneck_output.to(device=torch.device('cpu'), dtype=torch.float32).detach()
-                            cached_features = update_cache(cached_features, bottleneck_output, y)
+                            cache = update_cache(cached_features, bottleneck_output, y)
+                        else:
+                            cache = cached_features
 
                         if use_bfloat16:
                             scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
@@ -523,24 +527,26 @@ def main(args, resume_preempt=False):
                         else:
                             reconstruction_loss.backward()
                             AE_optimizer.step()
-                        return ae_lr, reconstruction_loss
+                        return ae_lr, reconstruction_loss, cache
 
-                    (ae_lr, reconstruction_loss), elapsed_time = gpu_timer(train_step)
-                    
+                    (ae_lr, reconstruction_loss, cache), elapsed_time = gpu_timer(train_step)
+                    cached_features = cache
+
                     time_meter.update(elapsed_time)
                     log_loss(iteration, epoch_no, ae_lr)                     
             # Epoch end
             reconstruction_logger.log(epoch_no, ae_lr, reconstruction_loss_meter.avg)
-        return cached_features
+        return cached_features, AE_scheduler
 
-    cached_features_last_epoch = train_autoencoder(fgdcc=model_noddp,
+    cached_features_last_epoch, AE_scheduler = train_autoencoder(fgdcc=model_noddp,
                       starting_epoch=0,
                       data_sampler_epoch=0,
                       use_bfloat16=use_bfloat16,
                       no_epochs=30,
                       train_data_loader=supervised_loader_train,
                       train_data_sampler=supervised_sampler_train,
-                      AE_scheduler=AE_scheduler)                      
+                      AE_scheduler=AE_scheduler,
+                      cached_features={})                      
     autoencoder_global_epoch_cnt = 30
     
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
@@ -754,14 +760,15 @@ def main(args, resume_preempt=False):
 
         # -- End of Epoch      
         autoencoder_global_epoch_cnt += 1
-        train_autoencoder(fgdcc=model_noddp,
+        cached_features, AE_scheduler = train_autoencoder(fgdcc=model_noddp,
                         starting_epoch=autoencoder_global_epoch_cnt,
                         data_sampler_epoch=epoch,
                         use_bfloat16=use_bfloat16,
                         no_epochs=10,
                         train_data_loader=supervised_loader_train,
                         train_data_sampler=supervised_sampler_train,
-                        AE_scheduler=AE_scheduler)
+                        AE_scheduler=AE_scheduler,
+                        cached_features={})
         autoencoder_global_epoch_cnt +=  10
 
         if world_size > 1:

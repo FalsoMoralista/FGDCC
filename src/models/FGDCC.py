@@ -5,6 +5,7 @@ import torch
 import torch.nn  as nn
 import torch.nn.functional as F
 from src.models.autoencoder import MaskedAutoEncoder
+from src.models.transformer_autoencoder import SpatialMaskedAutoEncoder
 from src.models.hierarchical_classifiers import JEHierarchicalClassifier
 from src.models.joint_embedding_classifier import JointEmbeddingClassifier
 from src.models.multi_head_attention_hierarchical_cls import MultiHeadAttentionHierarchicalCls
@@ -18,7 +19,7 @@ class FGDCC(nn.Module):
         self.backbone_patch_mean = backbone_patch_mean
         self.vit_encoder = vit_backbone
         self.classifier = classifier
-        self.autoencoder = MaskedAutoEncoder()
+        self.autoencoder = SpatialMaskedAutoEncoder() #MaskedAutoEncoder()
         self.l2_norm = torch.nn.MSELoss()
         self.raw_features = raw_features
     
@@ -43,10 +44,8 @@ class FGDCC(nn.Module):
         subclass_proj_detatched = subclass_proj_embed.detach()
 
         # Step 3. Dimensionality Reduction
-        with torch.no_grad():                      
-            reconstructed_input, bottleneck_output = self.autoencoder(subclass_proj_detatched, device)
-        #reconstruction_loss = self.l2_norm(reconstructed_input, subclass_proj_detatched)
-        reconstruction_loss = 0
+        reconstructed_input, bottleneck_output = self.autoencoder(subclass_proj_detatched, device)
+        reconstruction_loss = self.l2_norm(reconstructed_input, subclass_proj_detatched)
 
         return reconstruction_loss, bottleneck_output, parent_logits, subclass_logits
 
