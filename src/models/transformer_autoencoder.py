@@ -1,3 +1,4 @@
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -5,6 +6,10 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import numpy as np
 
+import math
+
+from src.models.vision_transformer import Block
+from src.utils.tensors import trunc_normal_
 
 def visualize_masked_input(masked_x, original_x, save_name, item_index=0):
     """
@@ -45,41 +50,59 @@ def visualize_masked_input(masked_x, original_x, save_name, item_index=0):
     plt.colorbar(axes[1].imshow(heatmap_masked, cmap='viridis'), ax=axes, fraction=0.046, pad=0.04)
     plt.savefig(save_name) # show()
 
+class VisionTransformerAutoEncoder(nn.Module):
 
-class SpatialMaskedAutoEncoder(nn.Module):
     def __init__(self):
         super().__init__()
 
+        ratio = 4.0
+        drop_rate = 0.
         self.encoder = nn.Sequential(
-            nn.Linear(1280, 1152),
-            nn.GELU(),
-            nn.Linear(1152, 1024),
-            nn.GELU(),
-            nn.Linear(1024 , 768)                        
+            nn.Linear(1280, 1024),
+            nn.GELU(),            
+            Block(dim=1024, num_heads=8, mlp_ratio=ratio, qkv_bias=False, drop=drop_rate),
+            nn.Linear(1024, 768),              
         )
 
-        self.decoder = torch.nn.Sequential(
-            nn.Linear(768, 1024), 
-            nn.GELU(),
-            nn.Linear(1024, 1152), 
-            nn.GELU(),
-            nn.Linear(1152, 1280), 
+        self.decoder = nn.Sequential(
+            nn.Linear(768, 1024),
+            nn.GELU(),            
+            Block(dim=1024, num_heads=8, mlp_ratio=ratio, qkv_bias=False, drop=drop_rate),
+            nn.Linear(1024, 1280)
         )
 
-    def generate_patch_mask(self, batch_size, num_patches, embed_dim, device, mask_fraction=0.75):
-        """
-        Generates a binary mask that masks entire patches of an image's features in a vectorized manner.
+        self.init_std=0.02
+        self.apply(self._init_weights)
+        self.fix_init_weight()
 
-        Args:
-            batch_size (int): Number of samples in the batch.
-            num_patches (int): Number of patches in the sequence (e.g., 256 for a 16x16 grid).
-            embed_dim (int): Dimensionality of each patch's feature embedding.
-            device (torch.device): Device to create the mask on (e.g., 'cuda' or 'cpu').
-            mask_fraction (float): Fraction of patches to mask.
+    def fix_init_weight(self):
+        def rescale(param, layer_id):
+            param.div_(math.sqrt(2.0 * layer_id))
+        
+        layer = self.encoder[2]
+        layer_id = 0
+        rescale(layer.attn.proj.weight.data, layer_id + 1)
+        rescale(layer.mlp.fc2.weight.data, layer_id + 1)
 
-        Returns:
-            torch.Tensor: Binary mask of shape (batch_size, num_patches, embed_dim) with `True` for masked patches.
-        """
+        layer = self.decoder[2]
+        rescale(layer.attn.proj.weight.data, layer_id + 1)
+        rescale(layer.mlp.fc2.weight.data, layer_id + 1)
+
+
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight, std=self.init_std)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.LayerNorm):
+            nn.init.constant_(m.bias, 0)
+            nn.init.constant_(m.weight, 1.0)
+        elif isinstance(m, nn.Conv2d):
+            trunc_normal_(m.weight, std=self.init_std)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+
+    def generate_patch_mask(self, batch_size, num_patches, embed_dim, device, mask_fraction=0.25):
         # Calculate the total number of patches to mask
         num_masked_patches = int(num_patches * mask_fraction)
 
@@ -114,12 +137,11 @@ class SpatialMaskedAutoEncoder(nn.Module):
 
         # Encode and decode
         bottleneck_output = self.encoder(masked_input)
+        bottleneck_output = F.layer_norm(bottleneck_output, (bottleneck_output.size(-1),))
+        
         reconstructed_input = self.decoder(bottleneck_output)
+
+
         reconstructed_input = F.layer_norm(reconstructed_input, (embed_dim,))  # Normalize over feature dimension
 
-        return reconstructed_input, bottleneck_output
-    
-def transformer_autoencoder():
-    return SpatialMaskedAutoEncoder()
-
-
+        return reconstructed_input, bottleneck_output        

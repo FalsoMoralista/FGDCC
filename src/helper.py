@@ -207,8 +207,6 @@ def init_model(
         depth=pred_depth,
         num_heads=encoder.num_heads)
 
-    autoencoder = AE.vanilla_autoencoder()
-
     def init_weights(m):
         if isinstance(m, torch.nn.Linear):
             trunc_normal_(m.weight, std=0.02)
@@ -218,20 +216,16 @@ def init_model(
             torch.nn.init.constant_(m.bias, 0)
             torch.nn.init.constant_(m.weight, 1.0)
 
-    for m in autoencoder.modules():
-        init_weights(m)
-
     for m in encoder.modules():
         init_weights(m)
 
     for m in predictor.modules():
         init_weights(m)
 
-    autoencoder.to(device)
     encoder.to(device)
     predictor.to(device)
     
-    return encoder, predictor, autoencoder
+    return encoder, predictor
 
 
 def build_cache_v2(data_loader, device, target_encoder, hierarchical_classifier, path):   

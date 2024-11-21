@@ -1,0 +1,536 @@
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:called-params configs/in1k_vith14_ep300_FGDCC.yaml
+INFO:root:loaded params...
+{   'data': {   'batch_size': 96,
+                'color_jitter_strength': 0.0,
+                'crop_scale': [0.3, 1.0],
+                'crop_size': 224,
+                'cutmix': 0.0,
+                'drop_path': 0.25,
+                'image_folder': '/home/rtcalumby/adam/luciano/plantnet_300K/',
+                'mixup': 0.0,
+                'nb_classes': 1081,
+                'num_workers': 16,
+                'pin_mem': True,
+                'reprob': 0.25,
+                'resume_epoch': 0,
+                'root_path': '/home/rtcalumby/adam/luciano/',
+                'use_color_distortion': False,
+                'use_gaussian_blur': False,
+                'use_horizontal_flip': False},
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp40',
+                   'write_tag': 'jepa'},
+    'mask': {   'allow_overlap': False,
+                'aspect_ratio': [0.75, 1.5],
+                'enc_mask_scale': [0.85, 1.0],
+                'min_keep': 10,
+                'num_enc_masks': 1,
+                'num_pred_masks': 4,
+                'patch_size': 14,
+                'pred_mask_scale': [0.15, 0.2]},
+    'meta': {   'copy_data': False,
+                'load_checkpoint': True,
+                'model_name': 'vit_huge',
+                'pred_depth': 12,
+                'pred_emb_dim': 384,
+                'read_checkpoint': None,
+                'use_bfloat16': True},
+    'optimization': {   'ema': [0.9, 0.999],
+                        'epochs': 75,
+                        'final_lr': 1e-05,
+                        'final_weight_decay': 0.4,
+                        'ipe_scale': 1.0,
+                        'label_smoothing': 0.1,
+                        'lr': 2.5e-05,
+                        'start_lr': 8.5e-05,
+                        'warmup': 5,
+                        'weight_decay': 0.05}}
+INFO:root:Running... (rank: 0/1)
+INFO:root:Initialized (rank/world-size) 0/1
+INFO:root:making imagenet data transforms
+INFO:root:making imagenet data transforms
+INFO:root:Finetuning dataset created
+Training dataset, length: 245952
+INFO:root:Finetuning dataset created
+Val dataset, length: 31200
+INFO:root:Using AdamW
+['encoder', 'predictor', 'opt', 'scaler', 'target_encoder', 'epoch', 'loss', 'batch_size', 'world_size', 'lr']
+INFO:root:loaded pretrained encoder from epoch 66 with msg: <All keys matched successfully>
+INFO:root:PairedCrossAttentionClassifier(
+  (act): GELU(approximate='none')
+  (subclass_proj): Sequential(
+    (0): Linear(in_features=1280, out_features=1280, bias=True)
+    (1): GELU(approximate='none')
+  )
+  (parent_cross_attention): MultiHeadCrossAttention(
+    (query): Linear(in_features=1280, out_features=1280, bias=True)
+    (key): Linear(in_features=1280, out_features=1280, bias=True)
+    (value): Linear(in_features=1280, out_features=1280, bias=True)
+  )
+  (subclass_cross_attention): MultiHeadCrossAttention(
+    (query): Linear(in_features=1280, out_features=1280, bias=True)
+    (key): Linear(in_features=1280, out_features=1280, bias=True)
+    (value): Linear(in_features=1280, out_features=1280, bias=True)
+  )
+  (parent_feature_selection): Linear(in_features=2560, out_features=1280, bias=True)
+  (subclass_feature_selection): Linear(in_features=2560, out_features=1280, bias=True)
+  (parent_classifier): Linear(in_features=1280, out_features=1081, bias=True)
+  (subclass_classifier): Linear(in_features=1280, out_features=4324, bias=True)
+  (head_drop): Dropout(p=0.25, inplace=False)
+)
+INFO:root:Using AdamW
+INFO:root:VisionTransformerAutoEncoder(
+  (encoder): Sequential(
+    (0): Block(
+      (norm1): LayerNorm((1280,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1280, out_features=3840, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1280, out_features=1280, bias=True)
+        (proj_drop): Dropout(p=0.1, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1280,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1280, out_features=1024, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=1024, out_features=1280, bias=True)
+        (drop): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (1): Linear(in_features=1280, out_features=1024, bias=True)
+    (2): GELU(approximate='none')
+    (3): Block(
+      (norm1): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1024, out_features=3072, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1024, out_features=1024, bias=True)
+        (proj_drop): Dropout(p=0.1, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1024, out_features=768, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=768, out_features=1024, bias=True)
+        (drop): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (4): Linear(in_features=1024, out_features=768, bias=True)
+  )
+  (decoder): Sequential(
+    (0): Block(
+      (norm1): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=768, out_features=2304, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=768, out_features=768, bias=True)
+        (proj_drop): Dropout(p=0.1, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=768, out_features=1024, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=1024, out_features=768, bias=True)
+        (drop): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (1): Linear(in_features=768, out_features=1024, bias=True)
+    (2): GELU(approximate='none')
+    (3): Block(
+      (norm1): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1024, out_features=3072, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1024, out_features=1024, bias=True)
+        (proj_drop): Dropout(p=0.1, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1024, out_features=1280, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=1280, out_features=1024, bias=True)
+        (drop): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (4): Linear(in_features=1024, out_features=1280, bias=True)
+  )
+)
+INFO:root:VisionTransformer(
+  (patch_embed): PatchEmbed(
+    (proj): Conv2d(3, 1280, kernel_size=(14, 14), stride=(14, 14))
+  )
+  (blocks): ModuleList(
+    (0-31): 32 x Block(
+      (norm1): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1280, out_features=3840, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1280, out_features=1280, bias=True)
+        (proj_drop): Dropout(p=0.0, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1280, out_features=5120, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=5120, out_features=1280, bias=True)
+        (drop): Dropout(p=0.0, inplace=False)
+      )
+    )
+  )
+  (norm): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+)
+INFO:root:Autoencoder Training...
+INFO:root: - - Epoch: 1 - - 
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[1,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9999] [autoencoder lr: 9.00e-04][mem: 1.03e+04](2564.7 ms)
+INFO:root:[1,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9997] [autoencoder lr: 9.00e-04][mem: 1.07e+04](505.4 ms)
+INFO:root:[1,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9996] [autoencoder lr: 9.01e-04][mem: 1.07e+04](495.1 ms)
+INFO:root:[1,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9996] [autoencoder lr: 9.01e-04][mem: 1.07e+04](492.6 ms)
+INFO:root:[1,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9995] [autoencoder lr: 9.02e-04][mem: 1.07e+04](490.5 ms)
+INFO:root:[1,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9994] [autoencoder lr: 9.02e-04][mem: 1.07e+04](490.2 ms)
+INFO:root:[1,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9992] [autoencoder lr: 9.02e-04][mem: 1.07e+04](489.5 ms)
+INFO:root:[1,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9986] [autoencoder lr: 9.03e-04][mem: 1.07e+04](489.3 ms)
+INFO:root:[1,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9972] [autoencoder lr: 9.03e-04][mem: 1.07e+04](488.7 ms)
+INFO:root:[1,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9950] [autoencoder lr: 9.04e-04][mem: 1.07e+04](488.2 ms)
+INFO:root:[1,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9919] [autoencoder lr: 9.04e-04][mem: 1.07e+04](488.5 ms)
+INFO:root:[1,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9878] [autoencoder lr: 9.04e-04][mem: 1.07e+04](488.2 ms)
+INFO:root:[1,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9829] [autoencoder lr: 9.05e-04][mem: 1.07e+04](487.9 ms)
+INFO:root:[1,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9769] [autoencoder lr: 9.05e-04][mem: 1.07e+04](488.2 ms)
+INFO:root:[1,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9700] [autoencoder lr: 9.05e-04][mem: 1.07e+04](488.0 ms)
+INFO:root:[1,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9621] [autoencoder lr: 9.06e-04][mem: 1.07e+04](487.7 ms)
+INFO:root:[1,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9535] [autoencoder lr: 9.06e-04][mem: 1.07e+04](487.4 ms)
+INFO:root:[1,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9442] [autoencoder lr: 9.07e-04][mem: 1.07e+04](487.2 ms)
+INFO:root:[1,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9344] [autoencoder lr: 9.07e-04][mem: 1.07e+04](487.6 ms)
+INFO:root:[1,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9241] [autoencoder lr: 9.07e-04][mem: 1.07e+04](487.5 ms)
+INFO:root:[1,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9136] [autoencoder lr: 9.08e-04][mem: 1.07e+04](487.4 ms)
+INFO:root:[1,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9030] [autoencoder lr: 9.08e-04][mem: 1.07e+04](487.2 ms)
+INFO:root:[1,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8925] [autoencoder lr: 9.09e-04][mem: 1.07e+04](487.2 ms)
+INFO:root:[1,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8822] [autoencoder lr: 9.09e-04][mem: 1.07e+04](487.8 ms)
+INFO:root:[1,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8724] [autoencoder lr: 9.09e-04][mem: 1.07e+04](487.7 ms)
+INFO:root:[1,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8631] [autoencoder lr: 9.10e-04][mem: 1.07e+04](487.5 ms)
+INFO:root:Initializing centroids...
+INFO:root:Update Step...
+/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/faiss/contrib/torch_utils.py:51: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  x.storage().data_ptr() + x.storage_offset() * 4)
+INFO:root:Epoch 1
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+[rank0]:[W reducer.cpp:1389] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+INFO:root:[1,     0/ 2562] - train_losses - Parent Class: 6.9856 - Children class: 8.3719 -Autoencoder Loss (total): 52.2565 - Reconstruction/K-Means Loss: [0.8577 / 51.3988] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.50e-05] [autoencoder lr: 9.10e-04][mem: 6.71e+04] (2663.0 ms)
+INFO:root:[1,     0] grad_stats: [7.26e-07 5.12e-06] (3.54e-13, 9.19e-03)
+INFO:root:[1,    50/ 2562] - train_losses - Parent Class: 6.0251 - Children class: 6.7278 -Autoencoder Loss (total): 15572114445957473501184.0000 - Reconstruction/K-Means Loss: [0.9027 / 15572114313498660438016.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.48e-05] [autoencoder lr: 9.10e-04][mem: 7.20e+04] (1676.1 ms)
+INFO:root:[1,    50] grad_stats: [1.62e-03 6.03e-02] (7.83e-09, 5.45e+00)
+INFO:root:[1,   100/ 2562] - train_losses - Parent Class: 5.8759 - Children class: 6.4668 -Autoencoder Loss (total): 16394273579531721768960.0000 - Reconstruction/K-Means Loss: [0.9265 / 16394273557236674461696.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.45e-05] [autoencoder lr: 9.10e-04][mem: 7.20e+04] (1640.8 ms)
+INFO:root:[1,   100] grad_stats: [1.36e-03 4.26e-02] (1.04e-09, 4.03e+00)
+INFO:root:[1,   150/ 2562] - train_losses - Parent Class: 5.8075 - Children class: 6.3388 -Autoencoder Loss (total): 16732274361065411706880.0000 - Reconstruction/K-Means Loss: [0.9550 / 16732274614579297779712.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.43e-05] [autoencoder lr: 9.11e-04][mem: 7.20e+04] (1646.8 ms)
+INFO:root:[1,   150] grad_stats: [3.62e-03 2.39e-02] (7.16e-09, 4.83e+00)
+INFO:root:[1,   200/ 2562] - train_losses - Parent Class: 5.7792 - Children class: 6.2739 -Autoencoder Loss (total): 16952442961948579987456.0000 - Reconstruction/K-Means Loss: [0.9846 / 16952442614656071106560.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.41e-05] [autoencoder lr: 9.11e-04][mem: 7.20e+04] (1639.6 ms)
+INFO:root:[1,   200] grad_stats: [6.15e-03 4.55e-02] (7.41e-09, 4.35e+00)
+INFO:root:[1,   250/ 2562] - train_losses - Parent Class: 5.7563 - Children class: 6.2226 -Autoencoder Loss (total): 17095566232206507507712.0000 - Reconstruction/K-Means Loss: [1.0101 / 17095566653858265432064.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.38e-05] [autoencoder lr: 9.11e-04][mem: 7.20e+04] (1636.5 ms)
+INFO:root:[1,   250] grad_stats: [7.88e-03 1.09e-02] (4.56e-09, 4.64e+00)
+INFO:root:[1,   300/ 2562] - train_losses - Parent Class: 5.7411 - Children class: 6.1871 -Autoencoder Loss (total): 17193716556585513254912.0000 - Reconstruction/K-Means Loss: [1.0339 / 17193716661320387919872.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.36e-05] [autoencoder lr: 9.11e-04][mem: 7.20e+04] (1646.0 ms)
+INFO:root:[1,   300] grad_stats: [2.12e-02 4.00e-02] (1.00e-07, 4.36e+00)
+INFO:root:[1,   350/ 2562] - train_losses - Parent Class: 5.7343 - Children class: 6.1664 -Autoencoder Loss (total): 17266113046495400820736.0000 - Reconstruction/K-Means Loss: [1.0557 / 17266113492364593987584.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.34e-05] [autoencoder lr: 9.11e-04][mem: 7.20e+04] (1644.9 ms)
+INFO:root:[1,   350] grad_stats: [3.88e-02 3.10e-02] (7.08e-07, 4.60e+00)
+INFO:root:[1,   400/ 2562] - train_losses - Parent Class: 5.7316 - Children class: 6.1489 -Autoencoder Loss (total): 17322876416198778552320.0000 - Reconstruction/K-Means Loss: [1.0759 / 17322875857460420149248.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.31e-05] [autoencoder lr: 9.12e-04][mem: 7.20e+04] (1644.5 ms)
+INFO:root:[1,   400] grad_stats: [2.53e-02 2.10e-02] (4.84e-05, 4.36e+00)
+INFO:root:[1,   450/ 2562] - train_losses - Parent Class: 5.7259 - Children class: 6.1335 -Autoencoder Loss (total): 17369470657943553703936.0000 - Reconstruction/K-Means Loss: [1.0948 / 17369470513149330325504.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.29e-05] [autoencoder lr: 9.12e-04][mem: 7.20e+04] (1653.3 ms)
+INFO:root:[1,   450] grad_stats: [2.74e-02 1.44e-02] (3.22e-05, 3.82e+00)
+INFO:root:[1,   500/ 2562] - train_losses - Parent Class: 5.7191 - Children class: 6.1171 -Autoencoder Loss (total): 17406159232307927449600.0000 - Reconstruction/K-Means Loss: [1.1134 / 17406159771661175357440.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.27e-05] [autoencoder lr: 9.12e-04][mem: 7.20e+04] (1653.8 ms)
+INFO:root:[1,   500] grad_stats: [1.12e-01 1.50e-02] (1.20e-04, 4.71e+00)
+INFO:root:[1,   550/ 2562] - train_losses - Parent Class: 5.7074 - Children class: 6.0968 -Autoencoder Loss (total): 17440162535394481537024.0000 - Reconstruction/K-Means Loss: [1.1336 / 17440162586478868692992.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.24e-05] [autoencoder lr: 9.12e-04][mem: 7.20e+04] (1655.5 ms)
+INFO:root:[1,   550] grad_stats: [2.83e-01 3.81e-02] (5.21e-04, 4.38e+00)
+INFO:root:[1,   600/ 2562] - train_losses - Parent Class: 5.6908 - Children class: 6.0726 -Autoencoder Loss (total): 17468150155278775484416.0000 - Reconstruction/K-Means Loss: [1.1552 / 17468150449399050272768.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.22e-05] [autoencoder lr: 9.12e-04][mem: 7.20e+04] (1657.6 ms)
+INFO:root:[1,   600] grad_stats: [6.10e-01 8.70e-02] (2.99e-04, 4.99e+00)
+INFO:root:[1,   650/ 2562] - train_losses - Parent Class: 5.6769 - Children class: 6.0537 -Autoencoder Loss (total): 17491474297748927283200.0000 - Reconstruction/K-Means Loss: [1.1756 / 17491473846351268151296.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.20e-05] [autoencoder lr: 9.13e-04][mem: 7.20e+04] (1666.9 ms)
+INFO:root:[1,   650] grad_stats: [1.99e-01 3.06e-02] (2.19e-04, 4.50e+00)
+INFO:root:[1,   700/ 2562] - train_losses - Parent Class: 5.6644 - Children class: 6.0374 -Autoencoder Loss (total): 17511881233560449843200.0000 - Reconstruction/K-Means Loss: [1.1950 / 17511881133980144107520.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.17e-05] [autoencoder lr: 9.13e-04][mem: 7.20e+04] (1669.0 ms)
+INFO:root:[1,   700] grad_stats: [1.87e-01 4.83e-02] (4.35e-04, 5.46e+00)
+INFO:root:[1,   750/ 2562] - train_losses - Parent Class: 5.6464 - Children class: 6.0160 -Autoencoder Loss (total): 17530003718460988719104.0000 - Reconstruction/K-Means Loss: [1.2167 / 17530003709465783697408.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.15e-05] [autoencoder lr: 9.13e-04][mem: 7.20e+04] (1671.4 ms)
+INFO:root:[1,   750] grad_stats: [3.32e-01 3.57e-02] (5.27e-04, 4.81e+00)
+INFO:root:[1,   800/ 2562] - train_losses - Parent Class: 5.6294 - Children class: 5.9942 -Autoencoder Loss (total): 17545755058157717028864.0000 - Reconstruction/K-Means Loss: [1.2388 / 17545754737676845580288.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.12e-05] [autoencoder lr: 9.13e-04][mem: 7.20e+04] (1674.3 ms)
+INFO:root:[1,   800] grad_stats: [2.65e-01 4.45e-02] (2.78e-04, 5.08e+00)
+INFO:root:[1,   850/ 2562] - train_losses - Parent Class: 5.6132 - Children class: 5.9745 -Autoencoder Loss (total): 17560571900931765960704.0000 - Reconstruction/K-Means Loss: [1.2605 / 17560572057049496551424.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.10e-05] [autoencoder lr: 9.13e-04][mem: 7.20e+04] (1677.0 ms)
+INFO:root:[1,   850] grad_stats: [4.32e-01 6.40e-02] (2.11e-03, 4.99e+00)
+INFO:root:[1,   900/ 2562] - train_losses - Parent Class: 5.5989 - Children class: 5.9561 -Autoencoder Loss (total): 17573998257320864251904.0000 - Reconstruction/K-Means Loss: [1.2804 / 17573998819646011080704.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.08e-05] [autoencoder lr: 9.14e-04][mem: 7.20e+04] (1686.5 ms)
+INFO:root:[1,   900] grad_stats: [4.31e-01 7.41e-02] (6.89e-04, 5.04e+00)
+INFO:root:[1,   950/ 2562] - train_losses - Parent Class: 5.5835 - Children class: 5.9373 -Autoencoder Loss (total): 17585871997738426564608.0000 - Reconstruction/K-Means Loss: [1.3001 / 17585872431050062299136.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.05e-05] [autoencoder lr: 9.14e-04][mem: 7.20e+04] (1689.3 ms)
+INFO:root:[1,   950] grad_stats: [5.89e-01 7.27e-02] (1.18e-03, 5.30e+00)
+INFO:root:[1,  1000/ 2562] - train_losses - Parent Class: 5.5677 - Children class: 5.9180 -Autoencoder Loss (total): 17596518507257530417152.0000 - Reconstruction/K-Means Loss: [1.3200 / 17596519032527517646848.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.03e-05] [autoencoder lr: 9.14e-04][mem: 7.20e+04] (1692.3 ms)
+INFO:root:[1,  1000] grad_stats: [3.59e-01 3.93e-02] (1.27e-04, 4.55e+00)
+INFO:root:[1,  1050/ 2562] - train_losses - Parent Class: 5.5528 - Children class: 5.8997 -Autoencoder Loss (total): 17606441063136534462464.0000 - Reconstruction/K-Means Loss: [1.3407 / 17606440890662809239552.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.01e-05] [autoencoder lr: 9.14e-04][mem: 7.20e+04] (1695.2 ms)
+INFO:root:[1,  1050] grad_stats: [4.14e-01 6.23e-02] (5.09e-04, 5.34e+00)
+INFO:root:[1,  1100/ 2562] - train_losses - Parent Class: 5.5370 - Children class: 5.8805 -Autoencoder Loss (total): 17614792988645493047296.0000 - Reconstruction/K-Means Loss: [1.3600 / 17614793431438099218432.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 7.98e-05] [autoencoder lr: 9.14e-04][mem: 7.20e+04] (1698.7 ms)
+INFO:root:[1,  1100] grad_stats: [4.82e-01 4.68e-02] (2.84e-04, 4.90e+00)
+INFO:root:[1,  1150/ 2562] - train_losses - Parent Class: 5.5251 - Children class: 5.8655 -Autoencoder Loss (total): 17623308169640943812608.0000 - Reconstruction/K-Means Loss: [1.3780 / 17623308589285651775488.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 7.96e-05] [autoencoder lr: 9.14e-04][mem: 7.20e+04] (1701.8 ms)
+INFO:root:[1,  1150] grad_stats: [3.51e-01 4.75e-02] (6.33e-04, 5.18e+00)
+INFO:root:[1,  1200/ 2562] - train_losses - Parent Class: 5.5122 - Children class: 5.8499 -Autoencoder Loss (total): 17630949652308684701696.0000 - Reconstruction/K-Means Loss: [1.3959 / 17630949880113578115072.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 7.94e-05] [autoencoder lr: 9.15e-04][mem: 7.20e+04] (1711.5 ms)
+INFO:root:[1,  1200] grad_stats: [3.95e-01 3.95e-02] (5.29e-04, 4.76e+00)
+INFO:root:[1,  1250/ 2562] - train_losses - Parent Class: 5.5004 - Children class: 5.8351 -Autoencoder Loss (total): 17638015800124029009920.0000 - Reconstruction/K-Means Loss: [1.4118 / 17638015459024057663488.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 7.91e-05] [autoencoder lr: 9.15e-04][mem: 7.20e+04] (1714.7 ms)
+INFO:root:[1,  1250] grad_stats: [2.92e-01 6.28e-02] (2.61e-04, 4.64e+00)
+INFO:root:[1,  1300/ 2562] - train_losses - Parent Class: 5.4894 - Children class: 5.8213 -Autoencoder Loss (total): 17644496479987815153664.0000 - Reconstruction/K-Means Loss: [1.4274 / 17644496880673178517504.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 7.89e-05] [autoencoder lr: 9.15e-04][mem: 7.20e+04] (1717.7 ms)
+INFO:root:[1,  1300] grad_stats: [4.78e-01 4.40e-02] (6.94e-04, 4.69e+00)
+INFO:root:[1,  1350/ 2562] - train_losses - Parent Class: 5.4770 - Children class: 5.8063 -Autoencoder Loss (total): 17650518918589516349440.0000 - Reconstruction/K-Means Loss: [1.4429 / 17650519417785700843520.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 7.87e-05] [autoencoder lr: 9.15e-04][mem: 7.20e+04] (1721.3 ms)
+INFO:root:[1,  1350] grad_stats: [4.64e-01 4.60e-02] (1.39e-03, 4.97e+00)
+INFO:root:[1,  1400/ 2562] - train_losses - Parent Class: 5.4671 - Children class: 5.7941 -Autoencoder Loss (total): 17656158551222891053056.0000 - Reconstruction/K-Means Loss: [1.4571 / 17656158218515852034048.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 7.84e-05] [autoencoder lr: 9.15e-04][mem: 7.20e+04] (1724.7 ms)
+INFO:root:[1,  1400] grad_stats: [4.29e-01 8.11e-02] (9.42e-04, 4.83e+00)
+INFO:root:[1,  1450/ 2562] - train_losses - Parent Class: 5.4552 - Children class: 5.7798 -Autoencoder Loss (total): 17661262255500608667648.0000 - Reconstruction/K-Means Loss: [1.4713 / 17661262138332527198208.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 7.82e-05] [autoencoder lr: 9.16e-04][mem: 7.20e+04] (1728.4 ms)
+INFO:root:[1,  1450] grad_stats: [4.85e-01 2.86e-02] (7.44e-04, 4.32e+00)
+INFO:root:[1,  1500/ 2562] - train_losses - Parent Class: 5.4436 - Children class: 5.7661 -Autoencoder Loss (total): 17666074351702454042624.0000 - Reconstruction/K-Means Loss: [1.4854 / 17666073973652119879680.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.80e-05] [autoencoder lr: 9.16e-04][mem: 7.20e+04] (1732.1 ms)
+INFO:root:[1,  1500] grad_stats: [5.24e-01 5.64e-02] (8.23e-03, 4.38e+00)
+INFO:root:[1,  1550/ 2562] - train_losses - Parent Class: 5.4345 - Children class: 5.7555 -Autoencoder Loss (total): 17670572321830290325504.0000 - Reconstruction/K-Means Loss: [1.4986 / 17670572201327785410560.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.77e-05] [autoencoder lr: 9.16e-04][mem: 7.20e+04] (1736.0 ms)
+INFO:root:[1,  1550] grad_stats: [4.23e-01 5.53e-02] (1.22e-03, 4.92e+00)
+INFO:root:[1,  1600/ 2562] - train_losses - Parent Class: 5.4247 - Children class: 5.7439 -Autoencoder Loss (total): 17674803453680204906496.0000 - Reconstruction/K-Means Loss: [1.5118 / 17674803397420371673088.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.75e-05] [autoencoder lr: 9.16e-04][mem: 7.20e+04] (1745.4 ms)
+INFO:root:[1,  1600] grad_stats: [4.41e-01 4.81e-02] (4.39e-03, 5.01e+00)
+INFO:root:[1,  1650/ 2562] - train_losses - Parent Class: 5.4156 - Children class: 5.7327 -Autoencoder Loss (total): 17678837553046422028288.0000 - Reconstruction/K-Means Loss: [1.5242 / 17678838022910163025920.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.73e-05] [autoencoder lr: 9.16e-04][mem: 7.20e+04] (1749.0 ms)
+INFO:root:[1,  1650] grad_stats: [4.80e-01 6.30e-02] (3.85e-03, 4.92e+00)
+INFO:root:[1,  1700/ 2562] - train_losses - Parent Class: 5.4074 - Children class: 5.7228 -Autoencoder Loss (total): 17682569911237605326848.0000 - Reconstruction/K-Means Loss: [1.5362 / 17682569543218588811264.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.70e-05] [autoencoder lr: 9.17e-04][mem: 7.20e+04] (1752.7 ms)
+INFO:root:[1,  1700] grad_stats: [4.65e-01 5.87e-02] (5.01e-03, 4.81e+00)
+INFO:root:[1,  1750/ 2562] - train_losses - Parent Class: 5.3984 - Children class: 5.7119 -Autoencoder Loss (total): 17686124377243507490816.0000 - Reconstruction/K-Means Loss: [1.5482 / 17686124134188015681536.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.68e-05] [autoencoder lr: 9.17e-04][mem: 7.20e+04] (1756.6 ms)
+INFO:root:[1,  1750] grad_stats: [3.76e-01 6.63e-02] (1.18e-02, 4.64e+00)
+INFO:root:[1,  1800/ 2562] - train_losses - Parent Class: 5.3902 - Children class: 5.7020 -Autoencoder Loss (total): 17689444656068786388992.0000 - Reconstruction/K-Means Loss: [1.5594 / 17689444773597483630592.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.66e-05] [autoencoder lr: 9.17e-04][mem: 7.20e+04] (1760.4 ms)
+INFO:root:[1,  1800] grad_stats: [4.27e-01 6.35e-02] (1.17e-02, 4.23e+00)
+INFO:root:[1,  1850/ 2562] - train_losses - Parent Class: 5.3817 - Children class: 5.6918 -Autoencoder Loss (total): 17692626449205523644416.0000 - Reconstruction/K-Means Loss: [1.5703 / 17692626082421274574848.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.63e-05] [autoencoder lr: 9.17e-04][mem: 7.20e+04] (1764.3 ms)
+INFO:root:[1,  1850] grad_stats: [3.83e-01 5.81e-02] (5.92e-03, 4.82e+00)
+INFO:root:[1,  1900/ 2562] - train_losses - Parent Class: 5.3730 - Children class: 5.6817 -Autoencoder Loss (total): 17695593195460053958656.0000 - Reconstruction/K-Means Loss: [1.5815 / 17695593574511048392704.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.61e-05] [autoencoder lr: 9.17e-04][mem: 7.20e+04] (1768.3 ms)
+INFO:root:[1,  1900] grad_stats: [4.99e-01 6.98e-02] (5.99e-03, 4.74e+00)
+INFO:root:[1,  1950/ 2562] - train_losses - Parent Class: 5.3651 - Children class: 5.6722 -Autoencoder Loss (total): 17698368538730421026816.0000 - Reconstruction/K-Means Loss: [1.5917 / 17698367988764961144832.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.59e-05] [autoencoder lr: 9.18e-04][mem: 7.20e+04] (1772.3 ms)
+INFO:root:[1,  1950] grad_stats: [4.46e-01 6.24e-02] (5.11e-03, 4.33e+00)
+INFO:root:[1,  2000/ 2562] - train_losses - Parent Class: 5.3577 - Children class: 5.6634 -Autoencoder Loss (total): 17701090964705166491648.0000 - Reconstruction/K-Means Loss: [1.6018 / 17701091117751030775808.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.56e-05] [autoencoder lr: 9.18e-04][mem: 7.20e+04] (1776.3 ms)
+INFO:root:[1,  2000] grad_stats: [6.32e-01 7.53e-02] (3.82e-03, 4.69e+00)
+INFO:root:[1,  2050/ 2562] - train_losses - Parent Class: 5.3493 - Children class: 5.6534 -Autoencoder Loss (total): 17703692919389879795712.0000 - Reconstruction/K-Means Loss: [1.6118 / 17703693178495075090432.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.54e-05] [autoencoder lr: 9.18e-04][mem: 7.20e+04] (1786.4 ms)
+INFO:root:[1,  2050] grad_stats: [4.38e-01 6.48e-02] (3.36e-03, 4.34e+00)
+INFO:root:[1,  2100/ 2562] - train_losses - Parent Class: 5.3407 - Children class: 5.6436 -Autoencoder Loss (total): 17706110226489870909440.0000 - Reconstruction/K-Means Loss: [1.6223 / 17706110312231890583552.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.52e-05] [autoencoder lr: 9.18e-04][mem: 7.20e+04] (1790.5 ms)
+INFO:root:[1,  2100] grad_stats: [4.35e-01 6.07e-02] (8.49e-03, 4.50e+00)
+INFO:root:[1,  2150/ 2562] - train_losses - Parent Class: 5.3333 - Children class: 5.6350 -Autoencoder Loss (total): 17708436335697407770624.0000 - Reconstruction/K-Means Loss: [1.6321 / 17708436063513330319360.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.49e-05] [autoencoder lr: 9.18e-04][mem: 7.20e+04] (1794.3 ms)
+INFO:root:[1,  2150] grad_stats: [5.49e-01 4.81e-02] (7.09e-03, 4.34e+00)
+INFO:root:[1,  2200/ 2562] - train_losses - Parent Class: 5.3262 - Children class: 5.6267 -Autoencoder Loss (total): 17710645351314632998912.0000 - Reconstruction/K-Means Loss: [1.6415 / 17710645587134650515456.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.47e-05] [autoencoder lr: 9.19e-04][mem: 7.20e+04] (1798.4 ms)
+INFO:root:[1,  2200] grad_stats: [5.66e-01 7.32e-02] (1.16e-02, 4.41e+00)
+INFO:root:[1,  2250/ 2562] - train_losses - Parent Class: 5.3182 - Children class: 5.6173 -Autoencoder Loss (total): 17712773302138565558272.0000 - Reconstruction/K-Means Loss: [1.6512 / 17712773656264346435584.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.45e-05] [autoencoder lr: 9.19e-04][mem: 7.20e+04] (1802.3 ms)
+INFO:root:[1,  2250] grad_stats: [6.25e-01 1.32e-01] (6.27e-03, 4.92e+00)
+INFO:root:[1,  2300/ 2562] - train_losses - Parent Class: 5.3109 - Children class: 5.6089 -Autoencoder Loss (total): 17714839328467621773312.0000 - Reconstruction/K-Means Loss: [1.6605 / 17714838922341189156864.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.42e-05] [autoencoder lr: 9.19e-04][mem: 7.20e+04] (1806.4 ms)
+INFO:root:[1,  2300] grad_stats: [4.53e-01 8.55e-02] (6.26e-03, 4.64e+00)
+INFO:root:[1,  2350/ 2562] - train_losses - Parent Class: 5.3036 - Children class: 5.6006 -Autoencoder Loss (total): 17716793890705900568576.0000 - Reconstruction/K-Means Loss: [1.6700 / 17716794403610536443904.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.40e-05] [autoencoder lr: 9.19e-04][mem: 7.20e+04] (1810.3 ms)
+INFO:root:[1,  2350] grad_stats: [6.67e-01 1.02e-01] (5.29e-03, 4.45e+00)
+INFO:root:[1,  2400/ 2562] - train_losses - Parent Class: 5.2971 - Children class: 5.5931 -Autoencoder Loss (total): 17718648247852470370304.0000 - Reconstruction/K-Means Loss: [1.6793 / 17718647843166248501248.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.38e-05] [autoencoder lr: 9.19e-04][mem: 7.20e+04] (1814.2 ms)
+INFO:root:[1,  2400] grad_stats: [7.26e-01 1.06e-01] (5.81e-03, 5.12e+00)
+INFO:root:[1,  2450/ 2562] - train_losses - Parent Class: 5.2895 - Children class: 5.5847 -Autoencoder Loss (total): 17720446310003698040832.0000 - Reconstruction/K-Means Loss: [1.6883 / 17720446825868893880320.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.35e-05] [autoencoder lr: 9.20e-04][mem: 7.20e+04] (1818.6 ms)
+INFO:root:[1,  2450] grad_stats: [4.60e-01 8.37e-02] (5.61e-03, 3.97e+00)
+INFO:root:[1,  2500/ 2562] - train_losses - Parent Class: 5.2817 - Children class: 5.5759 -Autoencoder Loss (total): 17722139663463589347328.0000 - Reconstruction/K-Means Loss: [1.6975 / 17722139141254915555328.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 7.33e-05] [autoencoder lr: 9.20e-04][mem: 7.20e+04] (1822.8 ms)
+INFO:root:[1,  2500] grad_stats: [5.53e-01 1.12e-01] (5.30e-03, 4.91e+00)
+INFO:root:[1,  2550/ 2562] - train_losses - Parent Class: 5.2740 - Children class: 5.5672 -Autoencoder Loss (total): 17723782351427672735744.0000 - Reconstruction/K-Means Loss: [1.7067 / 17723782387177533472768.0000] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.02e-02] [lr: 7.31e-05] [autoencoder lr: 9.20e-04][mem: 7.20e+04] (1827.4 ms)
+INFO:root:[1,  2550] grad_stats: [6.30e-01 1.08e-01] (5.69e-03, 5.09e+00)
+INFO:root:Autoencoder Training...
+INFO:root: - - Epoch: 3 - - 
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/autograd/graph.py:744: UserWarning: Error detected in AddmmBackward0. Traceback of forward call that caused the error:
+  File "<string>", line 1, in <module>
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/spawn.py", line 122, in spawn_main
+    exitcode = _main(fd, parent_sentinel)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/spawn.py", line 135, in _main
+    return self._bootstrap(parent_sentinel)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC.py", line 52, in process_main
+    app_main(args=params)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 768, in main
+    cached_features, AE_scheduler, AE_optimizer = train_autoencoder(fgdcc=fgdcc,
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 528, in train_autoencoder
+    (ae_lr, reconstruction_loss, cache), elapsed_time = gpu_timer(train_step)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/utils/logging.py", line 21, in gpu_timer
+    result = closure()
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 507, in train_step
+    reconstruction_loss, bottleneck_output, _, _ = fgdcc(x, device)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/parallel/distributed.py", line 1593, in forward
+    else self._run_ddp_forward(*inputs, **kwargs)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/parallel/distributed.py", line 1411, in _run_ddp_forward
+    return self.module(*inputs, **kwargs)  # type: ignore[index]
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/models/FGDCC.py", line 44, in forward
+    reconstructed_input, bottleneck_output = self.autoencoder(subclass_proj_embed, device)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/models/transformer_autoencoder.py", line 134, in forward
+    reconstructed_input = self.decoder(bottleneck_output)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/container.py", line 217, in forward
+    input = module(input)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 116, in forward
+    return F.linear(input, self.weight, self.bias)
+ (Triggered internally at /opt/conda/conda-bld/pytorch_1716905969118/work/torch/csrc/autograd/python_anomaly_mode.cpp:111.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+terminate called without an active exception
+terminate called without an active exception
+terminate called without an active exception
+terminate called without an active exception
+terminate called without an active exception
+terminate called without an active exception
+terminate called without an active exception
+Exception ignored in: <function _MultiProcessingDataLoaderIter.__del__ at 0x7f36573e00e0>
+Traceback (most recent call last):
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1479, in __del__
+    self._shutdown_workers()
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1443, in _shutdown_workers
+    w.join(timeout=_utils.MP_STATUS_CHECK_INTERVAL)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/popen_fork.py", line 40, in wait
+    if not wait([self.sentinel], timeout):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/connection.py", line 1136, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/_utils/signal_handling.py", line 66, in handler
+    _error_if_any_worker_fails()
+RuntimeError: DataLoader worker (pid 3374298) is killed by signal: Aborted. 
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC.py", line 52, in process_main
+    app_main(args=params)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 768, in main
+    cached_features, AE_scheduler, AE_optimizer = train_autoencoder(fgdcc=fgdcc,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 528, in train_autoencoder
+    (ae_lr, reconstruction_loss, cache), elapsed_time = gpu_timer(train_step)
+                                                        ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/utils/logging.py", line 21, in gpu_timer
+    result = closure()
+             ^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 520, in train_step
+    scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/helper.py", line 156, in __call__
+    self._scaler.scale(loss).backward(create_graph=create_graph, retain_graph=retain_graph)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/_tensor.py", line 525, in backward
+    torch.autograd.backward(
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/autograd/__init__.py", line 267, in backward
+    _engine_run_backward(
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/autograd/graph.py", line 744, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Function 'AddmmBackward0' returned nan values in its 2th output.

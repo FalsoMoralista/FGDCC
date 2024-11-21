@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC.py", line 16, in <module>
+    from engine_FGDCC import main as app_main
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 61, in <module>
+    from src.models import FGDCC
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/models/FGDCC.py", line 8, in <module>
+    from src.models.transformer_autoencoder import SpatialMaskedAutoEncoder
+ImportError: cannot import name 'SpatialMaskedAutoEncoder' from 'src.models.transformer_autoencoder' (/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/models/transformer_autoencoder.py)

@@ -1,0 +1,313 @@
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:called-params configs/in1k_vith14_ep300_FGDCC.yaml
+INFO:root:loaded params...
+{   'data': {   'batch_size': 96,
+                'color_jitter_strength': 0.0,
+                'crop_scale': [0.3, 1.0],
+                'crop_size': 224,
+                'cutmix': 0.0,
+                'drop_path': 0.25,
+                'image_folder': '/home/rtcalumby/adam/luciano/plantnet_300K/',
+                'mixup': 0.0,
+                'nb_classes': 1081,
+                'num_workers': 16,
+                'pin_mem': True,
+                'reprob': 0.25,
+                'resume_epoch': 0,
+                'root_path': '/home/rtcalumby/adam/luciano/',
+                'use_color_distortion': False,
+                'use_gaussian_blur': False,
+                'use_horizontal_flip': False},
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp40',
+                   'write_tag': 'jepa'},
+    'mask': {   'allow_overlap': False,
+                'aspect_ratio': [0.75, 1.5],
+                'enc_mask_scale': [0.85, 1.0],
+                'min_keep': 10,
+                'num_enc_masks': 1,
+                'num_pred_masks': 4,
+                'patch_size': 14,
+                'pred_mask_scale': [0.15, 0.2]},
+    'meta': {   'copy_data': False,
+                'load_checkpoint': True,
+                'model_name': 'vit_huge',
+                'pred_depth': 12,
+                'pred_emb_dim': 384,
+                'read_checkpoint': None,
+                'use_bfloat16': True},
+    'optimization': {   'ema': [0.9, 0.999],
+                        'epochs': 75,
+                        'final_lr': 1e-05,
+                        'final_weight_decay': 0.4,
+                        'ipe_scale': 1.0,
+                        'label_smoothing': 0.1,
+                        'lr': 2.5e-05,
+                        'start_lr': 8.5e-05,
+                        'warmup': 5,
+                        'weight_decay': 0.05}}
+INFO:root:Running... (rank: 0/1)
+INFO:root:Initialized (rank/world-size) 0/1
+INFO:root:making imagenet data transforms
+INFO:root:making imagenet data transforms
+INFO:root:Finetuning dataset created
+Training dataset, length: 245952
+INFO:root:Finetuning dataset created
+Val dataset, length: 31200
+INFO:root:Using AdamW
+['encoder', 'predictor', 'opt', 'scaler', 'target_encoder', 'epoch', 'loss', 'batch_size', 'world_size', 'lr']
+INFO:root:loaded pretrained encoder from epoch 66 with msg: <All keys matched successfully>
+INFO:root:PairedCrossAttentionClassifier(
+  (act): GELU(approximate='none')
+  (subclass_proj): Sequential(
+    (0): Linear(in_features=1280, out_features=1280, bias=True)
+    (1): GELU(approximate='none')
+  )
+  (parent_cross_attention): MultiHeadCrossAttention(
+    (query): Linear(in_features=1280, out_features=1280, bias=True)
+    (key): Linear(in_features=1280, out_features=1280, bias=True)
+    (value): Linear(in_features=1280, out_features=1280, bias=True)
+  )
+  (subclass_cross_attention): MultiHeadCrossAttention(
+    (query): Linear(in_features=1280, out_features=1280, bias=True)
+    (key): Linear(in_features=1280, out_features=1280, bias=True)
+    (value): Linear(in_features=1280, out_features=1280, bias=True)
+  )
+  (parent_feature_selection): Linear(in_features=2560, out_features=1280, bias=True)
+  (subclass_feature_selection): Linear(in_features=2560, out_features=1280, bias=True)
+  (parent_classifier): Linear(in_features=1280, out_features=1081, bias=True)
+  (subclass_classifier): Linear(in_features=1280, out_features=4324, bias=True)
+  (head_drop): Dropout(p=0.25, inplace=False)
+)
+INFO:root:Using AdamW
+INFO:root:VisionTransformerAutoEncoder(
+  (encoder): Sequential(
+    (0): Block(
+      (norm1): LayerNorm((1280,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1280, out_features=3840, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1280, out_features=1280, bias=True)
+        (proj_drop): Dropout(p=0.1, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1280,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1280, out_features=1024, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=1024, out_features=1280, bias=True)
+        (drop): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (1): Linear(in_features=1280, out_features=1024, bias=True)
+    (2): GELU(approximate='none')
+    (3): Block(
+      (norm1): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1024, out_features=3072, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1024, out_features=1024, bias=True)
+        (proj_drop): Dropout(p=0.1, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1024, out_features=768, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=768, out_features=1024, bias=True)
+        (drop): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (4): Linear(in_features=1024, out_features=768, bias=True)
+  )
+  (decoder): Sequential(
+    (0): Block(
+      (norm1): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=768, out_features=2304, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=768, out_features=768, bias=True)
+        (proj_drop): Dropout(p=0.1, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=768, out_features=1024, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=1024, out_features=768, bias=True)
+        (drop): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (1): Linear(in_features=768, out_features=1024, bias=True)
+    (2): GELU(approximate='none')
+    (3): Block(
+      (norm1): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1024, out_features=3072, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1024, out_features=1024, bias=True)
+        (proj_drop): Dropout(p=0.1, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1024, out_features=1280, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=1280, out_features=1024, bias=True)
+        (drop): Dropout(p=0.1, inplace=False)
+      )
+    )
+    (4): Linear(in_features=1024, out_features=1280, bias=True)
+  )
+)
+INFO:root:VisionTransformer(
+  (patch_embed): PatchEmbed(
+    (proj): Conv2d(3, 1280, kernel_size=(14, 14), stride=(14, 14))
+  )
+  (blocks): ModuleList(
+    (0-31): 32 x Block(
+      (norm1): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1280, out_features=3840, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1280, out_features=1280, bias=True)
+        (proj_drop): Dropout(p=0.0, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1280, out_features=5120, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=5120, out_features=1280, bias=True)
+        (drop): Dropout(p=0.0, inplace=False)
+      )
+    )
+  )
+  (norm): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+)
+INFO:root:Autoencoder Training...
+INFO:root: - - Epoch: 1 - - 
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[1,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9999] [autoencoder lr: 7.50e-04][mem: 1.03e+04](2222.1 ms)
+INFO:root:[1,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9998] [autoencoder lr: 7.50e-04][mem: 1.07e+04](429.0 ms)
+INFO:root:[1,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9997] [autoencoder lr: 7.50e-04][mem: 1.07e+04](420.2 ms)
+INFO:root:[1,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9996] [autoencoder lr: 7.50e-04][mem: 1.07e+04](417.5 ms)
+INFO:root:[1,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9995] [autoencoder lr: 7.50e-04][mem: 1.07e+04](416.0 ms)
+INFO:root:[1,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9995] [autoencoder lr: 7.50e-04][mem: 1.07e+04](415.5 ms)
+INFO:root:[1,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9994] [autoencoder lr: 7.50e-04][mem: 1.07e+04](414.9 ms)
+INFO:root:[1,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9992] [autoencoder lr: 7.50e-04][mem: 1.07e+04](414.5 ms)
+INFO:root:[1,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9988] [autoencoder lr: 7.50e-04][mem: 1.07e+04](414.3 ms)
+INFO:root:[1,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9979] [autoencoder lr: 7.50e-04][mem: 1.07e+04](414.1 ms)
+INFO:root:[1,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9964] [autoencoder lr: 7.50e-04][mem: 1.07e+04](414.0 ms)
+INFO:root:[1,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9942] [autoencoder lr: 7.50e-04][mem: 1.07e+04](414.0 ms)
+INFO:root:[1,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9914] [autoencoder lr: 7.50e-04][mem: 1.07e+04](414.0 ms)
+INFO:root:[1,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9879] [autoencoder lr: 7.50e-04][mem: 1.07e+04](414.1 ms)
+INFO:root:[1,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9837] [autoencoder lr: 7.50e-04][mem: 1.07e+04](414.1 ms)
+INFO:root:[1,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9788] [autoencoder lr: 7.50e-04][mem: 1.07e+04](414.0 ms)
+INFO:root:[1,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9732] [autoencoder lr: 7.50e-04][mem: 1.07e+04](414.0 ms)
+INFO:root:[1,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9669] [autoencoder lr: 7.50e-04][mem: 1.07e+04](413.9 ms)
+INFO:root:[1,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9601] [autoencoder lr: 7.50e-04][mem: 1.07e+04](413.8 ms)
+INFO:root:[1,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9527] [autoencoder lr: 7.50e-04][mem: 1.07e+04](413.7 ms)
+INFO:root:[1,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9447] [autoencoder lr: 7.50e-04][mem: 1.07e+04](413.7 ms)
+INFO:root:[1,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9364] [autoencoder lr: 7.50e-04][mem: 1.07e+04](413.6 ms)
+INFO:root:[1,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9278] [autoencoder lr: 7.50e-04][mem: 1.07e+04](413.6 ms)
+INFO:root:[1,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9189] [autoencoder lr: 7.50e-04][mem: 1.07e+04](413.6 ms)
+INFO:root:[1,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9099] [autoencoder lr: 7.50e-04][mem: 1.07e+04](413.6 ms)
+INFO:root:[1,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9008] [autoencoder lr: 7.50e-04][mem: 1.07e+04](413.5 ms)
+INFO:root:Initializing centroids...
+INFO:root:Update Step...
+/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/faiss/contrib/torch_utils.py:51: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  x.storage().data_ptr() + x.storage_offset() * 4)
+INFO:root:Epoch 1
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+[rank0]:[W reducer.cpp:1389] Warning: find_unused_parameters=True was specified in DDP constructor, but did not find any unused parameters in the forward pass. This flag results in an extra traversal of the autograd graph every iteration,  which can adversely affect performance. If your model indeed never has any unused parameters in the forward pass, consider turning this flag off. Note that this warning may be a false positive if your model has flow control causing later iterations to have unused parameters. (function operator())
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC.py", line 52, in process_main
+    app_main(args=params)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 698, in main
+    (loss, k_means_loss, ae_lr, _new_lr, _new_wd, grad_stats, bottleneck_output), etime = gpu_timer(train_step)
+                                                                                          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/utils/logging.py", line 21, in gpu_timer
+    result = closure()
+             ^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 680, in train_step
+    scaler(loss, optimizer, clip_grad=None,
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/helper.py", line 156, in __call__
+    self._scaler.scale(loss).backward(create_graph=create_graph, retain_graph=retain_graph)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/_tensor.py", line 525, in backward
+    torch.autograd.backward(
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/autograd/__init__.py", line 267, in backward
+    _engine_run_backward(
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/autograd/graph.py", line 744, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: one of the variables needed for gradient computation has been modified by an inplace operation: [torch.cuda.FloatTensor [1024]] is at version 5129; expected version 5127 instead. Hint: enable anomaly detection to find the operation that failed to compute its gradient, with torch.autograd.set_detect_anomaly(True).

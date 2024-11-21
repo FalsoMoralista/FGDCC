@@ -59,7 +59,7 @@ from src.helper import (
     )
 
 from src.models import FGDCC
-
+from src.models.transformer_autoencoder import VisionTransformerAutoEncoder
 from src.transforms import make_transforms
 import time
 
@@ -70,8 +70,6 @@ from timm.utils import accuracy
 
 from src import KMeans
 import faiss
-
-#torch.autograd.set_detect_anomaly(True)
 
 # --
 log_timings = True
@@ -87,6 +85,7 @@ torch.backends.cudnn.benchmark = True
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger()
 
+torch.autograd.set_detect_anomaly(True)
 
 def main(args, resume_preempt=False):
 
@@ -224,7 +223,7 @@ def main(args, resume_preempt=False):
                            ('%.5f', 'Reconstruction loss'))
 
     # -- init model
-    encoder, predictor, autoencoder = init_model(
+    encoder, predictor = init_model(
         device=device,
         patch_size=patch_size,
         crop_size=crop_size,
@@ -233,8 +232,6 @@ def main(args, resume_preempt=False):
         model_name=model_name)
     target_encoder = copy.deepcopy(encoder)
     target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Wrap around ddp. to make state dict compatible?
-
-    logger.info(autoencoder)
 
     training_transform = make_transforms( 
         crop_size=crop_size,
@@ -375,6 +372,11 @@ def main(args, resume_preempt=False):
                       proj_embed_dim=proj_embed_dim,
                       pretrained_model=target_encoder,
                       device=device)
+    
+    autoencoder = VisionTransformerAutoEncoder()
+    autoencoder.to(device)
+
+    logger.info(autoencoder)
     logger.info(fgdcc.classifier)
 
     # -- Override previously loaded optimization configs.
@@ -382,7 +384,7 @@ def main(args, resume_preempt=False):
     optimizer, AE_optimizer, AE_scheduler, scaler, scheduler, wd_scheduler = init_DC_opt(
         encoder=fgdcc.vit_encoder,
         classifier=fgdcc.classifier,
-        autoencoder=fgdcc.autoencoder,
+        autoencoder=autoencoder,
         wd=wd,
         final_wd=final_wd,
         start_lr=start_lr,
@@ -394,7 +396,8 @@ def main(args, resume_preempt=False):
         ipe_scale=ipe_scale,
         use_bfloat16=use_bfloat16)
     
-    fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=True)
+    fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=False)
+    autoencoder = DistributedDataParallel(autoencoder, static_graph=True)
     
     # TODO: ADJUST THIS later!
     if resume_epoch != 0:
@@ -407,8 +410,8 @@ def main(args, resume_preempt=False):
         for _ in range(resume_epoch*ipe):
             scheduler.step() 
             wd_scheduler.step()
-
     logger.info(target_encoder)
+    
     
     resources = faiss.StandardGpuResources()
     config = faiss.GpuIndexFlatConfig()
@@ -444,26 +447,27 @@ def main(args, resume_preempt=False):
     model_noddp = fgdcc.module
 
     accum_iter = 1
+    l2_norm = torch.nn.MSELoss()
 
-    autoencoder_path = 'autoencoder_'+ str(dimensionality) + '.pth' # TODO: if exists: load, otherwise train. 
-
-    # TODO: review the necessity of adding positional encoders when doing cross attention...
     reconstruction_loss_meter = AverageMeter()
-    def train_autoencoder(fgdcc, starting_epoch, data_sampler_epoch, use_bfloat16, no_epochs, train_data_loader, train_data_sampler, AE_scheduler, cached_features):
-        autoencoder = fgdcc.autoencoder
-        L2 = fgdcc.l2_norm
+    def train_autoencoder(fgdcc, autoencoder, starting_epoch, use_bfloat16, no_epochs, train_data_loader, cached_features, cold_start=False):
         
+        model_noddp = fgdcc.module
+        backbone = model_noddp.vit_encoder
+        classifier = model_noddp.classifier
+
         wup = 5 # Warmup epochs
         if starting_epoch == 0:
             wup = 10
 
+        AE_optimizer = torch.optim.AdamW(autoencoder.parameters())
         AE_scheduler = WarmupCosineSchedule(
             AE_optimizer,
             warmup_steps=int(wup*ipe),
-            start_lr=1.5e-4,
-            ref_lr=5.0e-4,
-            final_lr=8.5e-5,
-            T_max=(int(ipe_scale*num_epochs*ipe) + 1))
+            start_lr=7.5e-4,
+            ref_lr=7.5e-4,
+            final_lr=5.0e-6,
+            T_max=(int(ipe_scale * (no_epochs + 1) * ipe)))
 
         def update_cache(cache, bottleneck_output, target):
             for x, y in zip(bottleneck_output, target):
@@ -490,64 +494,63 @@ def main(args, resume_preempt=False):
 
         logger.info('Autoencoder Training...')
         for epoch_no in range(starting_epoch, (starting_epoch + no_epochs)):    
-            
             logger.info(' - - Epoch: %d - - ' % (epoch_no + 1))
-            train_data_sampler.set_epoch(data_sampler_epoch)
 
-            with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
-                for iteration, (x, y) in enumerate(train_data_loader):
-                    x = x.to(device, non_blocking=True)
-                    def train_step():
-                        ae_lr = AE_scheduler.step()
-                        with torch.no_grad():
-                            # If is the first epoch, we are going to use the representation from the pre-trained model instead
-                            if starting_epoch == 0:
-                                h = fgdcc.vit_encoder(x)
-                                #h = torch.mean(h, dim=1) # Mean over patch-level representation and squeeze
-                                #h = torch.squeeze(h, dim=1) 
-                                subclass_proj_embed = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim
-                            else:
-                                subclass_proj_embed = fgdcc.setup_autoencoder_features(x)
+            for iteration, (x, y) in enumerate(train_data_loader):
+                x = x.to(device, non_blocking=True)
+                def train_step():
+                    ae_lr = AE_scheduler.step()
+                    with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
+                        _, _, subclass_proj_embed = fgdcc(imgs=x, device=device, autoencoder=True, cold_start=cold_start)
+                        
                         reconstructed_input, bottleneck_output = autoencoder(subclass_proj_embed, device)
-                        reconstruction_loss = L2(reconstructed_input, subclass_proj_embed)
+                        reconstruction_loss = l2_norm(reconstructed_input, subclass_proj_embed)
+                        
                         reconstruction_loss_meter.update(reconstruction_loss)
 
                         # On the last epoch of training, update the feature cache
                         if epoch_no == (starting_epoch + no_epochs - 1):
-                            bottleneck_output = torch.mean(bottleneck_output, dim=1).squeeze(dim=1)
-                            bottleneck_output = bottleneck_output.to(device=torch.device('cpu'), dtype=torch.float32).detach()
-                            cache = update_cache(cached_features, bottleneck_output, y)
+                            compressed_representation = bottleneck_output.clone().detach()
+                            compressed_representation = torch.mean(compressed_representation, dim=1).squeeze(dim=1)
+                            compressed_representation = compressed_representation.to(device=torch.device('cpu'), dtype=torch.float32)
+                            cache = update_cache(cached_features, compressed_representation, y)
                         else:
                             cache = cached_features
 
                         if use_bfloat16:
-                            scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
-                                        parameters=autoencoder.parameters(), create_graph=False, retain_graph=False, 
+                            scaler(reconstruction_loss, AE_optimizer, clip_grad=None,
+                                        parameters=autoencoder.parameters(),
                                         update_grad=(iteration + 1) % accum_iter == 0)
                         else:
                             reconstruction_loss.backward()
                             AE_optimizer.step()
+
+                        if (iteration + 1) % accum_iter == 0:
+                            AE_optimizer.zero_grad()         
+
                         return ae_lr, reconstruction_loss, cache
 
-                    (ae_lr, reconstruction_loss, cache), elapsed_time = gpu_timer(train_step)
-                    cached_features = cache
+                (ae_lr, reconstruction_loss, cache), elapsed_time = gpu_timer(train_step)
+                cached_features = cache
 
-                    time_meter.update(elapsed_time)
-                    log_loss(iteration, epoch_no, ae_lr)                     
+                time_meter.update(elapsed_time)
+                log_loss(iteration, epoch_no, ae_lr)                     
             # Epoch end
             reconstruction_logger.log(epoch_no, ae_lr, reconstruction_loss_meter.avg)
-        return cached_features, AE_scheduler
+                
+        return cached_features, AE_scheduler, AE_optimizer
 
-    cached_features_last_epoch, AE_scheduler = train_autoencoder(fgdcc=model_noddp,
-                      starting_epoch=0,
-                      data_sampler_epoch=0,
-                      use_bfloat16=use_bfloat16,
-                      no_epochs=30,
-                      train_data_loader=supervised_loader_train,
-                      train_data_sampler=supervised_sampler_train,
-                      AE_scheduler=AE_scheduler,
-                      cached_features={})                      
-    autoencoder_global_epoch_cnt = 30
+    fgdcc.train(True)
+    with torch.autograd.set_detect_anomaly(True): # TODO: remove
+        cached_features_last_epoch, AE_scheduler, AE_optimizer = train_autoencoder(fgdcc=fgdcc,
+                        autoencoder=autoencoder,
+                        starting_epoch=0,
+                        use_bfloat16=use_bfloat16,
+                        no_epochs=2,
+                        cold_start=True,
+                        train_data_loader=supervised_loader_train,
+                        cached_features={})                      
+    autoencoder_global_epoch_cnt = 2
     
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
@@ -606,7 +609,13 @@ def main(args, resume_preempt=False):
 
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
 
-                    reconstruction_loss, bottleneck_output, parent_logits, child_logits = fgdcc(imgs, device)
+                    parent_logits, subclass_logits, subclass_proj_embed = fgdcc(imgs, device)
+
+                    reconstructed_input, compressed_features = autoencoder(subclass_proj_embed, device)
+                    reconstruction_loss = l2_norm(reconstructed_input, subclass_proj_embed)
+
+                    bottleneck_output = compressed_features.clone().detach()
+                    bottleneck_output = torch.mean(bottleneck_output, dim=1).squeeze(dim=1)
 
                     #-- Compute K-Means assignments with disabled autocast for better precision
                     with torch.cuda.amp.autocast(enabled=False): 
@@ -625,7 +634,7 @@ def main(args, resume_preempt=False):
                         subclass_losses = []
                         for k in range(len(K_range)):
                             k_means_target = k_means_assignments[:,k] # shape [batch_size]
-                            subclass_loss = CEL_no_reduction(child_logits[k], k_means_target)
+                            subclass_loss = CEL_no_reduction(subclass_logits[k], k_means_target)
                             subclass_losses.append(subclass_loss)
                         subclass_losses = torch.vstack(subclass_losses)
                     #############################################################################################################################
@@ -636,7 +645,7 @@ def main(args, resume_preempt=False):
                             class_id = targets[i].item()
                             best_k_id = best_K_classifiers[i].item()
                             k_means_idx_targets[i] = k_means_idx[class_id][str(best_k_id+2)]
-                        subclass_loss = criterion(child_logits, k_means_idx_targets)
+                        subclass_loss = criterion(subclass_logits, k_means_idx_targets)
                     
                     # -- Setup losses
                     k_means_loss = 0
@@ -648,13 +657,13 @@ def main(args, resume_preempt=False):
 
                     children_cls_loss_meter.update(subclass_loss)
                                         
-                    # Sum parent and subclass loss + Regularizers
-                    loss += subclass_loss
+                    # Sum parent, subclass loss + Regularizers
+                    loss = loss + subclass_loss # + 0.25 * reconstruction_loss
                     
                     reconstruction_loss_meter.update(reconstruction_loss)
 
                     # FIXME: this won't work as expected since its a constant
-                    reconstruction_loss += 0.25 * k_means_loss # Add K-means distances term as penalty to enforce a "k-means friendly space" 
+                    #reconstruction_loss = reconstruction_loss +  0.25 * k_means_loss # Add K-means distances term as penalty to enforce a "k-means friendly space" 
                     '''
                         `all_reduce`: is used to perform an element-wise reduction operation (like sum, product, max, min, etc.) 
                         across all processes in a process group. 
@@ -677,10 +686,11 @@ def main(args, resume_preempt=False):
                 #  Step 2. Backward & step
                 if use_bfloat16:
                     scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
-                                parameters=fgdcc.module.autoencoder.parameters(), create_graph=False, retain_graph=True,
+                                parameters=autoencoder.module.parameters(), create_graph=False, retain_graph=False,
                                 update_grad=(itr + 1) % accum_iter == 0)                    
                     scaler(loss, optimizer, clip_grad=None,
-                                parameters=(list(fgdcc.module.vit_encoder.parameters()) + list(fgdcc.module.classifier.parameters())),
+                                #parameters=(list(fgdcc.module.vit_encoder.parameters()) + list(fgdcc.module.classifier.parameters())),
+                                parameters=(fgdcc.module.parameters()),
                                 create_graph=False, retain_graph=False,
                                 update_grad=(itr + 1) % accum_iter == 0) # Scaling is only necessary when using bfloat16.   
                 else:
@@ -760,14 +770,12 @@ def main(args, resume_preempt=False):
 
         # -- End of Epoch      
         autoencoder_global_epoch_cnt += 1
-        cached_features, AE_scheduler = train_autoencoder(fgdcc=model_noddp,
+        cached_features, AE_scheduler, AE_optimizer = train_autoencoder(fgdcc=fgdcc,
+                        autoencoder=autoencoder,
                         starting_epoch=autoencoder_global_epoch_cnt,
-                        data_sampler_epoch=epoch,
                         use_bfloat16=use_bfloat16,
                         no_epochs=10,
                         train_data_loader=supervised_loader_train,
-                        train_data_sampler=supervised_sampler_train,
-                        AE_scheduler=AE_scheduler,
                         cached_features={})
         autoencoder_global_epoch_cnt +=  10
 

@@ -166,7 +166,7 @@ class Block(nn.Module):
         y, attn = self.attn(self.norm1(x))
         if return_attention:
             return attn
-        x = x + self.drop_path(y)
+        x = x + self.drop_path(y) # prevents in-place operations from happening. In-place operations disrupts gradient calculations.
         x = x + self.drop_path(self.mlp(self.norm2(x)))
         return x
 
