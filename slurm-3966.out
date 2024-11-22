@@ -193,3 +193,669 @@ INFO:root:[1,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.7242] [
 INFO:root:[1,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.6351] [autoencoder lr: 1.00e-04][mem: 1.11e+04](405.0 ms)
 INFO:root:[1,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.5784] [autoencoder lr: 1.00e-04][mem: 1.11e+04](403.4 ms)
 INFO:root:[1,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.5381] [autoencoder lr: 1.00e-04][mem: 1.11e+04](402.8 ms)
+INFO:root:[1,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.5079] [autoencoder lr: 1.00e-04][mem: 1.11e+04](402.1 ms)
+INFO:root:[1,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.4841] [autoencoder lr: 1.00e-04][mem: 1.11e+04](401.6 ms)
+INFO:root:[1,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.4648] [autoencoder lr: 1.00e-04][mem: 1.11e+04](401.6 ms)
+INFO:root:[1,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.4489] [autoencoder lr: 1.00e-04][mem: 1.11e+04](401.2 ms)
+INFO:root:[1,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.4355] [autoencoder lr: 1.00e-04][mem: 1.11e+04](401.0 ms)
+INFO:root:[1,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.4240] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.7 ms)
+INFO:root:[1,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.4140] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.8 ms)
+INFO:root:[1,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.4052] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.7 ms)
+INFO:root:[1,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3974] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.5 ms)
+INFO:root:[1,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3905] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.3 ms)
+INFO:root:[1,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3843] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.2 ms)
+INFO:root:[1,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3786] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.1 ms)
+INFO:root:[1,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3735] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.3 ms)
+INFO:root:[1,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3688] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.2 ms)
+INFO:root:[1,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3645] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.1 ms)
+INFO:root:[1,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3606] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.0 ms)
+INFO:root:[1,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3570] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.9 ms)
+INFO:root:[1,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3537] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.8 ms)
+INFO:root:[1,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3505] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.0 ms)
+INFO:root:[1,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3476] [autoencoder lr: 1.00e-04][mem: 1.11e+04](400.0 ms)
+INFO:root: - - Epoch: 2 - - 
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[2,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3459] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.9 ms)
+INFO:root:[2,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3433] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.8 ms)
+INFO:root:[2,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3409] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[2,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3386] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[2,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3364] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[2,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3344] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[2,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3325] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[2,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3307] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.8 ms)
+INFO:root:[2,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3289] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.8 ms)
+INFO:root:[2,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3273] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[2,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3258] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[2,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3243] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[2,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3229] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[2,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3216] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[2,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3203] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[2,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3191] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[2,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3179] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[2,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3168] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.8 ms)
+INFO:root:[2,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3158] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[2,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3147] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[2,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3138] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[2,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3128] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[2,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3119] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[2,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3111] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[2,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3102] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[2,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3094] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root: - - Epoch: 3 - - 
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[3,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3090] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[3,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3082] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[3,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3075] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[3,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3068] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[3,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3061] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[3,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3054] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[3,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3048] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[3,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3041] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[3,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3035] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[3,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3029] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[3,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3024] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[3,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3018] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[3,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3013] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[3,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3008] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[3,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.3003] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[3,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2998] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[3,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2993] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[3,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2989] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[3,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2984] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.3 ms)
+INFO:root:[3,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2980] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[3,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2975] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[3,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2971] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[3,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2967] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[3,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2963] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[3,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2959] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[3,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2955] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root: - - Epoch: 4 - - 
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[4,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2953] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2950] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2946] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[4,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2943] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[4,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2939] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[4,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2936] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[4,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2933] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[4,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2930] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[4,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2926] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[4,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2923] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.3 ms)
+INFO:root:[4,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2920] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.3 ms)
+INFO:root:[4,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2918] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.3 ms)
+INFO:root:[4,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2915] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.3 ms)
+INFO:root:[4,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2912] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[4,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2909] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[4,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2907] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2904] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2901] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2899] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2896] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2894] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2892] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2889] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2887] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2885] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root:[4,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2883] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.5 ms)
+INFO:root: - - Epoch: 5 - - 
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[5,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2881] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[5,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2879] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[5,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2877] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[5,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2875] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[5,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2873] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[5,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2871] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[5,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2869] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[5,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2867] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[5,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2866] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.4 ms)
+INFO:root:[5,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2864] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[5,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2862] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[5,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2860] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[5,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2858] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[5,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2857] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[5,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2855] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[5,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2853] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[5,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2852] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[5,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2850] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.7 ms)
+INFO:root:[5,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2848] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[5,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2847] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[5,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2845] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[5,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2844] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[5,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2842] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[5,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2841] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[5,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2839] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:[5,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2838] [autoencoder lr: 1.00e-04][mem: 1.11e+04](399.6 ms)
+INFO:root:Initializing centroids...
+INFO:root:Update Step...
+/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/faiss/contrib/torch_utils.py:51: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  x.storage().data_ptr() + x.storage_offset() * 4)
+INFO:root:Epoch 1
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[1,     0/ 2562] - train_losses - Parent Class: 6.9856 - Children class: 8.3719 -Autoencoder Loss (total): 107.9478 - Reconstruction/K-Means Loss: [0.2837 / 107.6641] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.50e-05] [autoencoder lr: 1.00e-04][mem: 6.59e+04] (2631.2 ms)
+INFO:root:[1,     0] grad_stats: [3.33e-07 5.48e-06] (3.68e-13, 9.94e-03)
+INFO:root:[1,    50/ 2562] - train_losses - Parent Class: 6.0241 - Children class: 6.5972 -Autoencoder Loss (total): 507.9461 - Reconstruction/K-Means Loss: [0.2850 / 507.6611] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.57e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1743.7 ms)
+INFO:root:[1,    50] grad_stats: [5.24e-04 1.07e-02] (1.59e-10, 5.10e+00)
+INFO:root:[1,   100/ 2562] - train_losses - Parent Class: 5.8753 - Children class: 6.3077 -Autoencoder Loss (total): 525.0718 - Reconstruction/K-Means Loss: [0.2841 / 524.7876] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.63e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1689.2 ms)
+INFO:root:[1,   100] grad_stats: [1.72e-03 2.69e-02] (1.75e-09, 4.29e+00)
+INFO:root:[1,   150/ 2562] - train_losses - Parent Class: 5.8078 - Children class: 6.1863 -Autoencoder Loss (total): 531.4499 - Reconstruction/K-Means Loss: [0.2831 / 531.1668] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.69e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1674.1 ms)
+INFO:root:[1,   150] grad_stats: [8.99e-04 2.74e-02] (2.37e-09, 4.25e+00)
+INFO:root:[1,   200/ 2562] - train_losses - Parent Class: 5.7805 - Children class: 6.1314 -Autoencoder Loss (total): 536.3503 - Reconstruction/K-Means Loss: [0.2820 / 536.0683] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.76e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1667.6 ms)
+INFO:root:[1,   200] grad_stats: [2.61e-03 4.52e-02] (4.60e-09, 3.64e+00)
+INFO:root:[1,   250/ 2562] - train_losses - Parent Class: 5.7577 - Children class: 6.0901 -Autoencoder Loss (total): 539.3964 - Reconstruction/K-Means Loss: [0.2810 / 539.1154] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.82e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1664.3 ms)
+INFO:root:[1,   250] grad_stats: [2.38e-03 1.91e-02] (1.37e-09, 3.57e+00)
+INFO:root:[1,   300/ 2562] - train_losses - Parent Class: 5.7424 - Children class: 6.0636 -Autoencoder Loss (total): 541.1224 - Reconstruction/K-Means Loss: [0.2800 / 540.8425] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.89e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1663.2 ms)
+INFO:root:[1,   300] grad_stats: [1.11e-02 2.67e-02] (4.44e-09, 3.90e+00)
+INFO:root:[1,   350/ 2562] - train_losses - Parent Class: 5.7363 - Children class: 6.0486 -Autoencoder Loss (total): 541.3247 - Reconstruction/K-Means Loss: [0.2790 / 541.0457] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 8.95e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1676.2 ms)
+INFO:root:[1,   350] grad_stats: [1.66e-02 6.01e-03] (4.87e-09, 3.47e+00)
+INFO:root:[1,   400/ 2562] - train_losses - Parent Class: 5.7332 - Children class: 6.0400 -Autoencoder Loss (total): 542.0451 - Reconstruction/K-Means Loss: [0.2780 / 541.7671] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.02e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1675.7 ms)
+INFO:root:[1,   400] grad_stats: [4.68e-02 2.13e-02] (1.03e-08, 3.67e+00)
+INFO:root:[1,   450/ 2562] - train_losses - Parent Class: 5.7275 - Children class: 6.0300 -Autoencoder Loss (total): 542.8362 - Reconstruction/K-Means Loss: [0.2771 / 542.5592] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.08e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1676.1 ms)
+INFO:root:[1,   450] grad_stats: [4.00e-02 5.78e-03] (2.52e-09, 3.26e+00)
+INFO:root:[1,   500/ 2562] - train_losses - Parent Class: 5.7238 - Children class: 6.0233 -Autoencoder Loss (total): 543.3215 - Reconstruction/K-Means Loss: [0.2762 / 543.0453] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.15e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1677.1 ms)
+INFO:root:[1,   500] grad_stats: [3.25e-02 9.21e-03] (2.05e-09, 3.73e+00)
+INFO:root:[1,   550/ 2562] - train_losses - Parent Class: 5.7165 - Children class: 6.0156 -Autoencoder Loss (total): 543.9916 - Reconstruction/K-Means Loss: [0.2759 / 543.7157] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.21e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1678.9 ms)
+INFO:root:[1,   550] grad_stats: [2.24e-01 2.32e-02] (5.07e-07, 3.85e+00)
+INFO:root:[1,   600/ 2562] - train_losses - Parent Class: 5.7046 - Children class: 6.0010 -Autoencoder Loss (total): 544.8305 - Reconstruction/K-Means Loss: [0.2760 / 544.5545] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.27e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1681.0 ms)
+INFO:root:[1,   600] grad_stats: [1.91e-01 1.39e-02] (5.49e-06, 4.31e+00)
+INFO:root:[1,   650/ 2562] - train_losses - Parent Class: 5.6939 - Children class: 5.9875 -Autoencoder Loss (total): 544.9903 - Reconstruction/K-Means Loss: [0.2753 / 544.7150] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.34e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1692.0 ms)
+INFO:root:[1,   650] grad_stats: [3.36e-01 1.90e-02] (3.62e-06, 4.46e+00)
+INFO:root:[1,   700/ 2562] - train_losses - Parent Class: 5.6872 - Children class: 5.9791 -Autoencoder Loss (total): 545.0911 - Reconstruction/K-Means Loss: [0.2746 / 544.8165] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.40e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1693.8 ms)
+INFO:root:[1,   700] grad_stats: [2.63e-01 1.11e-02] (1.00e-05, 3.92e+00)
+INFO:root:[1,   750/ 2562] - train_losses - Parent Class: 5.6768 - Children class: 5.9668 -Autoencoder Loss (total): 545.3872 - Reconstruction/K-Means Loss: [0.2739 / 545.1134] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.47e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1696.4 ms)
+INFO:root:[1,   750] grad_stats: [2.77e-01 2.02e-02] (9.44e-06, 3.71e+00)
+INFO:root:[1,   800/ 2562] - train_losses - Parent Class: 5.6684 - Children class: 5.9567 -Autoencoder Loss (total): 545.5513 - Reconstruction/K-Means Loss: [0.2731 / 545.2781] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.53e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1698.9 ms)
+INFO:root:[1,   800] grad_stats: [2.99e-01 1.70e-02] (2.74e-05, 3.49e+00)
+INFO:root:[1,   850/ 2562] - train_losses - Parent Class: 5.6591 - Children class: 5.9460 -Autoencoder Loss (total): 545.6918 - Reconstruction/K-Means Loss: [0.2729 / 545.4189] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.60e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1701.6 ms)
+INFO:root:[1,   850] grad_stats: [3.53e-01 2.67e-02] (1.09e-04, 4.33e+00)
+INFO:root:[1,   900/ 2562] - train_losses - Parent Class: 5.6469 - Children class: 5.9326 -Autoencoder Loss (total): 545.9338 - Reconstruction/K-Means Loss: [0.2730 / 545.6608] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.66e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1704.4 ms)
+INFO:root:[1,   900] grad_stats: [3.92e-01 4.89e-02] (5.17e-04, 4.30e+00)
+INFO:root:[1,   950/ 2562] - train_losses - Parent Class: 5.6334 - Children class: 5.9180 -Autoencoder Loss (total): 546.0161 - Reconstruction/K-Means Loss: [0.2729 / 545.7432] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.72e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1707.6 ms)
+INFO:root:[1,   950] grad_stats: [1.36e+00 5.72e-02] (6.43e-04, 4.65e+00)
+INFO:root:[1,  1000/ 2562] - train_losses - Parent Class: 5.6174 - Children class: 5.9008 -Autoencoder Loss (total): 546.0261 - Reconstruction/K-Means Loss: [0.2727 / 545.7535] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 9.79e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1710.8 ms)
+INFO:root:[1,  1000] grad_stats: [5.46e-01 5.41e-02] (3.29e-03, 4.28e+00)
+INFO:root:[1,  1050/ 2562] - train_losses - Parent Class: 5.6026 - Children class: 5.8850 -Autoencoder Loss (total): 546.1269 - Reconstruction/K-Means Loss: [0.2729 / 545.8540] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 9.85e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1720.6 ms)
+INFO:root:[1,  1050] grad_stats: [5.93e-01 3.43e-02] (4.59e-04, 4.58e+00)
+INFO:root:[1,  1100/ 2562] - train_losses - Parent Class: 5.5869 - Children class: 5.8681 -Autoencoder Loss (total): 546.2980 - Reconstruction/K-Means Loss: [0.2731 / 546.0250] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 9.92e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1723.9 ms)
+INFO:root:[1,  1100] grad_stats: [9.05e-01 5.36e-02] (4.02e-03, 4.95e+00)
+INFO:root:[1,  1150/ 2562] - train_losses - Parent Class: 5.5742 - Children class: 5.8544 -Autoencoder Loss (total): 546.3666 - Reconstruction/K-Means Loss: [0.2731 / 546.0935] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 9.98e-05] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1727.2 ms)
+INFO:root:[1,  1150] grad_stats: [7.86e-01 4.62e-02] (3.31e-03, 4.73e+00)
+INFO:root:[1,  1200/ 2562] - train_losses - Parent Class: 5.5610 - Children class: 5.8402 -Autoencoder Loss (total): 546.5460 - Reconstruction/K-Means Loss: [0.2730 / 546.2731] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 1.00e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1730.5 ms)
+INFO:root:[1,  1200] grad_stats: [6.74e-01 3.91e-02] (1.88e-03, 4.68e+00)
+INFO:root:[1,  1250/ 2562] - train_losses - Parent Class: 5.5484 - Children class: 5.8265 -Autoencoder Loss (total): 546.4462 - Reconstruction/K-Means Loss: [0.2728 / 546.1734] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 1.01e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1733.8 ms)
+INFO:root:[1,  1250] grad_stats: [5.15e-01 3.09e-02] (2.91e-03, 4.70e+00)
+INFO:root:[1,  1300/ 2562] - train_losses - Parent Class: 5.5363 - Children class: 5.8135 -Autoencoder Loss (total): 546.5774 - Reconstruction/K-Means Loss: [0.2725 / 546.3049] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 1.02e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1737.2 ms)
+INFO:root:[1,  1300] grad_stats: [7.23e-01 4.48e-02] (3.20e-03, 4.52e+00)
+INFO:root:[1,  1350/ 2562] - train_losses - Parent Class: 5.5235 - Children class: 5.7998 -Autoencoder Loss (total): 546.6829 - Reconstruction/K-Means Loss: [0.2723 / 546.4106] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 1.02e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1740.7 ms)
+INFO:root:[1,  1350] grad_stats: [4.85e-01 3.30e-02] (2.30e-03, 4.04e+00)
+INFO:root:[1,  1400/ 2562] - train_losses - Parent Class: 5.5127 - Children class: 5.7884 -Autoencoder Loss (total): 546.8256 - Reconstruction/K-Means Loss: [0.2721 / 546.5534] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 1.03e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1744.4 ms)
+INFO:root:[1,  1400] grad_stats: [6.08e-01 5.90e-02] (1.79e-03, 4.15e+00)
+INFO:root:[1,  1450/ 2562] - train_losses - Parent Class: 5.5000 - Children class: 5.7746 -Autoencoder Loss (total): 547.0397 - Reconstruction/K-Means Loss: [0.2720 / 546.7677] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 1.04e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1748.3 ms)
+INFO:root:[1,  1450] grad_stats: [6.74e-01 4.84e-02] (3.72e-03, 3.91e+00)
+INFO:root:[1,  1500/ 2562] - train_losses - Parent Class: 5.4879 - Children class: 5.7617 -Autoencoder Loss (total): 547.2392 - Reconstruction/K-Means Loss: [0.2718 / 546.9674] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 1.04e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1758.3 ms)
+INFO:root:[1,  1500] grad_stats: [5.70e-01 4.26e-02] (4.15e-03, 3.95e+00)
+INFO:root:[1,  1550/ 2562] - train_losses - Parent Class: 5.4786 - Children class: 5.7517 -Autoencoder Loss (total): 547.4992 - Reconstruction/K-Means Loss: [0.2716 / 547.2277] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 1.05e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1762.5 ms)
+INFO:root:[1,  1550] grad_stats: [4.97e-01 3.63e-02] (3.54e-03, 4.09e+00)
+INFO:root:[1,  1600/ 2562] - train_losses - Parent Class: 5.4689 - Children class: 5.7412 -Autoencoder Loss (total): 547.5070 - Reconstruction/K-Means Loss: [0.2713 / 547.2357] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 1.06e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1766.7 ms)
+INFO:root:[1,  1600] grad_stats: [4.83e-01 4.70e-02] (2.74e-03, 4.32e+00)
+INFO:root:[1,  1650/ 2562] - train_losses - Parent Class: 5.4584 - Children class: 5.7298 -Autoencoder Loss (total): 547.5228 - Reconstruction/K-Means Loss: [0.2710 / 547.2517] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.01e-02] [lr: 1.06e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1771.0 ms)
+INFO:root:[1,  1650] grad_stats: [8.83e-01 4.55e-02] (2.20e-03, 4.42e+00)
+INFO:root:[1,  1700/ 2562] - train_losses - Parent Class: 5.4499 - Children class: 5.7206 -Autoencoder Loss (total): 547.5474 - Reconstruction/K-Means Loss: [0.2707 / 547.2767] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.02e-02] [lr: 1.07e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1775.5 ms)
+INFO:root:[1,  1700] grad_stats: [8.43e-01 5.29e-02] (3.85e-03, 4.02e+00)
+INFO:root:[1,  1750/ 2562] - train_losses - Parent Class: 5.4402 - Children class: 5.7102 -Autoencoder Loss (total): 547.6259 - Reconstruction/K-Means Loss: [0.2704 / 547.3556] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.02e-02] [lr: 1.08e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1779.9 ms)
+INFO:root:[1,  1750] grad_stats: [5.64e-01 4.85e-02] (3.75e-03, 3.76e+00)
+INFO:root:[1,  1800/ 2562] - train_losses - Parent Class: 5.4312 - Children class: 5.7003 -Autoencoder Loss (total): 547.5844 - Reconstruction/K-Means Loss: [0.2701 / 547.3143] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.02e-02] [lr: 1.08e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1784.6 ms)
+INFO:root:[1,  1800] grad_stats: [7.63e-01 6.00e-02] (4.80e-03, 4.22e+00)
+INFO:root:[1,  1850/ 2562] - train_losses - Parent Class: 5.4224 - Children class: 5.6909 -Autoencoder Loss (total): 547.7725 - Reconstruction/K-Means Loss: [0.2698 / 547.5027] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.02e-02] [lr: 1.09e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1789.4 ms)
+INFO:root:[1,  1850] grad_stats: [7.06e-01 5.83e-02] (7.21e-03, 4.55e+00)
+INFO:root:[1,  1900/ 2562] - train_losses - Parent Class: 5.4143 - Children class: 5.6821 -Autoencoder Loss (total): 547.7613 - Reconstruction/K-Means Loss: [0.2694 / 547.4919] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.02e-02] [lr: 1.09e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1794.7 ms)
+INFO:root:[1,  1900] grad_stats: [6.09e-01 6.35e-02] (1.88e-03, 3.84e+00)
+INFO:root:[1,  1950/ 2562] - train_losses - Parent Class: 5.4062 - Children class: 5.6734 -Autoencoder Loss (total): 547.7133 - Reconstruction/K-Means Loss: [0.2692 / 547.4442] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.02e-02] [lr: 1.10e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1799.8 ms)
+INFO:root:[1,  1950] grad_stats: [6.30e-01 6.23e-02] (3.36e-03, 3.74e+00)
+INFO:root:[1,  2000/ 2562] - train_losses - Parent Class: 5.3983 - Children class: 5.6648 -Autoencoder Loss (total): 547.7298 - Reconstruction/K-Means Loss: [0.2689 / 547.4609] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.02e-02] [lr: 1.11e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1805.1 ms)
+INFO:root:[1,  2000] grad_stats: [9.21e-01 6.26e-02] (2.99e-03, 3.88e+00)
+INFO:root:[1,  2050/ 2562] - train_losses - Parent Class: 5.3904 - Children class: 5.6564 -Autoencoder Loss (total): 547.7418 - Reconstruction/K-Means Loss: [0.2687 / 547.4731] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.02e-02] [lr: 1.11e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1810.5 ms)
+INFO:root:[1,  2050] grad_stats: [5.73e-01 6.53e-02] (5.83e-03, 3.84e+00)
+INFO:root:[1,  2100/ 2562] - train_losses - Parent Class: 5.3826 - Children class: 5.6480 -Autoencoder Loss (total): 547.8812 - Reconstruction/K-Means Loss: [0.2685 / 547.6127] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.02e-02] [lr: 1.12e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1816.0 ms)
+INFO:root:[1,  2100] grad_stats: [6.12e-01 6.55e-02] (5.99e-03, 4.22e+00)
+INFO:root:[1,  2150/ 2562] - train_losses - Parent Class: 5.3757 - Children class: 5.6407 -Autoencoder Loss (total): 547.8757 - Reconstruction/K-Means Loss: [0.2684 / 547.6073] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.02e-02] [lr: 1.13e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1827.7 ms)
+INFO:root:[1,  2150] grad_stats: [6.80e-01 5.35e-02] (5.91e-03, 3.73e+00)
+INFO:root:[1,  2200/ 2562] - train_losses - Parent Class: 5.3686 - Children class: 5.6331 -Autoencoder Loss (total): 547.8445 - Reconstruction/K-Means Loss: [0.2681 / 547.5765] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.03e-02] [lr: 1.13e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1833.1 ms)
+INFO:root:[1,  2200] grad_stats: [7.32e-01 7.49e-02] (6.37e-03, 3.77e+00)
+INFO:root:[1,  2250/ 2562] - train_losses - Parent Class: 5.3610 - Children class: 5.6249 -Autoencoder Loss (total): 547.8186 - Reconstruction/K-Means Loss: [0.2678 / 547.5508] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.03e-02] [lr: 1.14e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1838.6 ms)
+INFO:root:[1,  2250] grad_stats: [6.92e-01 6.14e-02] (5.26e-03, 4.53e+00)
+INFO:root:[1,  2300/ 2562] - train_losses - Parent Class: 5.3539 - Children class: 5.6174 -Autoencoder Loss (total): 547.7986 - Reconstruction/K-Means Loss: [0.2675 / 547.5312] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.03e-02] [lr: 1.15e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1844.0 ms)
+INFO:root:[1,  2300] grad_stats: [5.32e-01 5.66e-02] (3.85e-03, 3.79e+00)
+INFO:root:[1,  2350/ 2562] - train_losses - Parent Class: 5.3471 - Children class: 5.6101 -Autoencoder Loss (total): 547.8570 - Reconstruction/K-Means Loss: [0.2672 / 547.5899] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.03e-02] [lr: 1.15e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1849.6 ms)
+INFO:root:[1,  2350] grad_stats: [6.66e-01 8.28e-02] (7.64e-03, 3.70e+00)
+INFO:root:[1,  2400/ 2562] - train_losses - Parent Class: 5.3412 - Children class: 5.6038 -Autoencoder Loss (total): 547.7888 - Reconstruction/K-Means Loss: [0.2669 / 547.5219] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.03e-02] [lr: 1.16e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1854.9 ms)
+INFO:root:[1,  2400] grad_stats: [6.04e-01 8.38e-02] (9.37e-03, 3.99e+00)
+INFO:root:[1,  2450/ 2562] - train_losses - Parent Class: 5.3344 - Children class: 5.5966 -Autoencoder Loss (total): 547.8127 - Reconstruction/K-Means Loss: [0.2665 / 547.5462] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.03e-02] [lr: 1.17e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1860.7 ms)
+INFO:root:[1,  2450] grad_stats: [6.43e-01 8.66e-02] (3.72e-03, 3.19e+00)
+INFO:root:[1,  2500/ 2562] - train_losses - Parent Class: 5.3267 - Children class: 5.5884 -Autoencoder Loss (total): 547.8606 - Reconstruction/K-Means Loss: [0.2661 / 547.5945] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.03e-02] [lr: 1.17e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1866.4 ms)
+INFO:root:[1,  2500] grad_stats: [6.11e-01 6.92e-02] (4.65e-03, 3.82e+00)
+INFO:root:[1,  2550/ 2562] - train_losses - Parent Class: 5.3202 - Children class: 5.5814 -Autoencoder Loss (total): 547.9609 - Reconstruction/K-Means Loss: [0.2658 / 547.6951] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.03e-02] [lr: 1.18e-04] [autoencoder lr: 1.00e-04][mem: 7.10e+04] (1872.4 ms)
+INFO:root:[1,  2550] grad_stats: [6.94e-01 1.18e-01] (5.42e-03, 3.86e+00)
+INFO:root:Autoencoder Training...
+INFO:root: - - Epoch: 7 - - 
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[7,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2657] [autoencoder lr: 1.00e-04][mem: 7.10e+04](463.1 ms)
+INFO:root:[7,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2649] [autoencoder lr: 1.00e-04][mem: 7.10e+04](410.0 ms)
+INFO:root:[7,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2640] [autoencoder lr: 1.00e-04][mem: 7.10e+04](410.0 ms)
+INFO:root:[7,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2630] [autoencoder lr: 1.00e-04][mem: 7.10e+04](410.0 ms)
+INFO:root:[7,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2621] [autoencoder lr: 1.00e-04][mem: 7.10e+04](410.6 ms)
+INFO:root:[7,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2612] [autoencoder lr: 1.00e-04][mem: 7.10e+04](410.9 ms)
+INFO:root:[7,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2603] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.2 ms)
+INFO:root:[7,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2593] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.3 ms)
+INFO:root:[7,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2584] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[7,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2575] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[7,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2566] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[7,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2557] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.7 ms)
+INFO:root:[7,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2548] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.8 ms)
+INFO:root:[7,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2539] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.7 ms)
+INFO:root:[7,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2530] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.7 ms)
+INFO:root:[7,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2521] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.7 ms)
+INFO:root:[7,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2513] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.7 ms)
+INFO:root:[7,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2504] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.7 ms)
+INFO:root:[7,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2496] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.7 ms)
+INFO:root:[7,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2488] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.7 ms)
+INFO:root:[7,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2480] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[7,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2471] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[7,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2463] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[7,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2456] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[7,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2448] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[7,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2440] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root: - - Epoch: 8 - - 
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[8,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2435] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[8,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2427] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[8,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2420] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[8,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2412] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[8,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2405] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[8,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2397] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[8,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2390] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[8,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2383] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[8,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2376] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[8,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2369] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[8,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2362] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[8,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2355] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[8,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2348] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.6 ms)
+INFO:root:[8,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2341] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[8,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2335] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[8,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2328] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[8,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2321] [autoencoder lr: 1.00e-04][mem: 7.10e+04](411.5 ms)
+INFO:root:[8,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2315] [autoencoder lr: 1.00e-04][mem: 7.10e+04](416.0 ms)
+INFO:root:[8,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2309] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.9 ms)
+INFO:root:[8,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2302] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.8 ms)
+INFO:root:[8,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2296] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.7 ms)
+INFO:root:[8,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2290] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.7 ms)
+INFO:root:[8,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2283] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.6 ms)
+INFO:root:[8,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2277] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.5 ms)
+INFO:root:[8,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2271] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.4 ms)
+INFO:root:[8,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2265] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.4 ms)
+INFO:root: - - Epoch: 9 - - 
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[9,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2262] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.3 ms)
+INFO:root:[9,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2256] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.2 ms)
+INFO:root:[9,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2250] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.2 ms)
+INFO:root:[9,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2244] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.1 ms)
+INFO:root:[9,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2238] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.1 ms)
+INFO:root:[9,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2233] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.1 ms)
+INFO:root:[9,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2227] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.0 ms)
+INFO:root:[9,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2222] [autoencoder lr: 1.00e-04][mem: 7.10e+04](415.0 ms)
+INFO:root:[9,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2216] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.9 ms)
+INFO:root:[9,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2211] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.9 ms)
+INFO:root:[9,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2205] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.9 ms)
+INFO:root:[9,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2200] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.8 ms)
+INFO:root:[9,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2195] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.8 ms)
+INFO:root:[9,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2189] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.8 ms)
+INFO:root:[9,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2184] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.7 ms)
+INFO:root:[9,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2179] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.7 ms)
+INFO:root:[9,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2174] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.7 ms)
+INFO:root:[9,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2169] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.6 ms)
+INFO:root:[9,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2164] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.6 ms)
+INFO:root:[9,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2159] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.5 ms)
+INFO:root:[9,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2154] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.5 ms)
+INFO:root:[9,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2149] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.5 ms)
+INFO:root:[9,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2144] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.5 ms)
+INFO:root:[9,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2139] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.4 ms)
+INFO:root:[9,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2134] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.4 ms)
+INFO:root:[9,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.2130] [autoencoder lr: 1.00e-04][mem: 7.10e+04](414.4 ms)
+INFO:root:Asserting cache length
+INFO:root:Reinitializing centroids
+Avg no of empty clusters: 8.012621359223301
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+terminate called without an active exception
+terminate called without an active exception
+Exception ignored in: <function _MultiProcessingDataLoaderIter.__del__ at 0x7f618e3d40e0>
+Traceback (most recent call last):
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1479, in __del__
+    self._shutdown_workers()
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/dataloader.py", line 1443, in _shutdown_workers
+    w.join(timeout=_utils.MP_STATUS_CHECK_INTERVAL)
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/popen_fork.py", line 40, in wait
+    if not wait([self.sentinel], timeout):
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/connection.py", line 1136, in wait
+    ready = selector.select(timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/data/_utils/signal_handling.py", line 66, in handler
+    _error_if_any_worker_fails()
+RuntimeError: DataLoader worker (pid 824607) is killed by signal: Aborted. 
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC.py", line 52, in process_main
+    app_main(args=params)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 858, in main
+    vtime = gpu_timer(evaluate)
+            ^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/utils/logging.py", line 21, in gpu_timer
+    result = closure()
+             ^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 850, in evaluate
+    loss = crossentropy(parent_logits, labels)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1532, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1541, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/modules/loss.py", line 1185, in forward
+    return F.cross_entropy(input, target, weight=self.weight,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/torch/nn/functional.py", line 3086, in cross_entropy
+    return torch._C._nn.cross_entropy_loss(input, target, weight, _Reduction.get_enum(reduction), ignore_index, label_smoothing)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Expected input batch_size (41) to match target batch_size (96).

@@ -456,12 +456,15 @@ def main(args, resume_preempt=False):
         backbone = model_noddp.vit_encoder
         classifier = model_noddp.classifier
 
-        wup = 1 # Warmup epochs
+        wup = 2 # Warmup epochs
         start_lr = 1.0e-4
         final_lr = start_lr
-        if starting_epoch >= 250:
-            final_lr = 5.0e-5
-        
+        if starting_epoch == 0:
+            final_lr = 7.5e-5
+            wup = 10
+        if starting_epoch > 250:
+            final_lr = 7.5e-5
+
         AE_optimizer = torch.optim.AdamW(autoencoder.parameters())
         AE_scheduler = WarmupCosineSchedule(
             AE_optimizer,
@@ -548,11 +551,11 @@ def main(args, resume_preempt=False):
                         autoencoder=autoencoder,
                         starting_epoch=0,
                         use_bfloat16=use_bfloat16,
-                        no_epochs=5,
+                        no_epochs=15,
                         cold_start=True,
                         train_data_loader=supervised_loader_train,
                         cached_features={})                      
-    autoencoder_global_epoch_cnt = 5
+    autoencoder_global_epoch_cnt = 15
     
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
@@ -846,7 +849,7 @@ def main(args, resume_preempt=False):
                 labels = targets.to(device, non_blocking=True)
                                  
                 with torch.cuda.amp.autocast():
-                    parent_logits, _, _ = fgdcc(imgs, device)                  
+                    parent_logits, _, _ = fgdcc(images, device)                  
                     loss = crossentropy(parent_logits, labels)
                 
                 acc1, acc5 = accuracy(parent_logits, labels, topk=(1, 5))
