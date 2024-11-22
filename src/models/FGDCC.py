@@ -46,7 +46,6 @@ class FGDCC(nn.Module):
 
         else:
             h = self.vit_encoder(imgs)
-            #h = torch.mean(h, dim=1).squeeze(dim=1)
             h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
 
         parent_logits, subclass_logits, subclass_proj_embed = self.classifier(h)

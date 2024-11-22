@@ -56,7 +56,7 @@ class VisionTransformerAutoEncoder(nn.Module):
         super().__init__()
 
         ratio = 4.0
-        drop_rate = 0.
+        drop_rate = 0.1
         self.encoder = nn.Sequential(
             nn.Linear(1280, 1024),
             nn.GELU(),            
@@ -102,7 +102,7 @@ class VisionTransformerAutoEncoder(nn.Module):
             if m.bias is not None:
                 nn.init.constant_(m.bias, 0)
 
-    def generate_patch_mask(self, batch_size, num_patches, embed_dim, device, mask_fraction=0.25):
+    def generate_patch_mask(self, batch_size, num_patches, embed_dim, device, mask_fraction=0.3):
         # Calculate the total number of patches to mask
         num_masked_patches = int(num_patches * mask_fraction)
 

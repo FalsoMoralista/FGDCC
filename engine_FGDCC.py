@@ -456,17 +456,19 @@ def main(args, resume_preempt=False):
         backbone = model_noddp.vit_encoder
         classifier = model_noddp.classifier
 
-        wup = 5 # Warmup epochs
-        if starting_epoch == 0:
-            wup = 10
-
+        wup = 1 # Warmup epochs
+        start_lr = 1.0e-4
+        final_lr = start_lr
+        if starting_epoch >= 250:
+            final_lr = 5.0e-5
+        
         AE_optimizer = torch.optim.AdamW(autoencoder.parameters())
         AE_scheduler = WarmupCosineSchedule(
             AE_optimizer,
             warmup_steps=int(wup*ipe),
-            start_lr=7.5e-4,
-            ref_lr=7.5e-4,
-            final_lr=5.0e-6,
+            start_lr=start_lr,
+            ref_lr=start_lr,
+            final_lr=final_lr,
             T_max=(int(ipe_scale * (no_epochs + 1) * ipe)))
 
         def update_cache(cache, bottleneck_output, target):
@@ -546,11 +548,11 @@ def main(args, resume_preempt=False):
                         autoencoder=autoencoder,
                         starting_epoch=0,
                         use_bfloat16=use_bfloat16,
-                        no_epochs=2,
+                        no_epochs=5,
                         cold_start=True,
                         train_data_loader=supervised_loader_train,
                         cached_features={})                      
-    autoencoder_global_epoch_cnt = 2
+    autoencoder_global_epoch_cnt = 5
     
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
@@ -774,10 +776,10 @@ def main(args, resume_preempt=False):
                         autoencoder=autoencoder,
                         starting_epoch=autoencoder_global_epoch_cnt,
                         use_bfloat16=use_bfloat16,
-                        no_epochs=10,
+                        no_epochs=3,
                         train_data_loader=supervised_loader_train,
                         cached_features={})
-        autoencoder_global_epoch_cnt +=  10
+        autoencoder_global_epoch_cnt +=  3
 
         if world_size > 1:
             # Convert cache to list format for gathering
@@ -844,7 +846,7 @@ def main(args, resume_preempt=False):
                 labels = targets.to(device, non_blocking=True)
                                  
                 with torch.cuda.amp.autocast():
-                    _, _, parent_logits, _, = fgdcc(images, device)                    
+                    parent_logits, _, _ = fgdcc(imgs, device)                  
                     loss = crossentropy(parent_logits, labels)
                 
                 acc1, acc5 = accuracy(parent_logits, labels, topk=(1, 5))
