@@ -80,12 +80,9 @@ checkpoint_freq = 5
 _GLOBAL_SEED = 0
 np.random.seed(_GLOBAL_SEED)
 torch.manual_seed(_GLOBAL_SEED)
-torch.backends.cudnn.benchmark = True
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger()
-
-torch.autograd.set_detect_anomaly(True)
 
 def main(args, resume_preempt=False):
 
@@ -446,33 +443,43 @@ def main(args, resume_preempt=False):
     
     model_noddp = fgdcc.module
 
-    accum_iter = 1
     l2_norm = torch.nn.MSELoss()
+    
+    accum_iter = 1
+    step = 3 # no of training epochs after backbone updating
+    wup = 50
+    total_epochs = num_epochs * step + 10 
+    
+    AE_optimizer = torch.optim.AdamW(autoencoder.module.parameters())
+    AE_scheduler = WarmupCosineSchedule(
+        AE_optimizer,
+        warmup_steps=int(wup*ipe),
+        start_lr=1.0e-4,
+        ref_lr=2.5e-4,
+        final_lr=7.0e-5,
+        T_max=(int(ipe_scale * total_epochs * ipe)))
 
     reconstruction_loss_meter = AverageMeter()
     def train_autoencoder(fgdcc, autoencoder, starting_epoch, use_bfloat16, no_epochs, train_data_loader, cached_features, cold_start=False):
-        
-        model_noddp = fgdcc.module
-        backbone = model_noddp.vit_encoder
-        classifier = model_noddp.classifier
+        #wup = 2 # Warmup epochs
+        #start_lr = 1.0e-4
+        #final_lr = start_lr
+        #if starting_epoch == 0:
+        #    final_lr = 7.5e-5
+        #    wup = 10
+        #if starting_epoch > 250:
+        #    final_lr = 7.5e-5
 
-        wup = 2 # Warmup epochs
-        start_lr = 1.0e-4
-        final_lr = start_lr
-        if starting_epoch == 0:
-            final_lr = 7.5e-5
-            wup = 10
-        if starting_epoch > 250:
-            final_lr = 7.5e-5
 
-        AE_optimizer = torch.optim.AdamW(autoencoder.parameters())
-        AE_scheduler = WarmupCosineSchedule(
-            AE_optimizer,
-            warmup_steps=int(wup*ipe),
-            start_lr=start_lr,
-            ref_lr=start_lr,
-            final_lr=final_lr,
-            T_max=(int(ipe_scale * (no_epochs + 1) * ipe)))
+        #AE_optimizer = torch.optim.AdamW(autoencoder.parameters())
+        #AE_scheduler = WarmupCosineSchedule(
+        #    AE_optimizer,
+        #    warmup_steps=int(wup*ipe),
+        #    start_lr=start_lr,
+        #    ref_lr=start_lr,
+        #    final_lr=final_lr,
+        #    T_max=(int(ipe_scale * (no_epochs + 1) * ipe)))
+
 
         def update_cache(cache, bottleneck_output, target):
             for x, y in zip(bottleneck_output, target):
@@ -543,18 +550,17 @@ def main(args, resume_preempt=False):
             # Epoch end
             reconstruction_logger.log(epoch_no, ae_lr, reconstruction_loss_meter.avg)
                 
-        return cached_features, AE_scheduler, AE_optimizer
-
-    fgdcc.train(True)
-    with torch.autograd.set_detect_anomaly(True): # TODO: remove
-        cached_features_last_epoch, AE_scheduler, AE_optimizer = train_autoencoder(fgdcc=fgdcc,
-                        autoencoder=autoencoder,
-                        starting_epoch=0,
-                        use_bfloat16=use_bfloat16,
-                        no_epochs=10,
-                        cold_start=True,
-                        train_data_loader=supervised_loader_train,
-                        cached_features={})                      
+        return cached_features, AE_scheduler, AE_optimizer # FIXME no need returning scheduler and optimizer
+    
+    fgdcc.eval()
+    cached_features_last_epoch, AE_scheduler, AE_optimizer = train_autoencoder(fgdcc=fgdcc,
+                    autoencoder=autoencoder,
+                    starting_epoch=0,
+                    use_bfloat16=use_bfloat16,
+                    no_epochs=10,
+                    cold_start=True,
+                    train_data_loader=supervised_loader_train,
+                    cached_features={})                      
     autoencoder_global_epoch_cnt = 10
     
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
@@ -694,7 +700,6 @@ def main(args, resume_preempt=False):
                                 parameters=autoencoder.module.parameters(), create_graph=False, retain_graph=False,
                                 update_grad=(itr + 1) % accum_iter == 0)                    
                     scaler(loss, optimizer, clip_grad=None,
-                                #parameters=(list(fgdcc.module.vit_encoder.parameters()) + list(fgdcc.module.classifier.parameters())),
                                 parameters=(fgdcc.module.parameters()),
                                 create_graph=False, retain_graph=False,
                                 update_grad=(itr + 1) % accum_iter == 0) # Scaling is only necessary when using bfloat16.   
@@ -742,7 +747,7 @@ def main(args, resume_preempt=False):
                                     torch.cuda.max_memory_allocated() / 1024.**2,
                                     time_meter.avg))
                     
-                    reconstruction_logger.log(epoch + 1,
+                    reconstruction_logger.log(autoencoder_global_epoch_cnt + 1,
                         ae_lr,
                         reconstruction_loss_meter.avg)
 
@@ -774,6 +779,7 @@ def main(args, resume_preempt=False):
             cached_features = update_cache(cached_features)
 
         # -- End of Epoch      
+        fgdcc.eval()
         autoencoder_global_epoch_cnt += 1
         cached_features, AE_scheduler, AE_optimizer = train_autoencoder(fgdcc=fgdcc,
                         autoencoder=autoencoder,
@@ -841,7 +847,6 @@ def main(args, resume_preempt=False):
         @torch.no_grad()
         def evaluate():
             crossentropy = torch.nn.CrossEntropyLoss()
-            fgdcc.eval()
             supervised_sampler_val.set_epoch(epoch) # -- Enable shuffling to reduce monitor bias
             
             for cnt, (samples, targets) in enumerate(supervised_loader_val):
