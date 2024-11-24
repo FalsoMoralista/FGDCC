@@ -551,11 +551,11 @@ def main(args, resume_preempt=False):
                         autoencoder=autoencoder,
                         starting_epoch=0,
                         use_bfloat16=use_bfloat16,
-                        no_epochs=15,
+                        no_epochs=10,
                         cold_start=True,
                         train_data_loader=supervised_loader_train,
                         cached_features={})                      
-    autoencoder_global_epoch_cnt = 15
+    autoencoder_global_epoch_cnt = 10
     
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
