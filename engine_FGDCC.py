@@ -447,15 +447,15 @@ def main(args, resume_preempt=False):
     
     accum_iter = 1
     step = 3 # no of training epochs after backbone updating
-    wup = 50
-    total_epochs = num_epochs * step + 10 
+    wup = 150
+    total_epochs = num_epochs * step + 10 + num_epochs
     
     AE_optimizer = torch.optim.AdamW(autoencoder.module.parameters())
     AE_scheduler = WarmupCosineSchedule(
         AE_optimizer,
         warmup_steps=int(wup*ipe),
-        start_lr=1.0e-4,
-        ref_lr=2.5e-4,
+        start_lr=1.5e-4,
+        ref_lr=5.0e-4,
         final_lr=7.0e-5,
         T_max=(int(ipe_scale * total_epochs * ipe)))
 
