@@ -69,7 +69,7 @@ def get_model(embed_dim, drop_path, nb_classes, K_range, proj_embed_dim, pretrai
                                       nb_classes=nb_classes,
                                       proj_embed_dim=proj_embed_dim,
                                       drop_path=drop_path,
-                                      num_heads=4,
+                                      num_heads=8,
                                       nb_subclasses_per_parent=K_range)
 
     model = FGDCC(vit_backbone=pretrained_model, classifier=cls, autoencoder=VisionTransformerAutoEncoder(), raw_features=raw_features)

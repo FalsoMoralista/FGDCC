@@ -21,7 +21,7 @@ INFO:root:loaded params...
                 'use_color_distortion': False,
                 'use_gaussian_blur': False,
                 'use_horizontal_flip': False},
-    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp41',
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp44',
                    'write_tag': 'jepa'},
     'mask': {   'allow_overlap': False,
                 'aspect_ratio': [0.75, 1.5],
@@ -44,9 +44,9 @@ INFO:root:loaded params...
                         'final_weight_decay': 0.4,
                         'ipe_scale': 1.0,
                         'label_smoothing': 0.1,
-                        'lr': 0.00045,
+                        'lr': 0.00035,
                         'start_lr': 9e-05,
-                        'warmup': 15,
+                        'warmup': 35,
                         'weight_decay': 0.05}}
 INFO:root:Running... (rank: 0/1)
 INFO:root:Initialized (rank/world-size) 0/1
@@ -69,7 +69,7 @@ INFO:root:VisionTransformerAutoEncoder(
         (qkv): Linear(in_features=1024, out_features=3072, bias=False)
         (attn_drop): Dropout(p=0.0, inplace=False)
         (proj): Linear(in_features=1024, out_features=1024, bias=True)
-        (proj_drop): Dropout(p=0.2, inplace=False)
+        (proj_drop): Dropout(p=0.25, inplace=False)
       )
       (drop_path): Identity()
       (norm2): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
@@ -77,7 +77,7 @@ INFO:root:VisionTransformerAutoEncoder(
         (fc1): Linear(in_features=1024, out_features=4096, bias=True)
         (act): GELU(approximate='none')
         (fc2): Linear(in_features=4096, out_features=1024, bias=True)
-        (drop): Dropout(p=0.2, inplace=False)
+        (drop): Dropout(p=0.25, inplace=False)
       )
     )
     (3): Linear(in_features=1024, out_features=768, bias=True)
@@ -91,7 +91,7 @@ INFO:root:VisionTransformerAutoEncoder(
         (qkv): Linear(in_features=1024, out_features=3072, bias=False)
         (attn_drop): Dropout(p=0.0, inplace=False)
         (proj): Linear(in_features=1024, out_features=1024, bias=True)
-        (proj_drop): Dropout(p=0.2, inplace=False)
+        (proj_drop): Dropout(p=0.25, inplace=False)
       )
       (drop_path): Identity()
       (norm2): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
@@ -99,7 +99,7 @@ INFO:root:VisionTransformerAutoEncoder(
         (fc1): Linear(in_features=1024, out_features=4096, bias=True)
         (act): GELU(approximate='none')
         (fc2): Linear(in_features=4096, out_features=1024, bias=True)
-        (drop): Dropout(p=0.2, inplace=False)
+        (drop): Dropout(p=0.25, inplace=False)
       )
     )
     (3): Linear(in_features=1024, out_features=1280, bias=True)
@@ -107,22 +107,28 @@ INFO:root:VisionTransformerAutoEncoder(
 )
 INFO:root:PairedCrossAttentionClassifier(
   (act): GELU(approximate='none')
-  (subclass_proj): Sequential(
-    (0): Linear(in_features=1280, out_features=1280, bias=True)
-    (1): GELU(approximate='none')
+  (subclass_proj): Block(
+    (norm1): LayerNorm((1280,), eps=1e-05, elementwise_affine=True)
+    (attn): Attention(
+      (qkv): Linear(in_features=1280, out_features=3840, bias=False)
+      (attn_drop): Dropout(p=0.0, inplace=False)
+      (proj): Linear(in_features=1280, out_features=1280, bias=True)
+      (proj_drop): Dropout(p=0.2, inplace=False)
+    )
+    (drop_path): Identity()
+    (norm2): LayerNorm((1280,), eps=1e-05, elementwise_affine=True)
+    (mlp): MLP(
+      (fc1): Linear(in_features=1280, out_features=5120, bias=True)
+      (act): GELU(approximate='none')
+      (fc2): Linear(in_features=5120, out_features=1280, bias=True)
+      (drop): Dropout(p=0.2, inplace=False)
+    )
   )
   (parent_cross_attention): MultiHeadCrossAttention(
     (query): Linear(in_features=1280, out_features=1280, bias=True)
     (key): Linear(in_features=1280, out_features=1280, bias=True)
     (value): Linear(in_features=1280, out_features=1280, bias=True)
   )
-  (subclass_cross_attention): MultiHeadCrossAttention(
-    (query): Linear(in_features=1280, out_features=1280, bias=True)
-    (key): Linear(in_features=1280, out_features=1280, bias=True)
-    (value): Linear(in_features=1280, out_features=1280, bias=True)
-  )
-  (parent_feature_selection): Linear(in_features=2560, out_features=1280, bias=True)
-  (subclass_feature_selection): Linear(in_features=2560, out_features=1280, bias=True)
   (parent_classifier): Linear(in_features=1280, out_features=1081, bias=True)
   (subclass_classifier): Linear(in_features=1280, out_features=4324, bias=True)
   (head_drop): Dropout(p=0.25, inplace=False)
@@ -187,22 +193,17 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:root:[1,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 2.0089] [autoencoder lr: 1.50e-04][mem: 1.05e+04](2217.0 ms)
-INFO:root:[1,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.1077] [autoencoder lr: 1.50e-04][mem: 1.11e+04](380.3 ms)
-INFO:root:[1,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9871] [autoencoder lr: 1.50e-04][mem: 1.11e+04](371.8 ms)
-INFO:root:[1,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9277] [autoencoder lr: 1.50e-04][mem: 1.11e+04](369.1 ms)
-INFO:root:[1,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8902] [autoencoder lr: 1.50e-04][mem: 1.11e+04](367.8 ms)
-INFO:root:[1,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8634] [autoencoder lr: 1.50e-04][mem: 1.11e+04](367.1 ms)
-INFO:root:[1,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8432] [autoencoder lr: 1.51e-04][mem: 1.11e+04](366.6 ms)
-INFO:root:[1,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8269] [autoencoder lr: 1.51e-04][mem: 1.11e+04](366.2 ms)
-INFO:root:[1,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8136] [autoencoder lr: 1.51e-04][mem: 1.11e+04](366.0 ms)
-INFO:root:[1,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8027] [autoencoder lr: 1.51e-04][mem: 1.11e+04](365.8 ms)
-INFO:root:[1,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.7933] [autoencoder lr: 1.51e-04][mem: 1.11e+04](365.7 ms)
-INFO:root:[1,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.7853] [autoencoder lr: 1.51e-04][mem: 1.11e+04](365.6 ms)
-INFO:root:[1,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.7784] [autoencoder lr: 1.51e-04][mem: 1.11e+04](365.5 ms)
-INFO:root:[1,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.7722] [autoencoder lr: 1.51e-04][mem: 1.11e+04](365.4 ms)
-INFO:root:[1,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.7667] [autoencoder lr: 1.51e-04][mem: 1.11e+04](365.3 ms)
-INFO:root:[1,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.7617] [autoencoder lr: 1.51e-04][mem: 1.11e+04](365.2 ms)
-INFO:root:[1,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.7572] [autoencoder lr: 1.51e-04][mem: 1.11e+04](365.2 ms)
-INFO:root:[1,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.7531] [autoencoder lr: 1.52e-04][mem: 1.11e+04](365.1 ms)
-INFO:root:[1,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.7494] [autoencoder lr: 1.52e-04][mem: 1.11e+04](365.0 ms)
+INFO:root:[1,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 2.0105] [autoencoder lr: 8.50e-05][mem: 1.05e+04](2040.4 ms)
+INFO:root:[1,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.1989] [autoencoder lr: 8.53e-05][mem: 1.11e+04](379.6 ms)
+INFO:root:[1,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.0786] [autoencoder lr: 8.55e-05][mem: 1.11e+04](371.2 ms)
+INFO:root:[1,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.0162] [autoencoder lr: 8.58e-05][mem: 1.11e+04](368.6 ms)
+INFO:root:[1,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9765] [autoencoder lr: 8.60e-05][mem: 1.11e+04](367.4 ms)
+INFO:root:[1,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9480] [autoencoder lr: 8.63e-05][mem: 1.11e+04](366.6 ms)
+INFO:root:[1,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9260] [autoencoder lr: 8.65e-05][mem: 1.11e+04](366.2 ms)
+INFO:root:[1,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9087] [autoencoder lr: 8.68e-05][mem: 1.11e+04](365.8 ms)
+INFO:root:[1,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8943] [autoencoder lr: 8.70e-05][mem: 1.11e+04](365.5 ms)
+INFO:root:[1,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8825] [autoencoder lr: 8.73e-05][mem: 1.11e+04](365.3 ms)
+INFO:root:[1,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8721] [autoencoder lr: 8.76e-05][mem: 1.11e+04](365.1 ms)
+INFO:root:[1,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8631] [autoencoder lr: 8.78e-05][mem: 1.11e+04](365.0 ms)
+INFO:root:[1,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8552] [autoencoder lr: 8.81e-05][mem: 1.11e+04](364.8 ms)
+INFO:root:[1,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8479] [autoencoder lr: 8.83e-05][mem: 1.11e+04](364.7 ms)

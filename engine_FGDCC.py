@@ -68,6 +68,8 @@ from timm.data.mixup import Mixup
 from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
 from timm.utils import accuracy
 
+import pickle
+
 from src import KMeans
 import faiss
 
@@ -446,40 +448,21 @@ def main(args, resume_preempt=False):
     l2_norm = torch.nn.MSELoss()
     
     accum_iter = 1
-    step = 3 # no of training epochs after backbone updating
-    wup = 150
-    total_epochs = num_epochs * step + 10 + num_epochs
+    autoencoder_steps = 2 # no of training epochs after backbone updating
+    wup = 140
+    total_epochs = num_epochs * autoencoder_steps + 10 + num_epochs
     
     AE_optimizer = torch.optim.AdamW(autoencoder.module.parameters())
     AE_scheduler = WarmupCosineSchedule(
         AE_optimizer,
         warmup_steps=int(wup*ipe),
-        start_lr=1.5e-4,
-        ref_lr=5.0e-4,
+        start_lr=8.5e-5,
+        ref_lr=1.0e-3,
         final_lr=7.0e-5,
         T_max=(int(ipe_scale * total_epochs * ipe)))
 
     reconstruction_loss_meter = AverageMeter()
     def train_autoencoder(fgdcc, autoencoder, starting_epoch, use_bfloat16, no_epochs, train_data_loader, cached_features, cold_start=False):
-        #wup = 2 # Warmup epochs
-        #start_lr = 1.0e-4
-        #final_lr = start_lr
-        #if starting_epoch == 0:
-        #    final_lr = 7.5e-5
-        #    wup = 10
-        #if starting_epoch > 250:
-        #    final_lr = 7.5e-5
-
-
-        #AE_optimizer = torch.optim.AdamW(autoencoder.parameters())
-        #AE_scheduler = WarmupCosineSchedule(
-        #    AE_optimizer,
-        #    warmup_steps=int(wup*ipe),
-        #    start_lr=start_lr,
-        #    ref_lr=start_lr,
-        #    final_lr=final_lr,
-        #    T_max=(int(ipe_scale * (no_epochs + 1) * ipe)))
-
 
         def update_cache(cache, bottleneck_output, target):
             for x, y in zip(bottleneck_output, target):
@@ -785,10 +768,10 @@ def main(args, resume_preempt=False):
                         autoencoder=autoencoder,
                         starting_epoch=autoencoder_global_epoch_cnt,
                         use_bfloat16=use_bfloat16,
-                        no_epochs=3,
+                        no_epochs=autoencoder_steps,
                         train_data_loader=supervised_loader_train,
                         cached_features={})
-        autoencoder_global_epoch_cnt +=  3
+        autoencoder_global_epoch_cnt +=  autoencoder_steps
 
         if world_size > 1:
             # Convert cache to list format for gathering
@@ -841,6 +824,52 @@ def main(args, resume_preempt=False):
         testAcc5 = AverageMeter()
         test_loss = AverageMeter()
 
+        def convert_assignment_to_class_id(predictions, class_mapping):
+            """
+            Converts a batch of cluster assignment predictions to their corresponding class ids.
+
+            Args:
+                predictions: A PyTorch tensor of predictions.
+                class_mapping: A dictionary mapping classes to their cluster assignments.
+
+            Returns:
+                A PyTorch tensor of corresponding classes.
+            """
+
+            # Create a reverse mapping for efficient lookup
+            reverse_mapping = {}
+            for class_id, cluster_assignments in class_mapping.items():
+                for cluster_id, prediction_value in cluster_assignments.items():
+                    reverse_mapping[prediction_value] = class_id
+
+            # Vectorized conversion using PyTorch's indexing
+            converted_predictions = torch.tensor([reverse_mapping[pred.item()] for pred in predictions])
+            
+            return converted_predictions
+        
+        def update_cluster_counts(y_hat, class_counts, class_mapping):
+            """
+            Updates the class_counts dictionary based on the predicted clusters.
+
+            Args:
+                y_hat: A list or PyTorch tensor of predicted cluster numbers.
+                class_counts: The dictionary to update, with cluster counts initialized to zero.
+                class_mapping: The original class mapping dictionary.
+            """
+            reverse_mapping = {}
+            for class_id, cluster_assignments in class_mapping.items():
+                for cluster_id, prediction_value in cluster_assignments.items():
+                    reverse_mapping[prediction_value] = (class_id, cluster_id)
+
+            for prediction in y_hat:
+                class_id, cluster_id = reverse_mapping[prediction.item()]
+                class_counts[class_id][cluster_id] += 1
+
+        class_counts = copy.deepcopy(k_means_idx) # Keeps track of how the distribution of cluster assignment predictions is changing per epoch
+        for class_id, cluster_assignments in class_counts.items():
+            for cluster_id in cluster_assignments:
+                class_counts[class_id][cluster_id] = 0        
+
         # Warning: Enabling distributed evaluation with an eval dataset not divisible by process number
         # will slightly alter validation results as extra duplicate entries are added to achieve equal 
         # num of samples per-process.
@@ -854,16 +883,26 @@ def main(args, resume_preempt=False):
                 labels = targets.to(device, non_blocking=True)
                                  
                 with torch.cuda.amp.autocast():
-                    parent_logits, _, _ = fgdcc(images, device)                  
-                    loss = crossentropy(parent_logits, labels)
+                    parent_logits, subclass_logits, _ = fgdcc(images, device)                  
+                    subclass_predictions = convert_assignment_to_class_id(subclass_logits, k_means_idx) 
+                    loss = crossentropy(subclass_predictions, labels)
+
+                acc1, acc5 = accuracy(subclass_predictions, labels, topk=(1, 5))
                 
-                acc1, acc5 = accuracy(parent_logits, labels, topk=(1, 5))
+                update_cluster_counts(subclass_logits, class_counts, k_means_idx)
+
+                #acc1, acc5 = accuracy(parent_logits, labels, topk=(1, 5))
 
                 testAcc1.update(acc1)
                 testAcc5.update(acc5)
                 test_loss.update(loss)
         
         vtime = gpu_timer(evaluate)
+
+        filename = 'cluster_distribution_epoch_{}.pkl'.format(epoch + 1)
+        output = open(filename, 'wb')
+        pickle.dump(class_counts, output)
+        output.close()
 
         stats_logger.log(epoch + 1,
                         lr,
