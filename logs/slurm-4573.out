@@ -193,17 +193,81 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:root:[1,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 2.0105] [autoencoder lr: 8.50e-05][mem: 1.05e+04](2040.4 ms)
-INFO:root:[1,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.1989] [autoencoder lr: 8.53e-05][mem: 1.11e+04](379.6 ms)
-INFO:root:[1,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.0786] [autoencoder lr: 8.55e-05][mem: 1.11e+04](371.2 ms)
-INFO:root:[1,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.0162] [autoencoder lr: 8.58e-05][mem: 1.11e+04](368.6 ms)
-INFO:root:[1,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9765] [autoencoder lr: 8.60e-05][mem: 1.11e+04](367.4 ms)
-INFO:root:[1,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9480] [autoencoder lr: 8.63e-05][mem: 1.11e+04](366.6 ms)
-INFO:root:[1,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9260] [autoencoder lr: 8.65e-05][mem: 1.11e+04](366.2 ms)
-INFO:root:[1,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9087] [autoencoder lr: 8.68e-05][mem: 1.11e+04](365.8 ms)
-INFO:root:[1,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8943] [autoencoder lr: 8.70e-05][mem: 1.11e+04](365.5 ms)
-INFO:root:[1,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8825] [autoencoder lr: 8.73e-05][mem: 1.11e+04](365.3 ms)
-INFO:root:[1,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8721] [autoencoder lr: 8.76e-05][mem: 1.11e+04](365.1 ms)
-INFO:root:[1,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8631] [autoencoder lr: 8.78e-05][mem: 1.11e+04](365.0 ms)
-INFO:root:[1,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8552] [autoencoder lr: 8.81e-05][mem: 1.11e+04](364.8 ms)
-INFO:root:[1,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8479] [autoencoder lr: 8.83e-05][mem: 1.11e+04](364.7 ms)
+INFO:root:[1,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 2.0105] [autoencoder lr: 8.50e-05][mem: 1.05e+04](3066.9 ms)
+INFO:root:[1,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.1989] [autoencoder lr: 8.53e-05][mem: 1.11e+04](389.0 ms)
+INFO:root:[1,   200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.0786] [autoencoder lr: 8.55e-05][mem: 1.11e+04](376.4 ms)
+INFO:root:[1,   300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.0162] [autoencoder lr: 8.58e-05][mem: 1.11e+04](372.4 ms)
+INFO:root:[1,   400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9765] [autoencoder lr: 8.60e-05][mem: 1.11e+04](370.4 ms)
+INFO:root:[1,   500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9480] [autoencoder lr: 8.63e-05][mem: 1.11e+04](369.6 ms)
+INFO:root:[1,   600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9260] [autoencoder lr: 8.65e-05][mem: 1.11e+04](368.7 ms)
+INFO:root:[1,   700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.9087] [autoencoder lr: 8.68e-05][mem: 1.11e+04](368.1 ms)
+INFO:root:[1,   800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8943] [autoencoder lr: 8.70e-05][mem: 1.11e+04](367.7 ms)
+INFO:root:[1,   900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8825] [autoencoder lr: 8.73e-05][mem: 1.11e+04](367.3 ms)
+INFO:root:[1,  1000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8721] [autoencoder lr: 8.76e-05][mem: 1.11e+04](367.0 ms)
+INFO:root:[1,  1100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8631] [autoencoder lr: 8.78e-05][mem: 1.11e+04](366.8 ms)
+INFO:root:[1,  1200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8552] [autoencoder lr: 8.81e-05][mem: 1.11e+04](366.6 ms)
+INFO:root:[1,  1300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8479] [autoencoder lr: 8.83e-05][mem: 1.11e+04](366.4 ms)
+INFO:root:[1,  1400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8414] [autoencoder lr: 8.86e-05][mem: 1.11e+04](366.3 ms)
+INFO:root:[1,  1500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8355] [autoencoder lr: 8.88e-05][mem: 1.11e+04](366.3 ms)
+INFO:root:[1,  1600/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8301] [autoencoder lr: 8.91e-05][mem: 1.11e+04](366.2 ms)
+INFO:root:[1,  1700/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8253] [autoencoder lr: 8.93e-05][mem: 1.11e+04](366.1 ms)
+INFO:root:[1,  1800/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8208] [autoencoder lr: 8.96e-05][mem: 1.11e+04](366.0 ms)
+INFO:root:[1,  1900/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8166] [autoencoder lr: 8.98e-05][mem: 1.11e+04](365.9 ms)
+INFO:root:[1,  2000/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8129] [autoencoder lr: 9.01e-05][mem: 1.11e+04](365.8 ms)
+INFO:root:[1,  2100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8093] [autoencoder lr: 9.04e-05][mem: 1.11e+04](365.8 ms)
+INFO:root:[1,  2200/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8060] [autoencoder lr: 9.06e-05][mem: 1.11e+04](365.7 ms)
+INFO:root:[1,  2300/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8029] [autoencoder lr: 9.09e-05][mem: 1.11e+04](365.7 ms)
+INFO:root:[1,  2400/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.8000] [autoencoder lr: 9.11e-05][mem: 1.11e+04](365.6 ms)
+INFO:root:[1,  2500/ 2562] - [Autoencoder Training] [Autoencoder Loss: 0.7974] [autoencoder lr: 9.14e-05][mem: 1.11e+04](365.6 ms)
+INFO:root:Initializing centroids...
+INFO:root:Update Step...
+/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/faiss/contrib/torch_utils.py:51: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  x.storage().data_ptr() + x.storage_offset() * 4)
+INFO:root:Epoch 1
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[1,     0/ 2562] - train_losses - Parent Class: 6.9857 - Children class: 8.3720 -Autoencoder Loss (total): 408.1169 - Reconstruction/K-Means Loss: [0.7958 / 407.3210] - Consistency Loss: [0.0000] - VICReg Loss: [0.0000][wd: 5.00e-02] [lr: 9.00e-05] [autoencoder lr: 9.15e-05][mem: 6.67e+04] (1996.4 ms)
+INFO:root:[1,     0] grad_stats: [2.10e-04 4.50e-03] (3.71e-08, 2.41e+00)
+INFO:root:Asserting cache length
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC.py", line 52, in process_main
+    app_main(args=params)
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCC.py", line 803, in main
+    assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
+           ^^^^^^^^^^^^^^^^^^
+AssertionError: Cache not compatible, corrupted or missing

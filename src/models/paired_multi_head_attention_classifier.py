@@ -58,7 +58,8 @@ class PairedCrossAttentionClassifier(nn.Module):
         #self.subclass_feature_selection = nn.Linear((self.proj_times + 1) * proj_embed_dim, input_dim)
         
         self.parent_classifier = nn.Linear(proj_embed_dim, nb_classes)
-        self.subclass_classifier = nn.Linear(proj_embed_dim, len(nb_subclasses_per_parent) * nb_classes)        
+        
+        self.subclass_classifier = nn.Linear(proj_embed_dim, nb_classes)        
 
         self.head_drop = nn.Dropout(drop_path)
         

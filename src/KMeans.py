@@ -67,6 +67,7 @@ class KMeansModule:
         batch_size = xb.size(0)
         D_batch = []
         best_K_values = torch.zeros(batch_size, dtype=torch.int32, device=device)
+        cluster_assignments = torch.zeros(batch_size, dtype=torch.int32, device=device)
         for i in range(batch_size):
             class_id = yb[i].item()
             sample = xb[i].unsqueeze(0)
@@ -85,16 +86,21 @@ class KMeansModule:
                 batch_assignments = batch_assignments.squeeze(-1)
                 D_k.append(D[0])
                 centroids = target_K_Means[k_i].centroids                
-                        
                 centroid_list = centroids[batch_assignments] 
-                # Computes the cosine similarity between every image and the cluster centroid to which is associated to
+                # Compute the cosine similarity between every image and the cluster centroid to which is associated to
                 C_score = F.cosine_similarity(batch_x, centroid_list)
                 C_scores[k_i] = C_score.sum()
             D_batch.append(torch.stack(D_k))
             CCI = S_scores / (C_scores + S_scores)
-            best_K_values[i] = CCI.argmax().item()                    
+            best_K_values[i] = CCI.argmax().item()
+
+            # Find the cluster assignment for the best K value
+            D, c_assignment = target_K_Means[best_K_values[i]].index.search(sample, 1)
+            c_assignment = c_assignment.squeeze(-1)
+            cluster_assignments[i] = c_assignment
+
         D_batch = torch.stack(D_batch)
-        return D_batch, best_K_values
+        return D_batch, best_K_values, cluster_assignments
 
     def restart(self):
             self.n_kmeans = []   

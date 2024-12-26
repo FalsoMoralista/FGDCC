@@ -59,6 +59,7 @@ class VisionTransformerAutoEncoder(nn.Module):
         drop_rate = 0.25
         
         self.encoder = nn.Sequential(
+            Block(dim=1280, num_heads=8, mlp_ratio=ratio, qkv_bias=False, drop=drop_rate),
             nn.Linear(1280, 1024),
             nn.GELU(),            
             Block(dim=1024, num_heads=8, mlp_ratio=ratio, qkv_bias=False, drop=drop_rate),
@@ -66,6 +67,7 @@ class VisionTransformerAutoEncoder(nn.Module):
         )
 
         self.decoder = nn.Sequential(
+            Block(dim=768, num_heads=8, mlp_ratio=ratio, qkv_bias=False, drop=drop_rate),
             nn.Linear(768, 1024),
             nn.GELU(),            
             Block(dim=1024, num_heads=8, mlp_ratio=ratio, qkv_bias=False, drop=drop_rate),
@@ -80,15 +82,26 @@ class VisionTransformerAutoEncoder(nn.Module):
         def rescale(param, layer_id):
             param.div_(math.sqrt(2.0 * layer_id))
         
-        layer = self.encoder[2]
         layer_id = 0
+        layer = self.encoder[0]
         rescale(layer.attn.proj.weight.data, layer_id + 1)
         rescale(layer.mlp.fc2.weight.data, layer_id + 1)
 
-        layer = self.decoder[2]
+        layer_id = 1
+        layer = self.encoder[3]
         rescale(layer.attn.proj.weight.data, layer_id + 1)
         rescale(layer.mlp.fc2.weight.data, layer_id + 1)
 
+
+        layer_id = 0
+        layer = self.decoder[0]
+        rescale(layer.attn.proj.weight.data, layer_id + 1)
+        rescale(layer.mlp.fc2.weight.data, layer_id + 1)
+        
+        layer_id = 1
+        layer = self.decoder[3]
+        rescale(layer.attn.proj.weight.data, layer_id + 1)
+        rescale(layer.mlp.fc2.weight.data, layer_id + 1)
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):

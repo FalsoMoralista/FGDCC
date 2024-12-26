@@ -364,10 +364,12 @@ def main(args, resume_preempt=False):
 
     proj_embed_dim = 1280
     
+    K_range = [2,3,4,5]
+    num_classes = nb_classes * sum([K for K in K_range])
     fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
                       drop_path=drop_path,
-                      nb_classes=nb_classes,
-                      K_range = [2,3,4,5],
+                      nb_classes=num_classes,
+                      K_range = K_range,
                       proj_embed_dim=proj_embed_dim,
                       pretrained_model=target_encoder,
                       device=device)
@@ -437,32 +439,63 @@ def main(args, resume_preempt=False):
             for k in K_range:
                 if new_idx.get(key, None) is None:
                     new_idx[key] = {}
-                new_idx[key][str(k)] = global_index
-                global_index += 1
+                for i in range(k):
+                    if new_idx[key].get(k, None) is None:
+                        new_idx[key][k] = {}
+                    elif new_idx[key][k].get(i, None) is None:      
+                        new_idx[key][k][i] = {}
+                    new_idx[key][k][i] = global_index
+                    global_index += 1
         return new_idx
     
     k_means_idx = build_new_idx(class_idx_map)
-    
     model_noddp = fgdcc.module
 
     l2_norm = torch.nn.MSELoss()
     
     accum_iter = 1
     autoencoder_steps = 2 # no of training epochs after backbone updating
+    pretraining_epochs = 30
+
     wup = 140
-    total_epochs = num_epochs * autoencoder_steps + 10 + num_epochs
+    total_epochs = num_epochs * autoencoder_steps + pretraining_epochs + num_epochs
     
     AE_optimizer = torch.optim.AdamW(autoencoder.module.parameters())
     AE_scheduler = WarmupCosineSchedule(
         AE_optimizer,
         warmup_steps=int(wup*ipe),
-        start_lr=8.5e-5,
+        start_lr=1.0e-6,
         ref_lr=1.0e-3,
-        final_lr=7.0e-5,
+        final_lr=1.0e-6,
         T_max=(int(ipe_scale * total_epochs * ipe)))
 
     reconstruction_loss_meter = AverageMeter()
     def train_autoencoder(fgdcc, autoencoder, starting_epoch, use_bfloat16, no_epochs, train_data_loader, cached_features, cold_start=False):
+        
+        path = root_path + '/DeepCluster/cache'
+        r_path = path + '/pretrained_autoencoder_768_epoch_30.pt'
+        if os.path.exists(r_path):
+            logger.info('Pretrained autoencoder found, loading...')
+            
+            state_dict = torch.load(r_path)
+                        
+            epoch = state_dict['epoch']
+            cached_features = state_dict['cache']
+            
+            autoencoder = autoencoder.module
+            if autoencoder is not None:
+                pretrained_dict = state_dict['autoencoder']
+                msg = autoencoder.load_state_dict(pretrained_dict) 
+                autoencoder = DistributedDataParallel(autoencoder, static_graph=True)
+                logger.info(f'loaded pretrained autoencoder from epoch {epoch} with msg: {msg}')
+            if AE_optimizer is not None:
+                AE_optimizer.load_state_dict(state_dict['ae_opt'])
+                logger.info(f'loaded optimizers from epoch {epoch}')
+
+            for i in range(epoch):
+                ae_lr = AE_scheduler.step()
+
+            return cached_features, AE_scheduler, AE_optimizer
 
         def update_cache(cache, bottleneck_output, target):
             for x, y in zip(bottleneck_output, target):
@@ -503,7 +536,7 @@ def main(args, resume_preempt=False):
                         
                         reconstruction_loss_meter.update(reconstruction_loss)
 
-                        # On the last epoch of training, update the feature cache
+                        # On the last epoch of training, update the feature cache and save checkpoint
                         if epoch_no == (starting_epoch + no_epochs - 1):
                             compressed_representation = bottleneck_output.clone().detach()
                             compressed_representation = torch.mean(compressed_representation, dim=1).squeeze(dim=1)
@@ -513,7 +546,7 @@ def main(args, resume_preempt=False):
                             cache = cached_features
 
                         if use_bfloat16:
-                            scaler(reconstruction_loss, AE_optimizer, clip_grad=None,
+                            scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
                                         parameters=autoencoder.parameters(),
                                         update_grad=(iteration + 1) % accum_iter == 0)
                         else:
@@ -531,6 +564,13 @@ def main(args, resume_preempt=False):
                 time_meter.update(elapsed_time)
                 log_loss(iteration, epoch_no, ae_lr)                     
             # Epoch end
+            save_dict = {
+                'epoch': epoch_no,
+                'autoencoder': autoencoder.module.state_dict(),
+                'ae_opt': AE_optimizer.state_dict(),
+                'cache': cache 
+            }
+            torch.save(save_dict, r_path)            
             reconstruction_logger.log(epoch_no, ae_lr, reconstruction_loss_meter.avg)
                 
         return cached_features, AE_scheduler, AE_optimizer # FIXME no need returning scheduler and optimizer
@@ -540,11 +580,11 @@ def main(args, resume_preempt=False):
                     autoencoder=autoencoder,
                     starting_epoch=0,
                     use_bfloat16=use_bfloat16,
-                    no_epochs=10,
-                    cold_start=True,
+                    no_epochs=pretraining_epochs,
+                    cold_start=True, 
                     train_data_loader=supervised_loader_train,
                     cached_features={})                      
-    autoencoder_global_epoch_cnt = 10
+    autoencoder_global_epoch_cnt = pretraining_epochs
     
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
@@ -579,7 +619,6 @@ def main(args, resume_preempt=False):
 
         cached_features = {}
         for itr, (sample, target) in enumerate(supervised_loader_train):
-            
             def load_imgs():
                 samples = sample.to(device, non_blocking=True)
                 targets = target.to(device, non_blocking=True)
@@ -614,7 +653,7 @@ def main(args, resume_preempt=False):
                     #-- Compute K-Means assignments with disabled autocast for better precision
                     with torch.cuda.amp.autocast(enabled=False): 
                         #k_means_losses, k_means_assignments = k_means_module.assign(x=bottleneck_output, y=target, resources=resources, rank=rank, device=device, cached_features=cached_features_last_epoch)  
-                        k_means_losses, best_K_classifiers = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
+                        k_means_losses, best_K_classifiers, cluster_assignments = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
 
                     loss = criterion(parent_logits, targets)
                     parent_cls_loss_meter.update(loss)
@@ -638,7 +677,8 @@ def main(args, resume_preempt=False):
                         for i in range(targets.size(0)):
                             class_id = targets[i].item()
                             best_k_id = best_K_classifiers[i].item()
-                            k_means_idx_targets[i] = k_means_idx[class_id][str(best_k_id+2)]
+                            cluster_assignment = cluster_assignments[i].item()
+                            k_means_idx_targets[i] = k_means_idx[class_id][best_k_id+2][cluster_assignment]
                         subclass_loss = criterion(subclass_logits, k_means_idx_targets)
                     
                     # -- Setup losses
@@ -760,7 +800,7 @@ def main(args, resume_preempt=False):
                  TODO: implement broadcasting solution.
             '''
             cached_features = update_cache(cached_features)
-
+             
         # -- End of Epoch      
         fgdcc.eval()
         autoencoder_global_epoch_cnt += 1
@@ -834,8 +874,7 @@ def main(args, resume_preempt=False):
 
             Returns:
                 A PyTorch tensor of corresponding classes.
-            """
-
+            """            
             # Create a reverse mapping for efficient lookup
             reverse_mapping = {}
             for class_id, cluster_assignments in class_mapping.items():
@@ -883,10 +922,11 @@ def main(args, resume_preempt=False):
                 labels = targets.to(device, non_blocking=True)
                                  
                 with torch.cuda.amp.autocast():
-                    parent_logits, subclass_logits, _ = fgdcc(images, device)                  
-                    subclass_predictions = convert_assignment_to_class_id(subclass_logits, k_means_idx) 
-                    loss = crossentropy(subclass_predictions, labels)
-
+                    parent_logits, subclass_logits, _ = fgdcc(images, device)
+                    indexes = torch.argmax(subclass_logits, dim=1)           
+                    subclass_predictions = convert_assignment_to_class_id(indexes, k_means_idx) 
+                    #loss = crossentropy(subclass_predictions, labels) # FIXME this won't work because we need logits
+                    loss = 0
                 acc1, acc5 = accuracy(subclass_predictions, labels, topk=(1, 5))
                 
                 update_cluster_counts(subclass_logits, class_counts, k_means_idx)
