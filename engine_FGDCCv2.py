@@ -371,7 +371,7 @@ def main(args, resume_preempt=False):
             'target_encoder': fgdcc.module.vit_encoder.state_dict(),
             'classification_head': fgdcc.module.classifier.state_dict(),
             'opt_1': optimizer.state_dict(),
-            'opt_2': AE_optimizer.state_dict(),
+            'opt_2': 0,
             'scaler': None if scaler is None else scaler.state_dict(),
             'epoch': epoch,
             'loss': total_loss_meter.avg,
@@ -594,7 +594,7 @@ def main(args, resume_preempt=False):
                     
                     vicreg_loss = VCR(subclass_proj_embed, subclass_proj_embed)
                     vicreg_loss_meter.update(vicreg_loss)
-                    
+
                     bottleneck_output = subclass_proj_embed
 
                     #-- Compute K-Means assignments with disabled autocast for better precision

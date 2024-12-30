@@ -21,7 +21,7 @@ INFO:root:loaded params...
                 'use_color_distortion': False,
                 'use_gaussian_blur': False,
                 'use_horizontal_flip': False},
-    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp45',
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp44',
                    'write_tag': 'jepa'},
     'mask': {   'allow_overlap': False,
                 'aspect_ratio': [0.75, 1.5],
@@ -53,13 +53,92 @@ INFO:root:Initialized (rank/world-size) 0/1
 INFO:root:making imagenet data transforms
 INFO:root:making imagenet data transforms
 INFO:root:Finetuning dataset created
-INFO:root:PairedDataset created
 Training dataset, length: 245952
 INFO:root:Finetuning dataset created
 Val dataset, length: 31200
 INFO:root:Using AdamW
 ['encoder', 'predictor', 'opt', 'scaler', 'target_encoder', 'epoch', 'loss', 'batch_size', 'world_size', 'lr']
 INFO:root:loaded pretrained encoder from epoch 66 with msg: <All keys matched successfully>
+INFO:root:VisionTransformerAutoEncoder(
+  (encoder): Sequential(
+    (0): Block(
+      (norm1): LayerNorm((1280,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1280, out_features=3840, bias=False)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1280, out_features=1280, bias=True)
+        (proj_drop): Dropout(p=0.25, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1280,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1280, out_features=5120, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=5120, out_features=1280, bias=True)
+        (drop): Dropout(p=0.25, inplace=False)
+      )
+    )
+    (1): Linear(in_features=1280, out_features=1024, bias=True)
+    (2): GELU(approximate='none')
+    (3): Block(
+      (norm1): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1024, out_features=3072, bias=False)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1024, out_features=1024, bias=True)
+        (proj_drop): Dropout(p=0.25, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1024, out_features=4096, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=4096, out_features=1024, bias=True)
+        (drop): Dropout(p=0.25, inplace=False)
+      )
+    )
+    (4): Linear(in_features=1024, out_features=768, bias=True)
+  )
+  (decoder): Sequential(
+    (0): Block(
+      (norm1): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=768, out_features=2304, bias=False)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=768, out_features=768, bias=True)
+        (proj_drop): Dropout(p=0.25, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((768,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=768, out_features=3072, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=3072, out_features=768, bias=True)
+        (drop): Dropout(p=0.25, inplace=False)
+      )
+    )
+    (1): Linear(in_features=768, out_features=1024, bias=True)
+    (2): GELU(approximate='none')
+    (3): Block(
+      (norm1): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1024, out_features=3072, bias=False)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1024, out_features=1024, bias=True)
+        (proj_drop): Dropout(p=0.25, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1024,), eps=1e-05, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1024, out_features=4096, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=4096, out_features=1024, bias=True)
+        (drop): Dropout(p=0.25, inplace=False)
+      )
+    )
+    (4): Linear(in_features=1024, out_features=1280, bias=True)
+  )
+)
 INFO:root:PairedCrossAttentionClassifier(
   (act): GELU(approximate='none')
   (subclass_proj): Block(
@@ -114,13 +193,8 @@ INFO:root:VisionTransformer(
   )
   (norm): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
 )
-INFO:root:Setting up cache...
-INFO:root:Done...
-INFO:root:Initializing centroids...
-INFO:root:Update Step...
-/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/faiss/contrib/torch_utils.py:51: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
-  x.storage().data_ptr() + x.storage_offset() * 4)
-INFO:root:Epoch 1
+INFO:root:Autoencoder Training...
+INFO:root: - - Epoch: 1 - - 
 INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:faiss.loader:Loading faiss with AVX2 support.
@@ -153,21 +227,5 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-Process Process-1:
-Traceback (most recent call last):
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
-    self.run()
-  File "/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/multiprocessing/process.py", line 108, in run
-    self._target(*self._args, **self._kwargs)
-  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC_v2.py", line 52, in process_main
-    app_main(args=params)
-  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCCv2.py", line 665, in main
-    (loss, k_means_loss, ae_lr, _new_lr, _new_wd, grad_stats, bottleneck_output), etime = gpu_timer(train_step)
-                                                                                          ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/utils/logging.py", line 21, in gpu_timer
-    result = closure()
-             ^^^^^^^^^
-  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCCv2.py", line 663, in train_step
-    return (float(loss), float(k_means_loss), _new_AE_lr, _new_lr, _new_wd, grad_stats, bottleneck_output)
-                                                                                        ^^^^^^^^^^^^^^^^^
-NameError: cannot access free variable 'bottleneck_output' where it is not associated with a value in enclosing scope
+INFO:root:[1,     0/ 2562] - [Autoencoder Training] [Autoencoder Loss: 2.0036] [autoencoder lr: 1.00e-06][mem: 1.36e+04](2630.3 ms)
+INFO:root:[1,   100/ 2562] - [Autoencoder Training] [Autoencoder Loss: 1.8011] [autoencoder lr: 1.28e-06][mem: 1.44e+04](432.8 ms)

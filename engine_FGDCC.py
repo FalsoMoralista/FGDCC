@@ -491,6 +491,7 @@ def main(args, resume_preempt=False):
         r_path = path + '/pretrained_autoencoder_768_epoch_{}.pt'
 
         if starting_epoch == 0:
+            r_path = r_path.format(pretraining_epochs)
             if os.path.exists(r_path):
                 logger.info('Pretrained autoencoder found, loading...')
                 
@@ -550,7 +551,7 @@ def main(args, resume_preempt=False):
                         _, _, subclass_proj_embed = fgdcc(imgs=x, device=device, autoencoder=True, cold_start=cold_start)
                         
                         subclass_proj_embed = subclass_proj_embed.clone().detach()
-                        
+
                         reconstructed_input, bottleneck_output = autoencoder(subclass_proj_embed, device)
                         reconstruction_loss = l2_norm(reconstructed_input, subclass_proj_embed)
                         
@@ -605,7 +606,18 @@ def main(args, resume_preempt=False):
                     train_data_loader=supervised_loader_train,
                     cached_features={})                      
     autoencoder_global_epoch_cnt = pretraining_epochs
+    
+    #### Test ####
     ae_lr = 1.0e-6
+    AE_optimizer = torch.optim.AdamW(autoencoder.module.parameters())
+    AE_scheduler = WarmupCosineSchedule(
+        AE_optimizer,
+        warmup_steps=int(wup*ipe),
+        start_lr=ae_lr,
+        ref_lr=1.0e-3,
+        final_lr=1.0e-6,
+        T_max=(int(ipe_scale * total_epochs * ipe)))    
+    #################################
 
     cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
     assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
