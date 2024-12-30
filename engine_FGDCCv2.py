@@ -45,6 +45,8 @@ from src.utils.logging import (
     AverageMeter)
 
 from src.datasets.FineTuningDataset import make_GenericDataset
+from src.datasets.paired_batch_dataset import make_paired_batch_dataset
+
 
 from src.utils.schedulers import WarmupCosineSchedule
 
@@ -55,7 +57,8 @@ from src.helper import (
     init_opt,
     init_DC_opt,
     build_cache,
-    VICReg
+    VICReg,
+    build_cache_v2
     )
 
 from src.models import FGDCC
@@ -254,7 +257,7 @@ def main(args, resume_preempt=False):
         color_jitter=color_jitter)
 
     # -- init data-loaders/samplers
-    train_dataset, supervised_loader_train, supervised_sampler_train = make_GenericDataset(
+    _, regular_supervised_loader_train, supervised_sampler_train = make_GenericDataset(
             transform=training_transform,
             batch_size=batch_size,
             collator=None,
@@ -267,6 +270,32 @@ def main(args, resume_preempt=False):
             image_folder=image_folder,
             copy_data=copy_data,
             drop_last=False)
+    
+    mask_collator = MBMaskCollator(
+        input_size=crop_size,
+        patch_size=patch_size,
+        pred_mask_scale=pred_mask_scale,
+        enc_mask_scale=enc_mask_scale,
+        aspect_ratio=aspect_ratio,
+        nenc=num_enc_masks,
+        npred=num_pred_masks,
+        allow_overlap=allow_overlap,
+        min_keep=min_keep)
+
+    train_dataset, supervised_loader_train, supervised_sampler_train = make_paired_batch_dataset(
+            ssl_transform=training_transform,
+            batch_size=batch_size,
+            collator=mask_collator,
+            pin_mem=pin_mem,
+            training=True,
+            num_workers=num_workers,
+            world_size=world_size,
+            rank=rank,
+            root_path=root_path,
+            image_folder=image_folder,
+            copy_data=copy_data,
+            drop_last=False)
+
     ipe = len(supervised_loader_train)
     print('Training dataset, length:', ipe*batch_size)
 
@@ -348,7 +377,7 @@ def main(args, resume_preempt=False):
             'loss': total_loss_meter.avg,
             'parent_loss': parent_cls_loss_meter.avg,
             'subclass_loss': children_cls_loss_meter.avg,
-            'reconstruction_loss': reconstruction_loss_meter.avg,
+            'reconstruction_loss': 0, # TODO: remove
             'k_means_loss': k_means_loss_meter.avg,
             'batch_size': batch_size,
             'world_size': world_size,
@@ -375,10 +404,7 @@ def main(args, resume_preempt=False):
                       pretrained_model=target_encoder,
                       device=device)
     
-    autoencoder = VisionTransformerAutoEncoder()
-    autoencoder.to(device)
 
-    logger.info(autoencoder)
     logger.info(fgdcc.classifier)
 
     # -- Override previously loaded optimization configs.
@@ -386,7 +412,7 @@ def main(args, resume_preempt=False):
     optimizer, AE_optimizer, AE_scheduler, scaler, scheduler, wd_scheduler = init_DC_opt(
         encoder=fgdcc.vit_encoder,
         classifier=fgdcc.classifier,
-        autoencoder=autoencoder,
+        autoencoder=None,
         wd=wd,
         final_wd=final_wd,
         start_lr=start_lr,
@@ -399,7 +425,6 @@ def main(args, resume_preempt=False):
         use_bfloat16=use_bfloat16)
     
     fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=False)
-    autoencoder = DistributedDataParallel(autoencoder, static_graph=True)
     
     # TODO: ADJUST THIS later!
     if resume_epoch != 0:
@@ -426,7 +451,7 @@ def main(args, resume_preempt=False):
     #configs[rank].device = rank
     #configs[rank].useFloat16 = False
 
-    dimensionality=768
+    dimensionality=1280
     K_range = [2,3,4,5]
     k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=dimensionality, k_range=K_range, resources=resources, config=config)
 
@@ -465,152 +490,12 @@ def main(args, resume_preempt=False):
     reverse_idx = reverse_mapping(k_means_idx)
 
     model_noddp = fgdcc.module
-
-    l2_norm = torch.nn.MSELoss()
-    
-    accum_iter = 1
-    autoencoder_steps = 2 # no of training epochs after backbone updating
-    pretraining_epochs = 30
-
-    wup = 140
-    total_epochs = num_epochs * autoencoder_steps + pretraining_epochs + num_epochs
-    ae_lr = 1.0e-6
-    AE_optimizer = torch.optim.AdamW(autoencoder.module.parameters())
-    AE_scheduler = WarmupCosineSchedule(
-        AE_optimizer,
-        warmup_steps=int(wup*ipe),
-        start_lr=ae_lr,
-        ref_lr=1.0e-3,
-        final_lr=1.0e-6,
-        T_max=(int(ipe_scale * total_epochs * ipe)))
-
-    reconstruction_loss_meter = AverageMeter()
-    def train_autoencoder(fgdcc, autoencoder, starting_epoch, use_bfloat16, no_epochs, train_data_loader, cached_features, cold_start=False):
-
-        path = root_path + '/DeepCluster/cache'
-        r_path = path + '/pretrained_autoencoder_768_epoch_{}.pt'
-
-        if starting_epoch == 0:
-            if os.path.exists(r_path):
-                logger.info('Pretrained autoencoder found, loading...')
-                
-                state_dict = torch.load(r_path)
-                            
-                epoch = state_dict['epoch']
-                cached_features = state_dict['cache']
-                
-                autoencoder = autoencoder.module
-                if autoencoder is not None:
-                    pretrained_dict = state_dict['autoencoder']
-                    msg = autoencoder.load_state_dict(pretrained_dict) 
-                    autoencoder = DistributedDataParallel(autoencoder, static_graph=True)
-                    logger.info(f'loaded pretrained autoencoder from epoch {epoch} with msg: {msg}')
-                if AE_optimizer is not None:
-                    AE_optimizer.load_state_dict(state_dict['ae_opt'])
-                    logger.info(f'loaded optimizers from epoch {epoch}')
-
-                # TODO: FIX (not working)
-                for i in range(epoch):
-                    ae_lr = AE_scheduler.step()
-
-                return cached_features, AE_scheduler, AE_optimizer
-
-        def update_cache(cache, bottleneck_output, target):
-            for x, y in zip(bottleneck_output, target):
-                class_id = y.item()
-                if not class_id in cache:
-                    cache[class_id] = []                    
-                cache[class_id].append(x)
-            return cache
-        
-        time_meter = AverageMeter()
-        def log_loss(itr, epoch, ae_lr):
-            if (itr % 100 == 0):
-                logger.info('[%d, %5d/%5d] - [Autoencoder Training]'
-                                                ' [Autoencoder Loss: %.4f]'
-                                                ' [autoencoder lr: %.2e]'
-                                                '[mem: %.2e]'
-                                                '(%.1f ms)'
-
-                                                % (epoch + 1, itr, ipe,
-                                                    reconstruction_loss_meter.avg,                                                    
-                                                    ae_lr,
-                                                    torch.cuda.max_memory_allocated() / 1024.**2,
-                                                    time_meter.avg))
-
-        logger.info('Autoencoder Training...')
-        for epoch_no in range(starting_epoch, (starting_epoch + no_epochs)):    
-            logger.info(' - - Epoch: %d - - ' % (epoch_no + 1))
-
-            for iteration, (x, y) in enumerate(train_data_loader):
-                x = x.to(device, non_blocking=True)
-                def train_step():
-                    ae_lr = AE_scheduler.step()
-                    with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
-                        _, _, subclass_proj_embed = fgdcc(imgs=x, device=device, autoencoder=True, cold_start=cold_start)
-                        
-                        subclass_proj_embed = subclass_proj_embed.clone().detach()
-                        
-                        reconstructed_input, bottleneck_output = autoencoder(subclass_proj_embed, device)
-                        reconstruction_loss = l2_norm(reconstructed_input, subclass_proj_embed)
-                        
-                        reconstruction_loss_meter.update(reconstruction_loss)
-
-                        # On the last epoch of training, update the feature cache and save checkpoint
-                        if epoch_no == (starting_epoch + no_epochs - 1):
-                            compressed_representation = bottleneck_output.clone().detach()
-                            compressed_representation = torch.mean(compressed_representation, dim=1).squeeze(dim=1)
-                            compressed_representation = compressed_representation.to(device=torch.device('cpu'), dtype=torch.float32)
-                            cache = update_cache(cached_features, compressed_representation, y)
-                        else:
-                            cache = cached_features
-
-                        if use_bfloat16:
-                            scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
-                                        parameters=autoencoder.parameters(),
-                                        update_grad=(iteration + 1) % accum_iter == 0)
-                        else:
-                            reconstruction_loss.backward()
-                            AE_optimizer.step()
-
-                        if (iteration + 1) % accum_iter == 0:
-                            AE_optimizer.zero_grad()         
-
-                        return ae_lr, reconstruction_loss, cache
-
-                (ae_lr, reconstruction_loss, cache), elapsed_time = gpu_timer(train_step)
-                cached_features = cache
-
-                time_meter.update(elapsed_time)
-                log_loss(iteration, epoch_no, ae_lr)                     
-            # Epoch end
-            save_dict = {
-                'epoch': epoch_no,
-                'autoencoder': autoencoder.module.state_dict(),
-                'ae_opt': AE_optimizer.state_dict(),
-                'cache': cache 
-            }
-            torch.save(save_dict, r_path.format(epoch_no + 1))            
-            reconstruction_logger.log(epoch_no, ae_lr, reconstruction_loss_meter.avg)
-                
-        return cached_features, AE_scheduler, AE_optimizer # FIXME no need returning scheduler and optimizer
-    
-    fgdcc.eval()
-    cached_features_last_epoch, AE_scheduler, AE_optimizer = train_autoencoder(fgdcc=fgdcc,
-                    autoencoder=autoencoder,
-                    starting_epoch=0,
-                    use_bfloat16=use_bfloat16,
-                    no_epochs=pretraining_epochs,
-                    cold_start=True, 
-                    train_data_loader=supervised_loader_train,
-                    cached_features={})                      
-    autoencoder_global_epoch_cnt = pretraining_epochs
-    ae_lr = 1.0e-6
-
-    cnt = [len(cached_features_last_epoch[key]) for key in cached_features_last_epoch.keys()]
-    assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
     
     empty_clusters_per_epoch = AverageMeter()
+
+    logger.info('Setting up cache...')
+    cached_features_last_epoch = build_cache_v2(data_loader=regular_supervised_loader_train, device=device, target_encoder=fgdcc.module.vit_encoder, path=root_path + '/DeepCluster/cache')  
+    logger.info('Done...')
     
     logger.info('Initializing centroids...')
     k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device)
@@ -645,7 +530,13 @@ def main(args, resume_preempt=False):
             prediction_distribution[target][best_k] += 1
 
     start_epoch = resume_epoch
+
+    VCR = VICReg(args=None, num_features=1280, sim_coeff=25.0, std_coeff=25.0, cov_coeff=1.0)
+    reconstruction_loss_meter = AverageMeter()
+
     T = 1
+    accum_iter = 1
+
     # -- TRAINING LOOP
     for epoch in range(start_epoch, num_epochs):
 
@@ -667,20 +558,22 @@ def main(args, resume_preempt=False):
         prediction_distribution, idx_map_to_best_k = setup_k_dist_analysis(k_means_idx)
 
         cached_features = {}
-        for itr, (sample, target) in enumerate(supervised_loader_train):
+        for itr, (((image1, target), (image2, _)), masks_enc, masks_pred) in enumerate(supervised_loader_train):
+            
             def load_imgs():
-                samples = sample.to(device, non_blocking=True)
-                targets = target.to(device, non_blocking=True)
+                imgs_1 = image1.to(device, non_blocking=True)
+                imgs_2 = image2.to(device, non_blocking=True)
+                targets = target.to(device, non_blocking=True)                
                 
                 # TODO: Verify how to add mixup in this hierarchical setting.     
                 if mixup_fn is not None:
                     samples, targets = mixup_fn(samples, targets)
-                return (samples, targets)
+                return (imgs_1, imgs_2, targets)
             
-            imgs, targets = load_imgs()
+            imgs_1, imgs_2, targets = load_imgs()
 
             def train_step():
-                _new_AE_lr = AE_scheduler.step()    
+                _new_AE_lr = 0
                 _new_lr = scheduler.step() 
                 _new_wd = wd_scheduler.step()
                 
@@ -691,18 +584,21 @@ def main(args, resume_preempt=False):
 
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
 
-                    parent_logits, subclass_logits, subclass_proj_embed = fgdcc(imgs, device)
+                    parent_logits, subclass_logits, subclass_proj_embed = fgdcc(imgs_1, device)
 
+                    with torch.no_grad():
+                        _, _, subclass_proj_embed_2 = fgdcc(imgs_2, device)
 
-                    reconstructed_input, compressed_features = autoencoder(subclass_proj_embed, device)
-                    reconstruction_loss = l2_norm(reconstructed_input, subclass_proj_embed)
-
-                    bottleneck_output = compressed_features.clone().detach()
-                    bottleneck_output = torch.mean(bottleneck_output, dim=1).squeeze(dim=1)
+                    subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
+                    subclass_proj_embed_2 = torch.mean(subclass_proj_embed_2, dim=1).squeeze(dim=1)
+                    
+                    vicreg_loss = VCR(subclass_proj_embed, subclass_proj_embed)
+                    vicreg_loss_meter.update(vicreg_loss)
+                    
+                    bottleneck_output = subclass_proj_embed
 
                     #-- Compute K-Means assignments with disabled autocast for better precision
                     with torch.cuda.amp.autocast(enabled=False): 
-                        #k_means_losses, k_means_assignments = k_means_module.assign(x=bottleneck_output, y=target, resources=resources, rank=rank, device=device, cached_features=cached_features_last_epoch)  
                         k_means_losses, best_K_classifiers, cluster_assignments = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
 
                     loss = criterion(parent_logits, targets)
@@ -724,17 +620,15 @@ def main(args, resume_preempt=False):
                     # -- Setup losses
                     k_means_loss = 0
                     consistency_loss = 0
-                    vicreg_loss = 0
-                                        
+
                     k_means_losses = k_means_losses.squeeze(2).transpose(0,1)
                     k_means_loss = k_means_losses[best_K_classifiers, torch.arange(best_K_classifiers.size(0))].mean()
 
                     children_cls_loss_meter.update(subclass_loss)
                                         
                     # Sum parent, subclass loss + Regularizers
-                    loss = loss + subclass_loss # + 0.25 * reconstruction_loss
+                    loss = loss + subclass_loss + vicreg_loss # + 0.25 * reconstruction_loss
                     
-                    reconstruction_loss_meter.update(reconstruction_loss)
 
                     # FIXME: this won't work as expected since its a constant
                     #reconstruction_loss = reconstruction_loss +  0.25 * k_means_loss # Add K-means distances term as penalty to enforce a "k-means friendly space" 
@@ -749,34 +643,25 @@ def main(args, resume_preempt=False):
                 # FIXME
                 if accum_iter > 1: 
                     loss_value = loss.item()
-                    reconstruction_loss_value = reconstruction_loss.item()
 
                     loss /= accum_iter
-                    reconstruction_loss /= accum_iter
                 else:
                     loss_value = loss
-                    reconstruction_loss_value = reconstruction_loss 
 
                 #  Step 2. Backward & step
-                if use_bfloat16:
-                    scaler(reconstruction_loss, AE_optimizer, clip_grad=1.0,
-                                parameters=autoencoder.module.parameters(), create_graph=False, retain_graph=False,
-                                update_grad=(itr + 1) % accum_iter == 0)                    
+                if use_bfloat16:                   
                     scaler(loss, optimizer, clip_grad=None,
                                 parameters=(fgdcc.module.parameters()),
                                 create_graph=False, retain_graph=False,
                                 update_grad=(itr + 1) % accum_iter == 0) # Scaling is only necessary when using bfloat16.   
                 else:
-                    reconstruction_loss.backward()
                     loss.backward()
                     optimizer.step()
-                    AE_optimizer.step()
 
                 grad_stats = grad_logger(list(fgdcc.module.vit_encoder.named_parameters())+ list(fgdcc.module.classifier.named_parameters()))
                 
                 if (itr + 1) % accum_iter == 0:
                     optimizer.zero_grad()
-                    AE_optimizer.zero_grad()
 
                 return (float(loss), float(k_means_loss), _new_AE_lr, _new_lr, _new_wd, grad_stats, bottleneck_output)
 
@@ -809,10 +694,6 @@ def main(args, resume_preempt=False):
                                     ae_lr,
                                     torch.cuda.max_memory_allocated() / 1024.**2,
                                     time_meter.avg))
-                    
-                    reconstruction_logger.log(autoencoder_global_epoch_cnt + 1,
-                        ae_lr,
-                        reconstruction_loss_meter.avg)
 
                     if grad_stats is not None:
                         logger.info('[%d, %5d] grad_stats: [%.2e %.2e] (%.2e, %.2e)'
@@ -849,17 +730,6 @@ def main(args, resume_preempt=False):
         output = open(folder+filename, 'wb')
         pickle.dump(prediction_distribution, output)
         output.close()
-
-        fgdcc.eval()
-        autoencoder_global_epoch_cnt += 1
-        cached_features, AE_scheduler, AE_optimizer = train_autoencoder(fgdcc=fgdcc,
-                        autoencoder=autoencoder,
-                        starting_epoch=autoencoder_global_epoch_cnt,
-                        use_bfloat16=use_bfloat16,
-                        no_epochs=autoencoder_steps,
-                        train_data_loader=supervised_loader_train,
-                        cached_features={})
-        autoencoder_global_epoch_cnt +=  autoencoder_steps
 
         if world_size > 1:
             # Convert cache to list format for gathering
@@ -935,10 +805,6 @@ def main(args, resume_preempt=False):
             crossentropy = torch.nn.CrossEntropyLoss()
             supervised_sampler_val.set_epoch(epoch) # -- Enable shuffling to reduce monitor bias
 
-            #reverse_class_idx = {}
-            #for key in class_idx_map.keys():
-            #    reverse_class_idx[class_idx_map[key]] = key   
-
             for cnt, (samples, targets) in enumerate(supervised_loader_val):
                 images = samples.to(device, non_blocking=True)
                 labels = targets.to(device, non_blocking=True)
@@ -947,24 +813,13 @@ def main(args, resume_preempt=False):
                     parent_logits, subclass_logits, _ = fgdcc(images, device)
 
                     predictions = torch.argmax(subclass_logits, dim=1)
-                    
-                    #predictions = subclass_logits[torch.arange(subclass_logits.size(0)), torch.argmax(subclass_logits, dim=1)]
-                    # Converts a batch of cluster assignment predictions to their corresponding class ids
                     subclass_predictions = torch.tensor([reverse_idx[pred.item()] for pred in predictions]).to(device) 
-
-                    #loss = crossentropy(subclass_predictions, labels) # FIXME this won't work because we need logits
                     loss = 0
-                #labels = [key for key in class_idx_map.keys()]
-                #acc1 = top_k_accuracy_score(y_score=subclass_predictions.cpu().numpy(), y_true=labels.cpu().numpy(), k=1, labels=[key for key in class_idx_map.keys()])
-                #acc5 = top_k_accuracy_score(y_score=subclass_predictions.cpu().numpy(), y_true=labels.cpu().numpy(), k=5, labels=[key for key in class_idx_map.keys()])
                 acc1, acc5 = accuracy(subclass_predictions, labels, topk=(1, 5))
-
-                #acc1, acc5 = accuracy(parent_logits, labels, topk=(1, 5))
 
                 testAcc1.update(acc1)
                 testAcc5.update(acc5)
                 test_loss.update(loss)
-                # break TODO: REMOVE
         
         vtime = gpu_timer(evaluate)
 

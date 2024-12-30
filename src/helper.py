@@ -228,20 +228,21 @@ def init_model(
     return encoder, predictor
 
 
-def build_cache_v2(data_loader, device, target_encoder, hierarchical_classifier, path):   
+def build_cache_v2(data_loader, device, target_encoder, path, hierarchical_classifier=None):   
 
     target_encoder.eval()
-    hierarchical_classifier.eval()
+    if not hierarchical_classifier is None: 
+        hierarchical_classifier.eval()
 
     items = []
     def forward_inputs():
-        with torch.no_grad():
-            for itr, (sample, target) in enumerate(data_loader):
-                def load_imgs():
-                    samples = sample.to(device, non_blocking=True)
-                    targets = target.to(device, non_blocking=True)
-                    return (samples, targets)
-                imgs, _ = load_imgs()            
+        for itr, (sample, target) in enumerate(data_loader):
+            def load_imgs():
+                samples = sample.to(device, non_blocking=True)
+                targets = target.to(device, non_blocking=True)
+                return (samples, targets)
+            imgs, _ = load_imgs()
+            with torch.no_grad():            
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=True):            
                     h = target_encoder(imgs)
                     h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
@@ -258,14 +259,17 @@ def build_cache_v2(data_loader, device, target_encoder, hierarchical_classifier,
                     cache[class_id] = []                    
                 cache[class_id].append(x)
         return cache
-    if not os.path.exists(path + '/integral_cached_features_epoch_0.pt'):
+    if not os.path.exists(path + '/cached_features_1280_epoch_0.pt'):
         forward_inputs()
         cache = build_feature_cache()
-        torch.save(cache, path + '/integral_cached_features_epoch_0.pt')
+        torch.save(cache, path + '/cached_features_1280_epoch_0.pt')
     else:
-        cache = torch.load(path + '/integral_cached_features_epoch_0.pt')        
+        cache = torch.load(path + '/cached_features_1280_epoch_0.pt')        
     target_encoder.train(True)
-    hierarchical_classifier.train(True)
+    
+    if not hierarchical_classifier is None: 
+        hierarchical_classifier.train(True)
+
     return cache
 
 def build_cache(data_loader, device, target_encoder, hierarchical_classifier, autoencoder, path):   
@@ -393,7 +397,10 @@ def init_DC_opt(
 
     logger.info('Using AdamW')
     optimizer = torch.optim.AdamW(list(encoder.parameters()) + list(classifier.parameters()))
-    AE_optimizer = torch.optim.AdamW(autoencoder.parameters())
+    
+    AE_optimizer = None
+    if not autoencoder is None:
+        AE_optimizer = torch.optim.AdamW(autoencoder.parameters())
     
     AE_scheduler = WarmupCosineSchedule(
         AE_optimizer,

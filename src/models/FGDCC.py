@@ -16,7 +16,7 @@ from src.models.paired_multi_head_attention_classifier import PairedCrossAttenti
 
 class FGDCC(nn.Module):
 
-    def __init__(self, vit_backbone, classifier, autoencoder, backbone_patch_mean=False, raw_features=False):
+    def __init__(self, vit_backbone, classifier, backbone_patch_mean=False, raw_features=False):
         super(FGDCC, self).__init__()        
         self.backbone_patch_mean = backbone_patch_mean
         self.vit_encoder = vit_backbone
@@ -41,7 +41,6 @@ class FGDCC(nn.Module):
                 return 0,0, h
             else:
                 parent_logits, subclass_logits, subclass_proj_embed = self.classifier(h)
-                subclass_proj_embed = subclass_proj_embed.clone().detach()
                 return parent_logits, subclass_logits, subclass_proj_embed
 
         else:
@@ -72,6 +71,6 @@ def get_model(embed_dim, drop_path, nb_classes, K_range, proj_embed_dim, pretrai
                                       num_heads=8,
                                       nb_subclasses_per_parent=K_range)
 
-    model = FGDCC(vit_backbone=pretrained_model, classifier=cls, autoencoder=VisionTransformerAutoEncoder(), raw_features=raw_features)
+    model = FGDCC(vit_backbone=pretrained_model, classifier=cls, raw_features=raw_features)
     model.to(device)
     return model                 
