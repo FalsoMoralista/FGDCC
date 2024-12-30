@@ -48,9 +48,7 @@ class FGDCC(nn.Module):
             h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
 
         parent_logits, subclass_logits, subclass_proj_embed = self.classifier(h)
-        
-        subclass_proj_embed = subclass_proj_embed.clone().detach() # detaching to prevent backprop from autoencoder to the backbone
-        
+                
         return parent_logits, subclass_logits, subclass_proj_embed
 
 

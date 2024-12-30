@@ -62,7 +62,9 @@ from src.helper import (
     )
 
 from src.models import FGDCC
+from src.models.classification_model import ClassificationModel
 from src.models.transformer_autoencoder import VisionTransformerAutoEncoder
+
 from src.transforms import make_transforms
 import time
 
@@ -234,7 +236,7 @@ def main(args, resume_preempt=False):
         pred_emb_dim=pred_emb_dim,
         model_name=model_name)
     target_encoder = copy.deepcopy(encoder)
-    target_encoder = DistributedDataParallel(target_encoder, static_graph=True) # Wrap around ddp. to make state dict compatible?
+    target_encoder = DistributedDataParallel(target_encoder, static_graph=True)
 
     training_transform = make_transforms( 
         crop_size=crop_size,
@@ -395,14 +397,15 @@ def main(args, resume_preempt=False):
     proj_embed_dim = 1280
     
     K_range = [2,3,4,5]
-    num_classes = nb_classes * sum([K for K in K_range])
-    fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
-                      drop_path=drop_path,
-                      nb_classes=num_classes,
-                      K_range = K_range,
-                      proj_embed_dim=proj_embed_dim,
-                      pretrained_model=target_encoder,
-                      device=device)
+    fgdcc = ClassificationModel(vit_backbone=target_encoder, embed_dim=proj_embed_dim, nb_classes=1081).to(device)
+    
+    #fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
+    #                  drop_path=drop_path,
+    #                  nb_classes=num_classes,
+    #                  K_range = K_range,
+    #                  proj_embed_dim=proj_embed_dim,
+    #                  pretrained_model=target_encoder,
+    #                  device=device)
     
 
     logger.info(fgdcc.classifier)
@@ -542,7 +545,7 @@ def main(args, resume_preempt=False):
 
         logger.info('Epoch %d' % (epoch + 1))
         
-        supervised_sampler_train.set_epoch(epoch) # Calling the set_epoch() method at the beginning of each epoch before creating the DataLoader iterator is necessary to make shuffling work properly across multiple epochs.
+        supervised_sampler_train.set_epoch(epoch) 
         
         total_loss_meter = AverageMeter()
         parent_cls_loss_meter = AverageMeter()
@@ -584,15 +587,16 @@ def main(args, resume_preempt=False):
 
                 with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
 
-                    parent_logits, subclass_logits, subclass_proj_embed = fgdcc(imgs_1, device)
+                    parent_logits, subclass_logits, subclass_proj_embed = fgdcc(imgs_1)
 
                     with torch.no_grad():
-                        _, _, subclass_proj_embed_2 = fgdcc(imgs_2, device)
+                        _, _, subclass_proj_embed_2 = fgdcc(imgs_2)
 
                     subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
                     subclass_proj_embed_2 = torch.mean(subclass_proj_embed_2, dim=1).squeeze(dim=1)
                     
                     vicreg_loss = VCR(subclass_proj_embed, subclass_proj_embed)
+                    
                     vicreg_loss_meter.update(vicreg_loss)
 
                     bottleneck_output = subclass_proj_embed
@@ -601,7 +605,7 @@ def main(args, resume_preempt=False):
                     with torch.cuda.amp.autocast(enabled=False): 
                         k_means_losses, best_K_classifiers, cluster_assignments = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
 
-                    loss = criterion(parent_logits, targets)
+                    loss =  0 # criterion(parent_logits, targets)
                     parent_cls_loss_meter.update(loss)
                                         
                     k_means_idx_targets = torch.zeros_like(targets)
