@@ -72,6 +72,7 @@ import time
 from timm.data.mixup import Mixup
 from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
 #from timm.utils import accuracy
+from sklearn.metrics import accuracy_score
 
 
 import pickle
@@ -595,7 +596,7 @@ def main(args, resume_preempt=False):
                     subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
                     subclass_proj_embed_2 = torch.mean(subclass_proj_embed_2, dim=1).squeeze(dim=1)
                     
-                    vicreg_loss = VCR(subclass_proj_embed, subclass_proj_embed)
+                    vicreg_loss = VCR(subclass_proj_embed, subclass_proj_embed_2)
                     
                     vicreg_loss_meter.update(vicreg_loss)
 
@@ -814,13 +815,15 @@ def main(args, resume_preempt=False):
                 labels = targets.to(device, non_blocking=True)
                                  
                 with torch.cuda.amp.autocast():
-                    parent_logits, subclass_logits, _ = fgdcc(images, device)
+                    parent_logits, subclass_logits, _ = fgdcc(images)
 
                     predictions = torch.argmax(subclass_logits, dim=1)
                     subclass_predictions = torch.tensor([reverse_idx[pred.item()] for pred in predictions]).to(device) 
-                    loss = 0
-                acc1, acc5 = accuracy(subclass_predictions, labels, topk=(1, 5))
+                    loss = 0                
+                acc1 = accuracy_score(y_true=targets.numpy(), y_pred=subclass_predictions.cpu().numpy())
+                #acc1, acc5 = accuracy(subclass_predictions, labels, topk=(1, 5))
 
+                acc5 = 0
                 testAcc1.update(acc1)
                 testAcc5.update(acc5)
                 test_loss.update(loss)
