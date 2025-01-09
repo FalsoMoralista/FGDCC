@@ -44,9 +44,9 @@ class KMeansModule:
         def two_by_two_combinations(values):
             return list(itertools.combinations(values, 2))
 
-        S_score = torch.zeros(len(self.k_range), device=device)
+        S_scores = torch.zeros(len(self.k_range), device=device)
         target_K_Means = self.n_kmeans[cls]
-
+        
         for k_i, k in enumerate(self.k_range):
             centroids = target_K_Means[k_i].centroids
 
@@ -54,13 +54,13 @@ class KMeansModule:
 
             # Extract the centroid pairs in a single operation
             centroid_pairs = centroids[pairs]
-            
+
             # Compute cosine similarity in a vectorized way
             cosine_similarities = F.cosine_similarity(centroid_pairs[:, 0], centroid_pairs[:, 1], dim=1)
             
             # Accumulate the sum of cosine similarities
-            S_score[k_i] = cosine_similarities.sum()
-        return S_score
+            S_scores[k_i] = cosine_similarities.sum() / len(pairs) # averaging by the number of combinations because in its original formulation it favours large values of K
+        return S_scores
 
     def cosine_cluster_index(self, xb, yb, current_cache, last_epoch_cache, device):
 
@@ -72,24 +72,30 @@ class KMeansModule:
             class_id = yb[i].item()
             sample = xb[i].unsqueeze(0)
 
-            image_list = current_cache.get(class_id, last_epoch_cache.get(class_id))
+            image_list = current_cache.get(class_id, last_epoch_cache.get(class_id))  # TODO: repensar isso
+
             batch_x = torch.stack(image_list).to(device, dtype=torch.float32)
-            batch_x = torch.cat((batch_x, sample), dim=0).detach()
+            batch_x = torch.cat((batch_x, sample), dim=0)
 
             S_scores = self.inter_cluster_separation(class_id, device=device)
+
             target_K_Means = self.n_kmeans[class_id]
-            
+
             D_k = [] 
             C_scores = torch.zeros(len(self.k_range), device=device)
             for k_i, k_range in enumerate(self.k_range):
                 D, batch_assignments = target_K_Means[k_i].index.search(batch_x, 1)
                 batch_assignments = batch_assignments.squeeze(-1)
                 D_k.append(D[0])
-                centroids = target_K_Means[k_i].centroids                
+
+                centroids = target_K_Means[k_i].centroids
+
                 centroid_list = centroids[batch_assignments] 
+
                 # Compute the cosine similarity between every image and the cluster centroid to which is associated to
                 C_score = F.cosine_similarity(batch_x, centroid_list)
                 C_scores[k_i] = C_score.sum()
+
             D_batch.append(torch.stack(D_k))
             CCI = S_scores / (C_scores + S_scores)
             best_K_values[i] = CCI.argmax().item()

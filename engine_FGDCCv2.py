@@ -478,6 +478,21 @@ def main(args, resume_preempt=False):
                     global_index += 1
         return new_idx
 
+    def cluster_assignment_distribution(class_idx_map):
+        new_idx = {}
+        for key in class_idx_map.keys():
+            key = class_idx_map[key]
+            for k in K_range:
+                if new_idx.get(key, None) is None:
+                    new_idx[key] = {}
+                for i in range(k):
+                    if new_idx[key].get(k, None) is None:
+                        new_idx[key][k] = {}
+                    elif new_idx[key][k].get(i, None) is None:      
+                        new_idx[key][k][i] = {}
+                    new_idx[key][k][i] = 0
+        return new_idx
+
     def reverse_mapping(class_idx_map):
         '''
             Maps between cluster assignments and parent classes.
@@ -509,7 +524,7 @@ def main(args, resume_preempt=False):
 
     def setup_k_dist_analysis(class_idx_mapping):
         '''
-            Analyze how the best-k selection changes across epochs.
+            Analyze how the cluster assignments are being distributed through epochs.
         '''
         idx_map_to_best_k = {} # Maps between cluster assignment and corresponding K value
         prediction_distribution = {} # Keeps track of the distribution of K value predictions
@@ -535,7 +550,7 @@ def main(args, resume_preempt=False):
 
     start_epoch = resume_epoch
 
-    VCR = VICReg(args=None, num_features=1280, sim_coeff=25.0, std_coeff=25.0, cov_coeff=1.0)
+    VCR = VICReg(args=None, num_features=1280, sim_coeff=5.0, std_coeff=25.0, cov_coeff=1.0)
     reconstruction_loss_meter = AverageMeter()
 
     T = 1
@@ -560,6 +575,8 @@ def main(args, resume_preempt=False):
         fgdcc.train(True)
 
         prediction_distribution, idx_map_to_best_k = setup_k_dist_analysis(k_means_idx)
+
+        prediction_distribution = cluster_assignment_distribution(class_idx_map)
 
         cached_features = {}
         for itr, (((image1, target), (image2, _)), masks_enc, masks_pred) in enumerate(supervised_loader_train):
@@ -615,12 +632,13 @@ def main(args, resume_preempt=False):
                         best_k_id = best_K_classifiers[i].item()
                         cluster_assignment = cluster_assignments[i].item()
                         k_means_idx_targets[i] = k_means_idx[class_id][best_k_id+2][cluster_assignment]
+                        prediction_distribution[class_id][best_k_id+2][cluster_assignment] += 1 # FIXME change name
                     subclass_loss = criterion(subclass_logits, k_means_idx_targets)
                     
-                    update_cluster_counts(y_pred=torch.argmax(subclass_logits, dim=1),
-                                          y_hat=targets,
-                                          prediction_distribution=prediction_distribution,
-                                          idx_map_to_best_k=idx_map_to_best_k)
+                    #update_cluster_counts(y_pred=torch.argmax(subclass_logits, dim=1),
+                    #                      y_hat=targets,
+                    #                      prediction_distribution=prediction_distribution,
+                    #                      idx_map_to_best_k=idx_map_to_best_k)
 
                     # -- Setup losses
                     k_means_loss = 0
@@ -820,7 +838,7 @@ def main(args, resume_preempt=False):
                     predictions = torch.argmax(subclass_logits, dim=1)
                     subclass_predictions = torch.tensor([reverse_idx[pred.item()] for pred in predictions]).to(device) 
                     loss = 0                
-                acc1 = accuracy_score(y_true=targets.numpy(), y_pred=subclass_predictions.cpu().numpy())
+                acc1 = accuracy_score(y_true=targets.numpy(), y_pred=subclass_predictions.cpu().numpy()) * 100
                 #acc1, acc5 = accuracy(subclass_predictions, labels, topk=(1, 5))
 
                 acc5 = 0

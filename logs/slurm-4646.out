@@ -21,7 +21,7 @@ INFO:root:loaded params...
                 'use_color_distortion': False,
                 'use_gaussian_blur': False,
                 'use_horizontal_flip': False},
-    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp48',
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp49',
                    'write_tag': 'jepa'},
     'mask': {   'allow_overlap': False,
                 'aspect_ratio': [0.75, 1.5],
@@ -95,3 +95,7 @@ INFO:root:Initializing centroids...
 INFO:root:Update Step...
 /home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/faiss/contrib/torch_utils.py:51: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
   x.storage().data_ptr() + x.storage_offset() * 4)
+INFO:root:Epoch 1
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+slurmstepd: error: *** JOB 4646 ON hgx CANCELLED AT 2025-01-02T17:08:31 ***
