@@ -607,13 +607,13 @@ def main(args, resume_preempt=False):
 
                     parent_logits, subclass_logits, subclass_proj_embed = fgdcc(imgs_1)
 
-                    with torch.no_grad():
-                        _, _, subclass_proj_embed_2 = fgdcc(imgs_2)
+                    #with torch.no_grad():
+                    #    _, _, subclass_proj_embed_2 = fgdcc(imgs_2) # TODO: uncomment
 
                     subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
-                    subclass_proj_embed_2 = torch.mean(subclass_proj_embed_2, dim=1).squeeze(dim=1)
+                    #subclass_proj_embed_2 = torch.mean(subclass_proj_embed_2, dim=1).squeeze(dim=1) # TODO: uncomment
                     
-                    vicreg_loss = VCR(subclass_proj_embed, subclass_proj_embed_2)
+                    vicreg_loss = 0 #VCR(subclass_proj_embed, subclass_proj_embed_2) # TODO: uncomment
                     
                     vicreg_loss_meter.update(vicreg_loss)
 
@@ -635,11 +635,6 @@ def main(args, resume_preempt=False):
                         prediction_distribution[class_id][best_k_id+2][cluster_assignment] += 1 # FIXME change name
                     subclass_loss = criterion(subclass_logits, k_means_idx_targets)
                     
-                    #update_cluster_counts(y_pred=torch.argmax(subclass_logits, dim=1),
-                    #                      y_hat=targets,
-                    #                      prediction_distribution=prediction_distribution,
-                    #                      idx_map_to_best_k=idx_map_to_best_k)
-
                     # -- Setup losses
                     k_means_loss = 0
                     consistency_loss = 0
@@ -743,17 +738,15 @@ def main(args, resume_preempt=False):
                  With this in mind we have to synchronize the update across all devices such that it is mantained consistent across all of them.
                  TODO: implement broadcasting solution.
             '''
-            #break # TODO : REMOVE
             cached_features = update_cache(cached_features)     
         # -- End of Epoch      
-        #cached_features = cached_features_last_epoch # TODO: remove
         
         # Save prediction distribution
         filename = '/cluster_distribution_epoch_{}.pkl'.format(epoch + 1)
         output = open(folder+filename, 'wb')
         pickle.dump(prediction_distribution, output)
         output.close()
-
+        
         if world_size > 1:
             # Convert cache to list format for gathering
             cache_list = [(key, torch.stack(value)) for key, value in cached_features.items()]
@@ -783,6 +776,11 @@ def main(args, resume_preempt=False):
         # Assert everything went fine
         cnt = [len(cached_features[key]) for key in cached_features.keys()]    
         assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
+        
+        filename = '/cached_features_1280_epoch_{}.pkl'.format(epoch + 1)
+        output = open(folder+filename, 'wb')
+        pickle.dump(cached_features, output)
+        output.close() 
 
         if (epoch + 1) % T == 0:
             logger.info('Reinitializing centroids')
@@ -797,8 +795,9 @@ def main(args, resume_preempt=False):
         
         # -- Perform M step on K-means module
         M_losses = k_means_module.update(cached_features, device, empty_clusters_per_epoch)
-        print('Avg no of empty clusters:', empty_clusters_per_epoch.avg)
-    
+        
+        print('Avg no of empty clusters:', empty_clusters_per_epoch.avg) # FIXME: this doesn't work      
+
         cached_features_last_epoch = copy.deepcopy(cached_features)
 
         testAcc1 = AverageMeter()

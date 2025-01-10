@@ -1,0 +1,358 @@
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:called-params configs/in1k_vith14_ep300_FGDCC.yaml
+INFO:root:loaded params...
+{   'data': {   'batch_size': 96,
+                'color_jitter_strength': 0.0,
+                'crop_scale': [0.3, 1.0],
+                'crop_size': 224,
+                'cutmix': 0.0,
+                'drop_path': 0.25,
+                'image_folder': '/home/rtcalumby/adam/luciano/plantnet_300K/',
+                'mixup': 0.0,
+                'nb_classes': 1081,
+                'num_workers': 16,
+                'pin_mem': True,
+                'reprob': 0.25,
+                'resume_epoch': 0,
+                'root_path': '/home/rtcalumby/adam/luciano/',
+                'use_color_distortion': False,
+                'use_gaussian_blur': False,
+                'use_horizontal_flip': False},
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp52',
+                   'write_tag': 'jepa'},
+    'mask': {   'allow_overlap': False,
+                'aspect_ratio': [0.75, 1.5],
+                'enc_mask_scale': [0.85, 1.0],
+                'min_keep': 10,
+                'num_enc_masks': 1,
+                'num_pred_masks': 4,
+                'patch_size': 14,
+                'pred_mask_scale': [0.15, 0.2]},
+    'meta': {   'copy_data': False,
+                'load_checkpoint': True,
+                'model_name': 'vit_huge',
+                'pred_depth': 12,
+                'pred_emb_dim': 384,
+                'read_checkpoint': None,
+                'use_bfloat16': True},
+    'optimization': {   'ema': [0.9, 0.999],
+                        'epochs': 50,
+                        'final_lr': 1e-05,
+                        'final_weight_decay': 0.4,
+                        'ipe_scale': 1.0,
+                        'label_smoothing': 0.1,
+                        'lr': 0.00035,
+                        'start_lr': 9e-05,
+                        'warmup': 35,
+                        'weight_decay': 0.05}}
+INFO:root:Running... (rank: 0/1)
+INFO:root:Initialized (rank/world-size) 0/1
+INFO:root:making imagenet data transforms
+INFO:root:making imagenet data transforms
+INFO:root:Finetuning dataset created
+INFO:root:PairedDataset created
+Training dataset, length: 245952
+INFO:root:Finetuning dataset created
+Val dataset, length: 31200
+INFO:root:Using AdamW
+['encoder', 'predictor', 'opt', 'scaler', 'target_encoder', 'epoch', 'loss', 'batch_size', 'world_size', 'lr']
+INFO:root:loaded pretrained encoder from epoch 66 with msg: <All keys matched successfully>
+INFO:root:ClassificationHead(
+  (classifier): Linear(in_features=1280, out_features=15134, bias=True)
+)
+INFO:root:Using AdamW
+INFO:root:VisionTransformer(
+  (patch_embed): PatchEmbed(
+    (proj): Conv2d(3, 1280, kernel_size=(14, 14), stride=(14, 14))
+  )
+  (blocks): ModuleList(
+    (0-31): 32 x Block(
+      (norm1): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1280, out_features=3840, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1280, out_features=1280, bias=True)
+        (proj_drop): Dropout(p=0.0, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1280, out_features=5120, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=5120, out_features=1280, bias=True)
+        (drop): Dropout(p=0.0, inplace=False)
+      )
+    )
+  )
+  (norm): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+)
+INFO:root:Setting up cache...
+INFO:root:Done...
+INFO:root:Initializing centroids...
+INFO:root:Update Step...
+/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/faiss/contrib/torch_utils.py:51: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  x.storage().data_ptr() + x.storage_offset() * 4)
+INFO:root:Epoch 1
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[1,     0/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 9.6246 -Autoencoder Loss (total): 192.7029 - Reconstruction/K-Means Loss: [0.0000 / 192.7029] - Consistency Loss: [0.0000] - VICReg Loss: [26.9768][wd: 5.00e-02] [lr: 9.00e-05] [autoencoder lr: 0.00e+00][mem: 6.12e+04] (3414.0 ms)
+INFO:root:[1,     0] grad_stats: [1.19e+00 8.37e+00] (9.22e-01, 2.34e+01)
+INFO:root:[1,    50/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 8.3743 -Autoencoder Loss (total): 468.3352 - Reconstruction/K-Means Loss: [0.0000 / 468.3352] - Consistency Loss: [0.0000] - VICReg Loss: [22.7806][wd: 5.00e-02] [lr: 9.01e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1461.2 ms)
+INFO:root:[1,    50] grad_stats: [1.13e-01 4.76e-01] (4.13e-03, 3.68e+00)
+INFO:root:[1,   100/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 7.6079 -Autoencoder Loss (total): 502.8615 - Reconstruction/K-Means Loss: [0.0000 / 502.8615] - Consistency Loss: [0.0000] - VICReg Loss: [22.2471][wd: 5.00e-02] [lr: 9.03e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1444.4 ms)
+INFO:root:[1,   100] grad_stats: [6.79e-02 5.83e-01] (7.45e-03, 3.58e+00)
+INFO:root:[1,   150/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 7.2945 -Autoencoder Loss (total): 513.8832 - Reconstruction/K-Means Loss: [0.0000 / 513.8832] - Consistency Loss: [0.0000] - VICReg Loss: [21.8081][wd: 5.00e-02] [lr: 9.04e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1441.4 ms)
+INFO:root:[1,   150] grad_stats: [6.18e-02 3.78e-01] (1.45e-02, 3.27e+00)
+INFO:root:[1,   200/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 7.1308 -Autoencoder Loss (total): 524.5047 - Reconstruction/K-Means Loss: [0.0000 / 524.5047] - Consistency Loss: [0.0000] - VICReg Loss: [21.4866][wd: 5.00e-02] [lr: 9.06e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1441.7 ms)
+INFO:root:[1,   200] grad_stats: [4.03e-02 4.96e-01] (1.53e-02, 3.41e+00)
+INFO:root:[1,   250/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.9942 -Autoencoder Loss (total): 530.3318 - Reconstruction/K-Means Loss: [0.0000 / 530.3318] - Consistency Loss: [0.0000] - VICReg Loss: [21.2396][wd: 5.00e-02] [lr: 9.07e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1443.7 ms)
+INFO:root:[1,   250] grad_stats: [6.84e-02 4.89e-01] (2.72e-02, 3.39e+00)
+INFO:root:[1,   300/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.8855 -Autoencoder Loss (total): 535.0773 - Reconstruction/K-Means Loss: [0.0000 / 535.0773] - Consistency Loss: [0.0000] - VICReg Loss: [21.0332][wd: 5.00e-02] [lr: 9.09e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1446.4 ms)
+INFO:root:[1,   300] grad_stats: [6.81e-02 5.88e-01] (3.49e-02, 4.71e+00)
+INFO:root:[1,   350/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.8005 -Autoencoder Loss (total): 540.5383 - Reconstruction/K-Means Loss: [0.0000 / 540.5383] - Consistency Loss: [0.0000] - VICReg Loss: [20.8521][wd: 5.00e-02] [lr: 9.10e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1449.4 ms)
+INFO:root:[1,   350] grad_stats: [6.74e-02 5.96e-01] (3.48e-02, 3.78e+00)
+INFO:root:[1,   400/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.7262 -Autoencoder Loss (total): 544.2559 - Reconstruction/K-Means Loss: [0.0000 / 544.2559] - Consistency Loss: [0.0000] - VICReg Loss: [20.6901][wd: 5.00e-02] [lr: 9.12e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1453.1 ms)
+INFO:root:[1,   400] grad_stats: [8.03e-02 6.62e-01] (3.99e-02, 3.48e+00)
+INFO:root:[1,   450/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.6545 -Autoencoder Loss (total): 546.3656 - Reconstruction/K-Means Loss: [0.0000 / 546.3656] - Consistency Loss: [0.0000] - VICReg Loss: [20.5466][wd: 5.00e-02] [lr: 9.13e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1457.0 ms)
+INFO:root:[1,   450] grad_stats: [8.19e-02 7.01e-01] (3.46e-02, 4.59e+00)
+INFO:root:[1,   500/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.6603 -Autoencoder Loss (total): 548.5673 - Reconstruction/K-Means Loss: [0.0000 / 548.5673] - Consistency Loss: [0.0000] - VICReg Loss: [20.4180][wd: 5.00e-02] [lr: 9.15e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1461.1 ms)
+INFO:root:[1,   500] grad_stats: [1.10e-01 7.57e-01] (5.87e-02, 3.71e+00)
+INFO:root:[1,   550/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.6224 -Autoencoder Loss (total): 550.5965 - Reconstruction/K-Means Loss: [0.0000 / 550.5965] - Consistency Loss: [0.0000] - VICReg Loss: [20.3011][wd: 5.00e-02] [lr: 9.16e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1465.6 ms)
+INFO:root:[1,   550] grad_stats: [1.20e-01 7.58e-01] (5.41e-02, 3.59e+00)
+INFO:root:[1,   600/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.5695 -Autoencoder Loss (total): 551.4773 - Reconstruction/K-Means Loss: [0.0000 / 551.4773] - Consistency Loss: [0.0000] - VICReg Loss: [20.1963][wd: 5.00e-02] [lr: 9.17e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1470.2 ms)
+INFO:root:[1,   600] grad_stats: [1.47e-01 6.23e-01] (7.31e-02, 3.19e+00)
+INFO:root:[1,   650/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.5186 -Autoencoder Loss (total): 553.3001 - Reconstruction/K-Means Loss: [0.0000 / 553.3001] - Consistency Loss: [0.0000] - VICReg Loss: [20.1007][wd: 5.00e-02] [lr: 9.19e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1474.7 ms)
+INFO:root:[1,   650] grad_stats: [1.65e-01 6.49e-01] (7.52e-02, 3.51e+00)
+INFO:root:[1,   700/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.4725 -Autoencoder Loss (total): 554.5485 - Reconstruction/K-Means Loss: [0.0000 / 554.5485] - Consistency Loss: [0.0000] - VICReg Loss: [20.0111][wd: 5.00e-02] [lr: 9.20e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1479.4 ms)
+INFO:root:[1,   700] grad_stats: [1.87e-01 7.34e-01] (8.00e-02, 4.76e+00)
+INFO:root:[1,   750/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.4258 -Autoencoder Loss (total): 555.7968 - Reconstruction/K-Means Loss: [0.0000 / 555.7968] - Consistency Loss: [0.0000] - VICReg Loss: [19.9294][wd: 5.00e-02] [lr: 9.22e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1484.4 ms)
+INFO:root:[1,   750] grad_stats: [1.99e-01 6.21e-01] (7.28e-02, 3.60e+00)
+INFO:root:[1,   800/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.3787 -Autoencoder Loss (total): 557.3409 - Reconstruction/K-Means Loss: [0.0000 / 557.3409] - Consistency Loss: [0.0000] - VICReg Loss: [19.8543][wd: 5.00e-02] [lr: 9.23e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1489.4 ms)
+INFO:root:[1,   800] grad_stats: [3.17e-01 8.99e-01] (1.12e-01, 5.01e+00)
+INFO:root:[1,   850/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.3426 -Autoencoder Loss (total): 558.5564 - Reconstruction/K-Means Loss: [0.0000 / 558.5564] - Consistency Loss: [0.0000] - VICReg Loss: [19.7866][wd: 5.00e-02] [lr: 9.25e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1494.4 ms)
+INFO:root:[1,   850] grad_stats: [1.83e-01 6.21e-01] (7.32e-02, 3.50e+00)
+INFO:root:[1,   900/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.3040 -Autoencoder Loss (total): 559.3386 - Reconstruction/K-Means Loss: [0.0000 / 559.3386] - Consistency Loss: [0.0000] - VICReg Loss: [19.7237][wd: 5.00e-02] [lr: 9.26e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1499.5 ms)
+INFO:root:[1,   900] grad_stats: [2.31e-01 7.09e-01] (9.65e-02, 4.92e+00)
+INFO:root:[1,   950/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.2627 -Autoencoder Loss (total): 560.1193 - Reconstruction/K-Means Loss: [0.0000 / 560.1193] - Consistency Loss: [0.0000] - VICReg Loss: [19.6658][wd: 5.00e-02] [lr: 9.28e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1504.7 ms)
+INFO:root:[1,   950] grad_stats: [2.52e-01 6.46e-01] (7.02e-02, 3.50e+00)
+INFO:root:[1,  1000/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.2192 -Autoencoder Loss (total): 560.6726 - Reconstruction/K-Means Loss: [0.0000 / 560.6726] - Consistency Loss: [0.0000] - VICReg Loss: [19.6111][wd: 5.01e-02] [lr: 9.29e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1509.9 ms)
+INFO:root:[1,  1000] grad_stats: [2.58e-01 5.92e-01] (6.80e-02, 3.71e+00)
+INFO:root:[1,  1050/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.1776 -Autoencoder Loss (total): 561.3912 - Reconstruction/K-Means Loss: [0.0000 / 561.3912] - Consistency Loss: [0.0000] - VICReg Loss: [19.5586][wd: 5.01e-02] [lr: 9.30e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1514.9 ms)
+INFO:root:[1,  1050] grad_stats: [2.97e-01 5.30e-01] (6.19e-02, 3.39e+00)
+INFO:root:[1,  1100/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.1390 -Autoencoder Loss (total): 561.9319 - Reconstruction/K-Means Loss: [0.0000 / 561.9319] - Consistency Loss: [0.0000] - VICReg Loss: [19.5089][wd: 5.01e-02] [lr: 9.32e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1520.4 ms)
+INFO:root:[1,  1100] grad_stats: [2.41e-01 5.69e-01] (5.92e-02, 3.29e+00)
+INFO:root:[1,  1150/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.1422 -Autoencoder Loss (total): 562.7038 - Reconstruction/K-Means Loss: [0.0000 / 562.7038] - Consistency Loss: [0.0000] - VICReg Loss: [19.4631][wd: 5.01e-02] [lr: 9.33e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1525.8 ms)
+INFO:root:[1,  1150] grad_stats: [2.77e-01 5.59e-01] (6.46e-02, 3.64e+00)
+INFO:root:[1,  1200/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.1138 -Autoencoder Loss (total): 563.3721 - Reconstruction/K-Means Loss: [0.0000 / 563.3721] - Consistency Loss: [0.0000] - VICReg Loss: [19.4219][wd: 5.01e-02] [lr: 9.35e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1531.2 ms)
+INFO:root:[1,  1200] grad_stats: [2.64e-01 6.60e-01] (8.38e-02, 3.42e+00)
+INFO:root:[1,  1250/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.0766 -Autoencoder Loss (total): 564.1619 - Reconstruction/K-Means Loss: [0.0000 / 564.1619] - Consistency Loss: [0.0000] - VICReg Loss: [19.3815][wd: 5.01e-02] [lr: 9.36e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1536.5 ms)
+INFO:root:[1,  1250] grad_stats: [3.30e-01 5.46e-01] (5.90e-02, 4.11e+00)
+INFO:root:[1,  1300/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.0406 -Autoencoder Loss (total): 564.7160 - Reconstruction/K-Means Loss: [0.0000 / 564.7160] - Consistency Loss: [0.0000] - VICReg Loss: [19.3422][wd: 5.01e-02] [lr: 9.38e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1541.7 ms)
+INFO:root:[1,  1300] grad_stats: [2.60e-01 5.81e-01] (6.30e-02, 3.40e+00)
+INFO:root:[1,  1350/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.0071 -Autoencoder Loss (total): 565.1467 - Reconstruction/K-Means Loss: [0.0000 / 565.1467] - Consistency Loss: [0.0000] - VICReg Loss: [19.3041][wd: 5.01e-02] [lr: 9.39e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1547.2 ms)
+INFO:root:[1,  1350] grad_stats: [3.17e-01 5.26e-01] (5.50e-02, 4.45e+00)
+INFO:root:[1,  1400/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.9731 -Autoencoder Loss (total): 565.6211 - Reconstruction/K-Means Loss: [0.0000 / 565.6211] - Consistency Loss: [0.0000] - VICReg Loss: [19.2695][wd: 5.01e-02] [lr: 9.41e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1552.7 ms)
+INFO:root:[1,  1400] grad_stats: [3.12e-01 6.02e-01] (6.36e-02, 3.48e+00)
+INFO:root:[1,  1450/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.9383 -Autoencoder Loss (total): 565.8664 - Reconstruction/K-Means Loss: [0.0000 / 565.8664] - Consistency Loss: [0.0000] - VICReg Loss: [19.2357][wd: 5.01e-02] [lr: 9.42e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1558.4 ms)
+INFO:root:[1,  1450] grad_stats: [3.21e-01 5.45e-01] (6.23e-02, 4.35e+00)
+INFO:root:[1,  1500/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.9033 -Autoencoder Loss (total): 565.9807 - Reconstruction/K-Means Loss: [0.0000 / 565.9807] - Consistency Loss: [0.0000] - VICReg Loss: [19.2041][wd: 5.01e-02] [lr: 9.44e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1564.2 ms)
+INFO:root:[1,  1500] grad_stats: [3.87e-01 5.59e-01] (5.61e-02, 3.83e+00)
+INFO:root:[1,  1550/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.8727 -Autoencoder Loss (total): 566.0521 - Reconstruction/K-Means Loss: [0.0000 / 566.0521] - Consistency Loss: [0.0000] - VICReg Loss: [19.1731][wd: 5.01e-02] [lr: 9.45e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1569.9 ms)
+INFO:root:[1,  1550] grad_stats: [3.50e-01 5.59e-01] (6.03e-02, 3.65e+00)
+INFO:root:[1,  1600/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.8397 -Autoencoder Loss (total): 566.3083 - Reconstruction/K-Means Loss: [0.0000 / 566.3083] - Consistency Loss: [0.0000] - VICReg Loss: [19.1422][wd: 5.01e-02] [lr: 9.46e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1575.6 ms)
+INFO:root:[1,  1600] grad_stats: [3.24e-01 5.23e-01] (5.78e-02, 3.45e+00)
+INFO:root:[1,  1650/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.8095 -Autoencoder Loss (total): 566.6201 - Reconstruction/K-Means Loss: [0.0000 / 566.6201] - Consistency Loss: [0.0000] - VICReg Loss: [19.1130][wd: 5.01e-02] [lr: 9.48e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1581.2 ms)
+INFO:root:[1,  1650] grad_stats: [3.22e-01 5.26e-01] (7.41e-02, 3.36e+00)
+INFO:root:[1,  1700/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.7793 -Autoencoder Loss (total): 566.9400 - Reconstruction/K-Means Loss: [0.0000 / 566.9400] - Consistency Loss: [0.0000] - VICReg Loss: [19.0847][wd: 5.02e-02] [lr: 9.49e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1586.8 ms)
+INFO:root:[1,  1700] grad_stats: [3.68e-01 5.16e-01] (6.52e-02, 4.12e+00)
+INFO:root:[1,  1750/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.7488 -Autoencoder Loss (total): 567.1507 - Reconstruction/K-Means Loss: [0.0000 / 567.1507] - Consistency Loss: [0.0000] - VICReg Loss: [19.0569][wd: 5.02e-02] [lr: 9.51e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1592.4 ms)
+INFO:root:[1,  1750] grad_stats: [3.30e-01 4.94e-01] (5.62e-02, 2.91e+00)
+INFO:root:[1,  1800/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.7182 -Autoencoder Loss (total): 567.4465 - Reconstruction/K-Means Loss: [0.0000 / 567.4465] - Consistency Loss: [0.0000] - VICReg Loss: [19.0304][wd: 5.02e-02] [lr: 9.52e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1598.0 ms)
+INFO:root:[1,  1800] grad_stats: [3.20e-01 5.01e-01] (5.29e-02, 4.44e+00)
+INFO:root:[1,  1850/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.6912 -Autoencoder Loss (total): 567.2909 - Reconstruction/K-Means Loss: [0.0000 / 567.2909] - Consistency Loss: [0.0000] - VICReg Loss: [19.0051][wd: 5.02e-02] [lr: 9.54e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1603.7 ms)
+INFO:root:[1,  1850] grad_stats: [4.68e-01 6.13e-01] (7.16e-02, 4.18e+00)
+INFO:root:[1,  1900/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.6644 -Autoencoder Loss (total): 567.5459 - Reconstruction/K-Means Loss: [0.0000 / 567.5459] - Consistency Loss: [0.0000] - VICReg Loss: [18.9810][wd: 5.02e-02] [lr: 9.55e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1609.8 ms)
+INFO:root:[1,  1900] grad_stats: [4.05e-01 5.47e-01] (5.56e-02, 3.21e+00)
+INFO:root:[1,  1950/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.6372 -Autoencoder Loss (total): 567.7991 - Reconstruction/K-Means Loss: [0.0000 / 567.7991] - Consistency Loss: [0.0000] - VICReg Loss: [18.9569][wd: 5.02e-02] [lr: 9.57e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1615.8 ms)
+INFO:root:[1,  1950] grad_stats: [3.52e-01 5.16e-01] (6.11e-02, 3.79e+00)
+INFO:root:[1,  2000/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.6126 -Autoencoder Loss (total): 568.0360 - Reconstruction/K-Means Loss: [0.0000 / 568.0360] - Consistency Loss: [0.0000] - VICReg Loss: [18.9331][wd: 5.02e-02] [lr: 9.58e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1621.8 ms)
+INFO:root:[1,  2000] grad_stats: [4.58e-01 5.73e-01] (7.81e-02, 4.40e+00)
+INFO:root:[1,  2050/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.5877 -Autoencoder Loss (total): 568.2954 - Reconstruction/K-Means Loss: [0.0000 / 568.2954] - Consistency Loss: [0.0000] - VICReg Loss: [18.9098][wd: 5.02e-02] [lr: 9.59e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1627.8 ms)
+INFO:root:[1,  2050] grad_stats: [4.23e-01 5.06e-01] (6.35e-02, 4.09e+00)
+INFO:root:[1,  2100/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.5609 -Autoencoder Loss (total): 568.2210 - Reconstruction/K-Means Loss: [0.0000 / 568.2210] - Consistency Loss: [0.0000] - VICReg Loss: [18.8874][wd: 5.02e-02] [lr: 9.61e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1633.8 ms)
+INFO:root:[1,  2100] grad_stats: [5.55e-01 5.97e-01] (6.83e-02, 4.22e+00)
+INFO:root:[1,  2150/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.5339 -Autoencoder Loss (total): 568.4483 - Reconstruction/K-Means Loss: [0.0000 / 568.4483] - Consistency Loss: [0.0000] - VICReg Loss: [18.8652][wd: 5.02e-02] [lr: 9.62e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1639.5 ms)
+INFO:root:[1,  2150] grad_stats: [4.52e-01 5.71e-01] (5.64e-02, 5.61e+00)
+INFO:root:[1,  2200/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.5099 -Autoencoder Loss (total): 568.5426 - Reconstruction/K-Means Loss: [0.0000 / 568.5426] - Consistency Loss: [0.0000] - VICReg Loss: [18.8442][wd: 5.03e-02] [lr: 9.64e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1645.5 ms)
+INFO:root:[1,  2200] grad_stats: [5.03e-01 5.12e-01] (6.59e-02, 4.34e+00)
+INFO:root:[1,  2250/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.4846 -Autoencoder Loss (total): 568.8238 - Reconstruction/K-Means Loss: [0.0000 / 568.8238] - Consistency Loss: [0.0000] - VICReg Loss: [18.8232][wd: 5.03e-02] [lr: 9.65e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1651.3 ms)
+INFO:root:[1,  2250] grad_stats: [4.45e-01 5.74e-01] (6.60e-02, 4.05e+00)
+INFO:root:[1,  2300/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.4598 -Autoencoder Loss (total): 569.0694 - Reconstruction/K-Means Loss: [0.0000 / 569.0694] - Consistency Loss: [0.0000] - VICReg Loss: [18.8031][wd: 5.03e-02] [lr: 9.67e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1657.1 ms)
+INFO:root:[1,  2300] grad_stats: [6.07e-01 6.06e-01] (6.01e-02, 4.78e+00)
+INFO:root:[1,  2350/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.4367 -Autoencoder Loss (total): 569.1937 - Reconstruction/K-Means Loss: [0.0000 / 569.1937] - Consistency Loss: [0.0000] - VICReg Loss: [18.7833][wd: 5.03e-02] [lr: 9.68e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1663.0 ms)
+INFO:root:[1,  2350] grad_stats: [3.71e-01 5.84e-01] (6.03e-02, 3.67e+00)
+INFO:root:[1,  2400/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.4134 -Autoencoder Loss (total): 569.4593 - Reconstruction/K-Means Loss: [0.0000 / 569.4593] - Consistency Loss: [0.0000] - VICReg Loss: [18.7632][wd: 5.03e-02] [lr: 9.70e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1668.5 ms)
+INFO:root:[1,  2400] grad_stats: [4.99e-01 5.70e-01] (5.65e-02, 3.87e+00)
+INFO:root:[1,  2450/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.3890 -Autoencoder Loss (total): 569.4419 - Reconstruction/K-Means Loss: [0.0000 / 569.4419] - Consistency Loss: [0.0000] - VICReg Loss: [18.7434][wd: 5.03e-02] [lr: 9.71e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1674.4 ms)
+INFO:root:[1,  2450] grad_stats: [5.17e-01 4.91e-01] (6.46e-02, 4.21e+00)
+INFO:root:[1,  2500/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.3639 -Autoencoder Loss (total): 569.5249 - Reconstruction/K-Means Loss: [0.0000 / 569.5249] - Consistency Loss: [0.0000] - VICReg Loss: [18.7242][wd: 5.03e-02] [lr: 9.73e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1680.6 ms)
+INFO:root:[1,  2500] grad_stats: [4.15e-01 5.24e-01] (5.93e-02, 4.16e+00)
+INFO:root:[1,  2550/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.3400 -Autoencoder Loss (total): 569.5872 - Reconstruction/K-Means Loss: [0.0000 / 569.5872] - Consistency Loss: [0.0000] - VICReg Loss: [18.7056][wd: 5.03e-02] [lr: 9.74e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1686.5 ms)
+INFO:root:[1,  2550] grad_stats: [5.29e-01 5.11e-01] (6.22e-02, 3.99e+00)
+INFO:root:Asserting cache length
+INFO:root:Reinitializing centroids
+Avg no of empty clusters: 8.26137463697967
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:avg. train_loss 24.037
+INFO:root:avg. test_loss 0.000 avg. Accuracy@1 47.440 - avg. Accuracy@5 0.000
+INFO:root:Loss 23.7486
+INFO:root:Epoch 2
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:[2,     0/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 6.7012 -Autoencoder Loss (total): 731.9186 - Reconstruction/K-Means Loss: [0.0000 / 731.9186] - Consistency Loss: [0.0000] - VICReg Loss: [17.8460][wd: 5.03e-02] [lr: 9.74e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (2298.0 ms)
+INFO:root:[2,     0] grad_stats: [4.84e-01 5.12e-01] (6.66e-02, 3.93e+00)
+INFO:root:[2,    50/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.5926 -Autoencoder Loss (total): 482.9591 - Reconstruction/K-Means Loss: [0.0000 / 482.9591] - Consistency Loss: [0.0000] - VICReg Loss: [17.8474][wd: 5.04e-02] [lr: 9.76e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1449.7 ms)
+INFO:root:[2,    50] grad_stats: [6.18e-01 5.61e-01] (7.20e-02, 4.75e+00)
+INFO:root:[2,   100/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.0716 -Autoencoder Loss (total): 484.9444 - Reconstruction/K-Means Loss: [0.0000 / 484.9444] - Consistency Loss: [0.0000] - VICReg Loss: [17.8083][wd: 5.04e-02] [lr: 9.77e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1443.1 ms)
+INFO:root:[2,   100] grad_stats: [5.09e-01 5.01e-01] (7.09e-02, 4.69e+00)
+INFO:root:[2,   150/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.2239 -Autoencoder Loss (total): 485.1774 - Reconstruction/K-Means Loss: [0.0000 / 485.1774] - Consistency Loss: [0.0000] - VICReg Loss: [17.8107][wd: 5.04e-02] [lr: 9.79e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1443.7 ms)
+INFO:root:[2,   150] grad_stats: [3.32e-01 6.29e-01] (8.46e-02, 3.03e+00)
+INFO:root:[2,   200/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.1562 -Autoencoder Loss (total): 486.4589 - Reconstruction/K-Means Loss: [0.0000 / 486.4589] - Consistency Loss: [0.0000] - VICReg Loss: [17.8073][wd: 5.04e-02] [lr: 9.80e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1445.6 ms)
+INFO:root:[2,   200] grad_stats: [4.15e-01 4.82e-01] (8.60e-02, 3.15e+00)
+INFO:root:[2,   250/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 5.0339 -Autoencoder Loss (total): 487.9665 - Reconstruction/K-Means Loss: [0.0000 / 487.9665] - Consistency Loss: [0.0000] - VICReg Loss: [17.7955][wd: 5.04e-02] [lr: 9.82e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1448.6 ms)
+INFO:root:[2,   250] grad_stats: [5.59e-01 5.43e-01] (6.64e-02, 4.79e+00)
+INFO:root:[2,   300/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.9340 -Autoencoder Loss (total): 489.9563 - Reconstruction/K-Means Loss: [0.0000 / 489.9563] - Consistency Loss: [0.0000] - VICReg Loss: [17.7837][wd: 5.04e-02] [lr: 9.83e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1451.8 ms)
+INFO:root:[2,   300] grad_stats: [5.22e-01 4.84e-01] (6.53e-02, 4.89e+00)
+INFO:root:[2,   350/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.8385 -Autoencoder Loss (total): 491.5050 - Reconstruction/K-Means Loss: [0.0000 / 491.5050] - Consistency Loss: [0.0000] - VICReg Loss: [17.7707][wd: 5.04e-02] [lr: 9.84e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1455.6 ms)
+INFO:root:[2,   350] grad_stats: [4.90e-01 4.75e-01] (6.32e-02, 5.32e+00)
+INFO:root:[2,   400/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.7666 -Autoencoder Loss (total): 493.4838 - Reconstruction/K-Means Loss: [0.0000 / 493.4838] - Consistency Loss: [0.0000] - VICReg Loss: [17.7553][wd: 5.05e-02] [lr: 9.86e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1459.5 ms)
+INFO:root:[2,   400] grad_stats: [5.98e-01 4.67e-01] (5.48e-02, 4.30e+00)
+INFO:root:[2,   450/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.6991 -Autoencoder Loss (total): 495.3376 - Reconstruction/K-Means Loss: [0.0000 / 495.3376] - Consistency Loss: [0.0000] - VICReg Loss: [17.7413][wd: 5.05e-02] [lr: 9.87e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1463.7 ms)
+INFO:root:[2,   450] grad_stats: [4.87e-01 4.50e-01] (5.80e-02, 3.43e+00)
+INFO:root:[2,   500/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.6359 -Autoencoder Loss (total): 495.9192 - Reconstruction/K-Means Loss: [0.0000 / 495.9192] - Consistency Loss: [0.0000] - VICReg Loss: [17.7289][wd: 5.05e-02] [lr: 9.89e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1468.4 ms)
+INFO:root:[2,   500] grad_stats: [5.44e-01 5.07e-01] (6.17e-02, 5.90e+00)
+INFO:root:[2,   550/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.5898 -Autoencoder Loss (total): 497.4265 - Reconstruction/K-Means Loss: [0.0000 / 497.4265] - Consistency Loss: [0.0000] - VICReg Loss: [17.7166][wd: 5.05e-02] [lr: 9.90e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1472.9 ms)
+INFO:root:[2,   550] grad_stats: [6.54e-01 5.10e-01] (7.28e-02, 5.79e+00)
+INFO:root:[2,   600/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.5425 -Autoencoder Loss (total): 498.2053 - Reconstruction/K-Means Loss: [0.0000 / 498.2053] - Consistency Loss: [0.0000] - VICReg Loss: [17.7050][wd: 5.05e-02] [lr: 9.92e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1477.6 ms)
+INFO:root:[2,   600] grad_stats: [5.71e-01 5.16e-01] (6.28e-02, 4.09e+00)
+INFO:root:[2,   650/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.4989 -Autoencoder Loss (total): 498.6528 - Reconstruction/K-Means Loss: [0.0000 / 498.6528] - Consistency Loss: [0.0000] - VICReg Loss: [17.6946][wd: 5.05e-02] [lr: 9.93e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1482.7 ms)
+INFO:root:[2,   650] grad_stats: [4.95e-01 4.84e-01] (6.18e-02, 3.79e+00)
+INFO:root:[2,   700/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.4636 -Autoencoder Loss (total): 499.6369 - Reconstruction/K-Means Loss: [0.0000 / 499.6369] - Consistency Loss: [0.0000] - VICReg Loss: [17.6828][wd: 5.06e-02] [lr: 9.95e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1487.3 ms)
+INFO:root:[2,   700] grad_stats: [6.54e-01 5.34e-01] (5.49e-02, 5.55e+00)
+INFO:root:[2,   750/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.4314 -Autoencoder Loss (total): 500.0854 - Reconstruction/K-Means Loss: [0.0000 / 500.0854] - Consistency Loss: [0.0000] - VICReg Loss: [17.6705][wd: 5.06e-02] [lr: 9.96e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1492.3 ms)
+INFO:root:[2,   750] grad_stats: [4.89e-01 4.86e-01] (5.92e-02, 4.34e+00)
+INFO:root:[2,   800/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.4032 -Autoencoder Loss (total): 500.6254 - Reconstruction/K-Means Loss: [0.0000 / 500.6254] - Consistency Loss: [0.0000] - VICReg Loss: [17.6616][wd: 5.06e-02] [lr: 9.98e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1497.2 ms)
+INFO:root:[2,   800] grad_stats: [5.62e-01 4.92e-01] (5.94e-02, 4.86e+00)
+INFO:root:[2,   850/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.3749 -Autoencoder Loss (total): 501.0446 - Reconstruction/K-Means Loss: [0.0000 / 501.0446] - Consistency Loss: [0.0000] - VICReg Loss: [17.6513][wd: 5.06e-02] [lr: 9.99e-05] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1502.0 ms)
+INFO:root:[2,   850] grad_stats: [6.26e-01 4.92e-01] (7.13e-02, 4.90e+00)
+INFO:root:[2,   900/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.3456 -Autoencoder Loss (total): 501.3468 - Reconstruction/K-Means Loss: [0.0000 / 501.3468] - Consistency Loss: [0.0000] - VICReg Loss: [17.6406][wd: 5.06e-02] [lr: 1.00e-04] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1507.1 ms)
+INFO:root:[2,   900] grad_stats: [6.54e-01 4.52e-01] (5.25e-02, 4.59e+00)
+INFO:root:[2,   950/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.3205 -Autoencoder Loss (total): 501.8820 - Reconstruction/K-Means Loss: [0.0000 / 501.8820] - Consistency Loss: [0.0000] - VICReg Loss: [17.6307][wd: 5.06e-02] [lr: 1.00e-04] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1512.1 ms)
+INFO:root:[2,   950] grad_stats: [6.80e-01 4.88e-01] (5.97e-02, 7.16e+00)
+INFO:root:[2,  1000/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.2950 -Autoencoder Loss (total): 502.6997 - Reconstruction/K-Means Loss: [0.0000 / 502.6997] - Consistency Loss: [0.0000] - VICReg Loss: [17.6197][wd: 5.07e-02] [lr: 1.00e-04] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1517.3 ms)
+INFO:root:[2,  1000] grad_stats: [5.45e-01 4.82e-01] (6.21e-02, 4.38e+00)
+INFO:root:[2,  1050/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.2737 -Autoencoder Loss (total): 503.2094 - Reconstruction/K-Means Loss: [0.0000 / 503.2094] - Consistency Loss: [0.0000] - VICReg Loss: [17.6108][wd: 5.07e-02] [lr: 1.00e-04] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1522.2 ms)
+INFO:root:[2,  1050] grad_stats: [5.16e-01 4.62e-01] (5.21e-02, 4.02e+00)
+INFO:root:[2,  1100/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.2517 -Autoencoder Loss (total): 503.8203 - Reconstruction/K-Means Loss: [0.0000 / 503.8203] - Consistency Loss: [0.0000] - VICReg Loss: [17.6018][wd: 5.07e-02] [lr: 1.01e-04] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1527.2 ms)
+INFO:root:[2,  1100] grad_stats: [6.18e-01 5.11e-01] (6.01e-02, 4.24e+00)
+INFO:root:[2,  1150/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.2295 -Autoencoder Loss (total): 504.2434 - Reconstruction/K-Means Loss: [0.0000 / 504.2434] - Consistency Loss: [0.0000] - VICReg Loss: [17.5917][wd: 5.07e-02] [lr: 1.01e-04] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1532.3 ms)
+INFO:root:[2,  1150] grad_stats: [6.24e-01 4.80e-01] (5.99e-02, 5.25e+00)
+INFO:root:[2,  1200/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.2082 -Autoencoder Loss (total): 504.4903 - Reconstruction/K-Means Loss: [0.0000 / 504.4903] - Consistency Loss: [0.0000] - VICReg Loss: [17.5832][wd: 5.07e-02] [lr: 1.01e-04] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1537.4 ms)
+INFO:root:[2,  1200] grad_stats: [6.89e-01 4.30e-01] (5.46e-02, 5.72e+00)
+INFO:root:[2,  1250/ 2562] - train_losses - Parent Class: 0.0000 - Children class: 4.1896 -Autoencoder Loss (total): 504.7496 - Reconstruction/K-Means Loss: [0.0000 / 504.7496] - Consistency Loss: [0.0000] - VICReg Loss: [17.5752][wd: 5.08e-02] [lr: 1.01e-04] [autoencoder lr: 0.00e+00][mem: 6.63e+04] (1542.5 ms)
+INFO:root:[2,  1250] grad_stats: [5.69e-01 4.54e-01] (5.23e-02, 4.14e+00)
+slurmstepd: error: *** JOB 4733 ON hgx CANCELLED AT 2025-01-09T17:44:23 ***
