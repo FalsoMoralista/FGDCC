@@ -84,7 +84,7 @@ import faiss
 # --
 log_timings = True
 log_freq = 50
-checkpoint_freq = 10
+checkpoint_freq = 25
 # --
 
 _GLOBAL_SEED = 0
@@ -135,6 +135,13 @@ def main(args, resume_preempt=False):
     crop_size = args['data']['crop_size']
     crop_scale = args['data']['crop_scale']
     resume_epoch = args['data']['resume_epoch']
+    cache_path = args['data']['cache_path']
+
+
+    # -- VICReg
+    alpha = args['vicreg']['alpha']
+    beta = args['vicreg']['beta']
+    gamma = args['vicreg']['gamma']
 
     # --
 
@@ -398,8 +405,9 @@ def main(args, resume_preempt=False):
 
     proj_embed_dim = 1280
     
-    K_range = [2,3,4,5]
-    fgdcc = ClassificationModel(vit_backbone=target_encoder, embed_dim=proj_embed_dim, nb_classes=nb_classes).to(device)
+    K_range = args['data']['K_range']
+    
+    fgdcc = ClassificationModel(vit_backbone=target_encoder, K_range=K_range, embed_dim=proj_embed_dim, nb_classes=nb_classes).to(device)
     
     #fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
     #                  drop_path=drop_path,
@@ -408,7 +416,6 @@ def main(args, resume_preempt=False):
     #                  proj_embed_dim=proj_embed_dim,
     #                  pretrained_model=target_encoder,
     #                  device=device)
-    
 
     logger.info(fgdcc.classifier)
 
@@ -444,7 +451,6 @@ def main(args, resume_preempt=False):
             wd_scheduler.step()
     logger.info(target_encoder)
     
-    
     resources = faiss.StandardGpuResources()
     config = faiss.GpuIndexFlatConfig()
     config.device = rank
@@ -457,7 +463,6 @@ def main(args, resume_preempt=False):
     #configs[rank].useFloat16 = False
 
     dimensionality=1280
-    K_range = [2,3,4,5]
     k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=dimensionality, k_range=K_range, resources=resources, config=config)
 
     class_idx_map = train_dataset.class_to_idx
@@ -517,7 +522,7 @@ def main(args, resume_preempt=False):
     cached_features_last_epoch = build_cache_v2(data_loader=regular_supervised_loader_train,
                                                 device=device,
                                                 target_encoder=fgdcc.module.vit_encoder,
-                                                path=root_path + '/DeepCluster/cache/inat18') # TODO: adjust here accordingly
+                                                path=cache_path) # TODO: adjust here accordingly 
     logger.info('Done...')
     
     logger.info('Initializing centroids...')
@@ -554,10 +559,10 @@ def main(args, resume_preempt=False):
 
     start_epoch = resume_epoch
 
-    VCR = VICReg(args=None, num_features=1280, sim_coeff=5.0, std_coeff=25.0, cov_coeff=1.0)
+    VCR = VICReg(args=None, num_features=1280, sim_coeff=alpha, std_coeff=beta, cov_coeff=gamma)
     reconstruction_loss_meter = AverageMeter()
 
-    T = 1
+    T = 5
     accum_iter = 1
 
     # -- TRAINING LOOP

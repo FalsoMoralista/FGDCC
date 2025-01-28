@@ -20,10 +20,10 @@ class ClassificationHead(nn.Module):
         return self.classifier(x)   
 
 class ClassificationModel(nn.Module):
-    def __init__(self, vit_backbone, embed_dim, nb_classes):
+    def __init__(self, vit_backbone, embed_dim,nb_classes, K_range=[2,3,4,5]):
         super(ClassificationModel, self).__init__()        
         self.vit_encoder = vit_backbone
-        self.classifier = ClassificationHead(embed_dim=embed_dim, nb_classes=nb_classes)
+        self.classifier = ClassificationHead(embed_dim=embed_dim, K_range=K_range, nb_classes=nb_classes)
     
     def forward(self, imgs):
         h = self.vit_encoder(imgs)

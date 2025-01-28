@@ -40,7 +40,7 @@ class KMeansModule:
         else:
             self.n_kmeans = []   
             for _ in range(nb_classes):
-                self.n_kmeans.append([faiss.Kmeans(d=dimensionality, k=k, niter=1, verbose=False, min_points_per_centroid = 1) for k in k_range])                                                            
+                self.n_kmeans.append([faiss.Kmeans(d=dimensionality, k=k, niter=1, verbose=False, min_points_per_centroid = 1) for k in self.k_range])                                                            
 
     def inter_cluster_separation(self, cls, device):
         def two_by_two_combinations(values):
