@@ -71,7 +71,8 @@ import time
 # --BROUGHT fRoM MAE
 from timm.data.mixup import Mixup
 from timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy
-#from timm.utils import accuracy
+from timm.utils import accuracy
+
 from sklearn.metrics import accuracy_score
 
 
@@ -83,7 +84,7 @@ import faiss
 # --
 log_timings = True
 log_freq = 50
-checkpoint_freq = 5
+checkpoint_freq = 10
 # --
 
 _GLOBAL_SEED = 0
@@ -398,7 +399,7 @@ def main(args, resume_preempt=False):
     proj_embed_dim = 1280
     
     K_range = [2,3,4,5]
-    fgdcc = ClassificationModel(vit_backbone=target_encoder, embed_dim=proj_embed_dim, nb_classes=1081).to(device)
+    fgdcc = ClassificationModel(vit_backbone=target_encoder, embed_dim=proj_embed_dim, nb_classes=nb_classes).to(device)
     
     #fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
     #                  drop_path=drop_path,
@@ -513,7 +514,10 @@ def main(args, resume_preempt=False):
     empty_clusters_per_epoch = AverageMeter()
 
     logger.info('Setting up cache...')
-    cached_features_last_epoch = build_cache_v2(data_loader=regular_supervised_loader_train, device=device, target_encoder=fgdcc.module.vit_encoder, path=root_path + '/DeepCluster/cache')  
+    cached_features_last_epoch = build_cache_v2(data_loader=regular_supervised_loader_train,
+                                                device=device,
+                                                target_encoder=fgdcc.module.vit_encoder,
+                                                path=root_path + '/DeepCluster/cache/inat18') # TODO: adjust here accordingly
     logger.info('Done...')
     
     logger.info('Initializing centroids...')
@@ -607,23 +611,24 @@ def main(args, resume_preempt=False):
 
                     parent_logits, subclass_logits, subclass_proj_embed = fgdcc(imgs_1)
 
-                    #with torch.no_grad():
-                    #    _, _, subclass_proj_embed_2 = fgdcc(imgs_2) # TODO: uncomment
+                    with torch.no_grad():
+                        _, _, subclass_proj_embed_2 = fgdcc(imgs_2)
 
                     subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
-                    #subclass_proj_embed_2 = torch.mean(subclass_proj_embed_2, dim=1).squeeze(dim=1) # TODO: uncomment
+                    subclass_proj_embed_2 = torch.mean(subclass_proj_embed_2, dim=1).squeeze(dim=1)
                     
-                    vicreg_loss = 0 #VCR(subclass_proj_embed, subclass_proj_embed_2) # TODO: uncomment
+                    vicreg_loss = VCR(subclass_proj_embed, subclass_proj_embed_2)
                     
                     vicreg_loss_meter.update(vicreg_loss)
 
                     bottleneck_output = subclass_proj_embed
 
                     #-- Compute K-Means assignments with disabled autocast for better precision
-                    with torch.cuda.amp.autocast(enabled=False): 
+                    with torch.cuda.amp.autocast(dtype=torch.float64, enabled=True): 
                         k_means_losses, best_K_classifiers, cluster_assignments = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
+                        #k_means_losses, best_K_classifiers, cluster_assignments = k_means_module.CKA_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
 
-                    loss =  0 # criterion(parent_logits, targets)
+                    loss = 0
                     parent_cls_loss_meter.update(loss)
                                         
                     k_means_idx_targets = torch.zeros_like(targets)
@@ -738,7 +743,7 @@ def main(args, resume_preempt=False):
                  With this in mind we have to synchronize the update across all devices such that it is mantained consistent across all of them.
                  TODO: implement broadcasting solution.
             '''
-            cached_features = update_cache(cached_features)     
+            cached_features = update_cache(cached_features)
         # -- End of Epoch      
         
         # Save prediction distribution
@@ -775,16 +780,16 @@ def main(args, resume_preempt=False):
         logger.info('Asserting cache length')
         # Assert everything went fine
         cnt = [len(cached_features[key]) for key in cached_features.keys()]    
-        assert sum(cnt) == 245897, 'Cache not compatible, corrupted or missing'
+        assert sum(cnt) == len(train_dataset), 'Cache not compatible, corrupted or missing'
         
-        filename = '/cached_features_1280_epoch_{}.pkl'.format(epoch + 1)
-        output = open(folder+filename, 'wb')
-        pickle.dump(cached_features, output)
-        output.close() 
+        #filename = '/cached_features_1280_epoch_{}.pkl'.format(epoch + 1)
+        #output = open(folder+filename, 'wb')
+        #pickle.dump(cached_features, output)
+        #output.close() 
 
         if (epoch + 1) % T == 0:
             logger.info('Reinitializing centroids')
-            k_means_module.restart()
+            k_means_module.restart() 
             k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device)
 
         # TODO: same cache problem happens over here.
@@ -796,28 +801,13 @@ def main(args, resume_preempt=False):
         # -- Perform M step on K-means module
         M_losses = k_means_module.update(cached_features, device, empty_clusters_per_epoch)
         
-        print('Avg no of empty clusters:', empty_clusters_per_epoch.avg) # FIXME: this doesn't work      
+        print('Avg no of empty clusters:', empty_clusters_per_epoch.avg) # TODO: REMOVE (doesn't work)
 
         cached_features_last_epoch = copy.deepcopy(cached_features)
 
         testAcc1 = AverageMeter()
         testAcc5 = AverageMeter()
         test_loss = AverageMeter()
-
-        def accuracy(output, target, topk=(1,)):
-            """Computes the accuracy for the top-k predictions."""
-            if output.ndimension() == 1:  # If `output` contains predicted class indices
-                # Compare directly against the target
-                correct = output.eq(target)
-                return [correct.float().sum() * 100. / target.size(0) for _ in topk]
-            else:  # If `output` contains logits or probabilities
-                maxk = min(max(topk), output.size(1))
-                batch_size = target.size(0)
-                _, pred = output.topk(maxk, 1, True, True)
-                pred = pred.t()
-                correct = pred.eq(target.reshape(1, -1).expand_as(pred))
-                return [correct[:min(k, maxk)].reshape(-1).float().sum(0) * 100. / batch_size for k in topk]
-
         
         # Warning: Enabling distributed evaluation with an eval dataset not divisible by process number
         # will slightly alter validation results as extra duplicate entries are added to achieve equal 
@@ -833,14 +823,14 @@ def main(args, resume_preempt=False):
                                  
                 with torch.cuda.amp.autocast():
                     parent_logits, subclass_logits, _ = fgdcc(images)
-
-                    predictions = torch.argmax(subclass_logits, dim=1)
-                    subclass_predictions = torch.tensor([reverse_idx[pred.item()] for pred in predictions]).to(device) 
+                    predictions = torch.argmax(subclass_logits, dim=1) 
+                    subclass_predictions = torch.tensor([reverse_idx[pred.item()] for pred in predictions]).to(device)  
                     loss = 0                
                 acc1 = accuracy_score(y_true=targets.numpy(), y_pred=subclass_predictions.cpu().numpy()) * 100
-                #acc1, acc5 = accuracy(subclass_predictions, labels, topk=(1, 5))
+                #acc1, acc5 = accuracy(subclass_logits, labels, topk=(1, 5))
 
-                acc5 = 0
+                acc5 = 0 
+
                 testAcc1.update(acc1)
                 testAcc5.update(acc5)
                 test_loss.update(loss)

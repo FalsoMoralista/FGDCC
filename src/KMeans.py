@@ -10,6 +10,8 @@ import itertools
 
 import torch.nn.functional as F
 
+from src.utils import centered_kernel_alignment as cka_helper
+
 import numpy as np
 np.random.seed(0) # TODO: modify
 
@@ -111,7 +113,92 @@ class KMeansModule:
     def restart(self):
             self.n_kmeans = []   
             for _ in range(self.nb_classes):
-                self.n_kmeans.append([faiss.Kmeans(d=self.d, k=k, niter=1, verbose=False, min_points_per_centroid = 1) for k in self.k_range])         
+                self.n_kmeans.append([faiss.Kmeans(d=self.d, k=k, niter=1, verbose=False, min_points_per_centroid = 1) for k in self.k_range])     
+
+    def CKA_inter_cluster_separation(self, cls, device):
+        def two_by_two_combinations(values):
+            return list(itertools.combinations(values, 2))
+        S_scores = torch.zeros(len(self.k_range), device=device)
+        target_K_Means = self.n_kmeans[cls]
+        
+        for k_i, k in enumerate(self.k_range):
+            print('K:', k)
+            centroids = target_K_Means[k_i].centroids
+
+            pairs = torch.tensor(two_by_two_combinations(range(k)), device=device)
+            print('Pairs size', pairs.size())
+            print('pairs', pairs)
+
+            centroid_pairs = centroids[pairs]
+
+            # Extract the centroid pairs in a single operation
+            print('centroid_pairs', centroid_pairs.size())
+            print('centroid_pairs[0]:', centroid_pairs[:, 0])
+            print('centroid_pairs[1]:', centroid_pairs[:, 1])
+
+            cka_similarities = 0
+            for i in range(len(centroid_pairs)):
+                # Compute CKA similarity in a vectorized way
+                cka_similarities = cka_helper.compute_cka(centroid_pairs[i, 0], centroid_pairs[i, 1], unbiased=True)
+
+            print('CKA_similarity:', cka_similarities)
+            # Accumulate the sum of cosine similarities
+            S_scores[k_i] = cka_similarities / len(pairs) # averaging by the number of combinations because in its original formulation it favours large values of K
+        exit(0)
+        return S_scores
+
+    def CKA_cluster_index(self, xb, yb, current_cache, last_epoch_cache, device):
+        original_dtype = torch.get_default_dtype()
+        print('Original Dtype:', original_dtype)
+        #torch.set_default_dtype(torch.float64)
+        batch_size = xb.size(0)
+        D_batch = []
+        best_K_values = torch.zeros(batch_size, dtype=torch.int32, device=device)
+        cluster_assignments = torch.zeros(batch_size, dtype=torch.int32, device=device)
+        for i in range(batch_size):
+            class_id = yb[i].item()
+            sample = xb[i].unsqueeze(0)
+
+            image_list = current_cache.get(class_id, last_epoch_cache.get(class_id))  # TODO: review
+
+            batch_x = torch.stack(image_list).to(device, dtype=torch.float32)
+            batch_x = torch.cat((batch_x, sample), dim=0)
+
+            S_scores = self.CKA_inter_cluster_separation(class_id, device=device)
+            print('S-Scores:', S_scores)
+
+            target_K_Means = self.n_kmeans[class_id]
+
+            D_k = [] 
+            C_scores = torch.zeros(len(self.k_range), device=device)
+            for k_i, k_range in enumerate(self.k_range):
+                D, batch_assignments = target_K_Means[k_i].index.search(batch_x, 1)
+                batch_assignments = batch_assignments.squeeze(-1)
+                D_k.append(D[0])
+
+                centroids = target_K_Means[k_i].centroids
+
+                centroid_list = centroids[batch_assignments] 
+
+                # Compute the cosine similarity between every image and the cluster centroid to which is associated to
+                C_score = cka_helper.compute_cka(batch_x, centroid_list)
+                C_scores[k_i] = C_score.sum()
+
+            print('C-Scores:', C_scores)
+            D_batch.append(torch.stack(D_k))
+            CCI = S_scores / (C_scores + S_scores)
+            best_K_values[i] = CCI.argmin().item()
+            print('CCI:', CCI)
+            # Find the cluster assignment for the best K value
+            D, c_assignment = target_K_Means[best_K_values[i]].index.search(sample, 1)
+            c_assignment = c_assignment.squeeze(-1)
+            cluster_assignments[i] = c_assignment
+        
+        D_batch = torch.stack(D_batch)
+        exit(0)
+        return D_batch, best_K_values, cluster_assignments        
+
+
 
     def initialize_centroids(self, batch_x, class_id, resources, rank, device, config, cached_features):
         

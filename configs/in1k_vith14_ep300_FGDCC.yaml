@@ -7,10 +7,10 @@ data:
   crop_size: 224
   drop_path: 0.25
   mixup: 0.0 #0.8
-  nb_classes: 1081
+  nb_classes: 8142 # 1081
   cutmix: 0.0 #1.0
   reprob: 0.25
-  image_folder:  /home/rtcalumby/adam/luciano/plantnet_300K/
+  image_folder: /home/rtcalumby/adam/luciano/inat18/ #/home/rtcalumby/adam/luciano/plantnet_300K/
   num_workers: 16
   pin_mem: true
   root_path: /home/rtcalumby/adam/luciano/
@@ -19,7 +19,7 @@ data:
   use_horizontal_flip: false
   resume_epoch: 0
 logging:
-  folder: /home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp53
+  folder: /home/rtcalumby/adam/luciano/inat18/logs/exp_3 #/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp58
   write_tag: jepa
 mask:
   allow_overlap: false
@@ -49,12 +49,12 @@ optimization:
   - 0.9
   - 0.999
   epochs: 50
-  final_lr: 1.0e-05 # Default: 1e-6
+  final_lr: 5.0e-05 # Default: 1e-6
   final_weight_decay: 0.4  
   ipe_scale: 1.0
-  lr: 3.5e-04 #0.0007 # Default 0.0015 -> lr = base lr × batchsize / 256. (learning rate formula). /0.0007
-  start_lr: 9.0e-05 #0.00001 # Default: 0.0002 
-  warmup: 35
+  lr: 1.0e-03 #0.0007 # Default 0.0015 -> lr = base lr × batchsize / 256. (learning rate formula). /0.0007
+  start_lr: 1.0e-04 #0.00001 # Default: 0.0002 
+  warmup: 25
   weight_decay: 0.05
   label_smoothing: 0.1
 

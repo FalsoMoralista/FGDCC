@@ -1,0 +1,515 @@
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:root:called-params configs/in1k_vith14_ep300_FGDCC.yaml
+INFO:root:loaded params...
+{   'data': {   'batch_size': 96,
+                'color_jitter_strength': 0.0,
+                'crop_scale': [0.3, 1.0],
+                'crop_size': 224,
+                'cutmix': 0.0,
+                'drop_path': 0.25,
+                'image_folder': '/home/rtcalumby/adam/luciano/plantnet_300K/',
+                'mixup': 0.0,
+                'nb_classes': 1081,
+                'num_workers': 16,
+                'pin_mem': True,
+                'reprob': 0.25,
+                'resume_epoch': 0,
+                'root_path': '/home/rtcalumby/adam/luciano/',
+                'use_color_distortion': False,
+                'use_gaussian_blur': False,
+                'use_horizontal_flip': False},
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp59',
+                   'write_tag': 'jepa'},
+    'mask': {   'allow_overlap': False,
+                'aspect_ratio': [0.75, 1.5],
+                'enc_mask_scale': [0.85, 1.0],
+                'min_keep': 10,
+                'num_enc_masks': 1,
+                'num_pred_masks': 4,
+                'patch_size': 14,
+                'pred_mask_scale': [0.15, 0.2]},
+    'meta': {   'copy_data': False,
+                'load_checkpoint': True,
+                'model_name': 'vit_huge',
+                'pred_depth': 12,
+                'pred_emb_dim': 384,
+                'read_checkpoint': None,
+                'use_bfloat16': True},
+    'optimization': {   'ema': [0.9, 0.999],
+                        'epochs': 50,
+                        'final_lr': 1e-05,
+                        'final_weight_decay': 0.4,
+                        'ipe_scale': 1.0,
+                        'label_smoothing': 0.1,
+                        'lr': 0.0001,
+                        'start_lr': 1e-05,
+                        'warmup': 25,
+                        'weight_decay': 0.05}}
+INFO:root:Running... (rank: 0/1)
+INFO:root:Initialized (rank/world-size) 0/1
+INFO:root:making imagenet data transforms
+INFO:root:making imagenet data transforms
+INFO:root:Finetuning dataset created
+INFO:root:PairedDataset created
+Training dataset, length: 245952
+INFO:root:Finetuning dataset created
+Val dataset, length: 31200
+INFO:root:Using AdamW
+['encoder', 'predictor', 'opt', 'scaler', 'target_encoder', 'epoch', 'loss', 'batch_size', 'world_size', 'lr']
+INFO:root:loaded pretrained encoder from epoch 66 with msg: <All keys matched successfully>
+INFO:root:ClassificationHead(
+  (classifier): Linear(in_features=1280, out_features=15134, bias=True)
+)
+INFO:root:Using AdamW
+INFO:root:VisionTransformer(
+  (patch_embed): PatchEmbed(
+    (proj): Conv2d(3, 1280, kernel_size=(14, 14), stride=(14, 14))
+  )
+  (blocks): ModuleList(
+    (0-31): 32 x Block(
+      (norm1): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+      (attn): Attention(
+        (qkv): Linear(in_features=1280, out_features=3840, bias=True)
+        (attn_drop): Dropout(p=0.0, inplace=False)
+        (proj): Linear(in_features=1280, out_features=1280, bias=True)
+        (proj_drop): Dropout(p=0.0, inplace=False)
+      )
+      (drop_path): Identity()
+      (norm2): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+      (mlp): MLP(
+        (fc1): Linear(in_features=1280, out_features=5120, bias=True)
+        (act): GELU(approximate='none')
+        (fc2): Linear(in_features=5120, out_features=1280, bias=True)
+        (drop): Dropout(p=0.0, inplace=False)
+      )
+    )
+  )
+  (norm): LayerNorm((1280,), eps=1e-06, elementwise_affine=True)
+)
+INFO:root:Setting up cache...
+INFO:root:Done...
+INFO:root:Initializing centroids...
+INFO:root:Update Step...
+/home/rtcalumby/miniconda3/envs/py382/lib/python3.12/site-packages/faiss/contrib/torch_utils.py:51: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  x.storage().data_ptr() + x.storage_offset() * 4)
+INFO:root:Epoch 1
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+Original Dtype: torch.float32
+S-Scores: tensor([   nan, 0.3333, 0.1521, 0.0229], device='cuda:0')
+C-Scores: tensor([0.5298, 0.5576, 0.6326, 0.6929], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3741, 0.1938, 0.0320], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3329, 0.1229, 0.0160], device='cuda:0')
+C-Scores: tensor([0.3541, 0.7573, 0.8390, 0.8622], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3054, 0.1278, 0.0182], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3330, 0.1334, 0.0222], device='cuda:0')
+C-Scores: tensor([0.6116, 0.7562, 0.7942, 0.8197], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3058, 0.1438, 0.0263], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1557, 0.0356], device='cuda:0')
+C-Scores: tensor([0.5409, 0.6376, 0.6616, 0.6719], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3432, 0.1905, 0.0503], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1490, 0.0370], device='cuda:0')
+C-Scores: tensor([0.5181, 0.6011, 0.6278, 0.6475], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3567, 0.1918, 0.0540], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1529, 0.0210], device='cuda:0')
+C-Scores: tensor([0.5493, 0.6572, 0.6628, 0.7032], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3365, 0.1874, 0.0290], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1492, 0.0281], device='cuda:0')
+C-Scores: tensor([0.5454, 0.6188, 0.6500, 0.6745], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3500, 0.1867, 0.0400], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1161, 0.0186], device='cuda:0')
+C-Scores: tensor([0.3415, 0.7346, 0.8284, 0.9120], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3120, 0.1229, 0.0200], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1524, 0.0332], device='cuda:0')
+C-Scores: tensor([0.5798, 0.6695, 0.6927, 0.6985], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3323, 0.1804, 0.0454], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3328, 0.1156, 0.0163], device='cuda:0')
+C-Scores: tensor([0.3720, 0.6156, 0.7585, 0.8500], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3509, 0.1322, 0.0189], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1560, 0.0260], device='cuda:0')
+C-Scores: tensor([0.4825, 0.5518, 0.5609, 0.6591], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3766, 0.2176, 0.0379], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.1556, 0.0353], device='cuda:0')
+C-Scores: tensor([0.5114, 0.5837, 0.6161, 0.6280], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3633, 0.2016, 0.0533], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1542, 0.0227], device='cuda:0')
+C-Scores: tensor([0.5462, 0.6363, 0.6481, 0.6901], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3437, 0.1923, 0.0319], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1541, 0.0305], device='cuda:0')
+C-Scores: tensor([0.5176, 0.5936, 0.6182, 0.6375], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3595, 0.1996, 0.0456], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1305, 0.0331], device='cuda:0')
+C-Scores: tensor([0.6502, 0.7531, 0.7661, 0.7855], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3068, 0.1456, 0.0404], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3328, 0.1377, 0.0241], device='cuda:0')
+C-Scores: tensor([0.4411, 0.4759, 0.5293, 0.5784], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.4115, 0.2064, 0.0401], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3329, 0.1218, 0.0191], device='cuda:0')
+C-Scores: tensor([0.5728, 0.7146, 0.7389, 0.7653], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3178, 0.1415, 0.0244], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1494, 0.0291], device='cuda:0')
+C-Scores: tensor([0.6189, 0.6606, 0.6978, 0.7058], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3354, 0.1764, 0.0396], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1344, 0.0235], device='cuda:0')
+C-Scores: tensor([0.5516, 0.6541, 0.6847, 0.7011], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3375, 0.1641, 0.0324], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1582, 0.0296], device='cuda:0')
+C-Scores: tensor([0.5608, 0.6539, 0.6933, 0.6970], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3376, 0.1858, 0.0407], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.0951, 0.0244], device='cuda:0')
+C-Scores: tensor([0.5429, 0.6689, 0.6679, 0.7019], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3325, 0.1246, 0.0336], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.1268, 0.0166], device='cuda:0')
+C-Scores: tensor([0.5022, 0.5721, 0.6068, 0.6845], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3680, 0.1728, 0.0236], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1582, 0.0296], device='cuda:0')
+C-Scores: tensor([0.5608, 0.6538, 0.6932, 0.6968], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3376, 0.1858, 0.0407], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1385, 0.0265], device='cuda:0')
+C-Scores: tensor([0.5231, 0.6324, 0.6658, 0.6787], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3451, 0.1722, 0.0376], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1519, 0.0368], device='cuda:0')
+C-Scores: tensor([0.5566, 0.6381, 0.6779, 0.6797], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3430, 0.1830, 0.0514], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3330, 0.1380, 0.0171], device='cuda:0')
+C-Scores: tensor([0.6392, 0.7644, 0.7706, 0.8064], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3034, 0.1519, 0.0208], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3330, 0.1577, 0.0348], device='cuda:0')
+C-Scores: tensor([0.5748, 0.6620, 0.6753, 0.7255], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3347, 0.1894, 0.0458], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.1259, 0.0254], device='cuda:0')
+C-Scores: tensor([0.4944, 0.6779, 0.7686, 0.7748], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3295, 0.1408, 0.0318], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3330, 0.1369, 0.0177], device='cuda:0')
+C-Scores: tensor([0.6416, 0.6934, 0.7901, 0.7913], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3245, 0.1477, 0.0218], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1473, 0.0351], device='cuda:0')
+C-Scores: tensor([0.5507, 0.6414, 0.6585, 0.6689], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3419, 0.1828, 0.0498], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1502, 0.0264], device='cuda:0')
+C-Scores: tensor([0.5854, 0.6996, 0.7149, 0.7329], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3226, 0.1737, 0.0348], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1501, 0.0411], device='cuda:0')
+C-Scores: tensor([0.5721, 0.6287, 0.7067, 0.7222], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3464, 0.1751, 0.0539], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3327, 0.1307, 0.0195], device='cuda:0')
+C-Scores: tensor([0.7786, 0.7949, 0.8489, 0.8581], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.2951, 0.1334, 0.0222], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1403, 0.0239], device='cuda:0')
+C-Scores: tensor([0.6141, 0.7202, 0.7164, 0.7261], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3163, 0.1638, 0.0318], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3328, 0.0998, 0.0132], device='cuda:0')
+C-Scores: tensor([0.3375, 0.7369, 0.7696, 0.7967], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3111, 0.1148, 0.0163], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1477, 0.0307], device='cuda:0')
+C-Scores: tensor([0.5865, 0.7198, 0.7321, 0.7437], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3164, 0.1679, 0.0397], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1494, 0.0291], device='cuda:0')
+C-Scores: tensor([0.6192, 0.6608, 0.6978, 0.7057], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3353, 0.1764, 0.0397], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.1537, 0.0304], device='cuda:0')
+C-Scores: tensor([0.5263, 0.6856, 0.7061, 0.7134], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3270, 0.1788, 0.0409], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1559, 0.0406], device='cuda:0')
+C-Scores: tensor([0.5382, 0.6400, 0.6601, 0.6609], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3424, 0.1911, 0.0579], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.0951, 0.0244], device='cuda:0')
+C-Scores: tensor([0.5429, 0.6692, 0.6682, 0.7021], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3324, 0.1246, 0.0336], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.1419, 0.0304], device='cuda:0')
+C-Scores: tensor([0.6240, 0.6791, 0.7606, 0.7755], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3291, 0.1572, 0.0377], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3330, 0.1577, 0.0348], device='cuda:0')
+C-Scores: tensor([0.5749, 0.6620, 0.6753, 0.7255], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3347, 0.1894, 0.0458], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1412, 0.0249], device='cuda:0')
+C-Scores: tensor([0.5233, 0.5964, 0.6740, 0.7041], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3585, 0.1732, 0.0341], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1557, 0.0356], device='cuda:0')
+C-Scores: tensor([0.5406, 0.6374, 0.6614, 0.6718], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3433, 0.1905, 0.0503], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1436, 0.0365], device='cuda:0')
+C-Scores: tensor([0.4288, 0.5933, 0.6169, 0.6150], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3597, 0.1888, 0.0560], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1461, 0.0280], device='cuda:0')
+C-Scores: tensor([0.4786, 0.6384, 0.6670, 0.7231], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3429, 0.1797, 0.0372], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1434, 0.0306], device='cuda:0')
+C-Scores: tensor([0.4036, 0.6514, 0.7128, 0.7283], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3385, 0.1675, 0.0403], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1518, 0.0311], device='cuda:0')
+C-Scores: tensor([0.4203, 0.5264, 0.5938, 0.6364], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3877, 0.2035, 0.0467], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3330, 0.1457, 0.0205], device='cuda:0')
+C-Scores: tensor([0.6307, 0.7329, 0.7354, 0.7702], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3124, 0.1654, 0.0259], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1433, 0.0327], device='cuda:0')
+C-Scores: tensor([0.5660, 0.6986, 0.7061, 0.7259], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3230, 0.1687, 0.0431], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1521, 0.0312], device='cuda:0')
+C-Scores: tensor([0.5486, 0.6365, 0.6825, 0.6988], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3437, 0.1822, 0.0428], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3330, 0.1334, 0.0222], device='cuda:0')
+C-Scores: tensor([0.6118, 0.7560, 0.7941, 0.8197], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3058, 0.1438, 0.0263], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1518, 0.0279], device='cuda:0')
+C-Scores: tensor([0.5160, 0.5778, 0.6259, 0.6642], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3658, 0.1952, 0.0403], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1305, 0.0331], device='cuda:0')
+C-Scores: tensor([0.6501, 0.7530, 0.7660, 0.7854], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3068, 0.1456, 0.0404], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1424, 0.0331], device='cuda:0')
+C-Scores: tensor([0.5220, 0.6054, 0.6634, 0.6773], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3550, 0.1768, 0.0467], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.1437, 0.0423], device='cuda:0')
+C-Scores: tensor([0.5919, 0.6919, 0.7246, 0.7297], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3250, 0.1655, 0.0547], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1467, 0.0291], device='cuda:0')
+C-Scores: tensor([0.5246, 0.5453, 0.5781, 0.6724], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3793, 0.2024, 0.0414], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1578, 0.0248], device='cuda:0')
+C-Scores: tensor([0.5671, 0.6548, 0.6629, 0.7120], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3373, 0.1923, 0.0337], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1518, 0.0279], device='cuda:0')
+C-Scores: tensor([0.5160, 0.5777, 0.6259, 0.6642], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3658, 0.1952, 0.0403], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1493, 0.0200], device='cuda:0')
+C-Scores: tensor([0.5646, 0.6389, 0.6466, 0.6963], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3428, 0.1875, 0.0279], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1576, 0.0467], device='cuda:0')
+C-Scores: tensor([0.5608, 0.5956, 0.5959, 0.6535], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3588, 0.2092, 0.0666], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.1501, 0.0349], device='cuda:0')
+C-Scores: tensor([0.5502, 0.6422, 0.6607, 0.6982], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3416, 0.1851, 0.0476], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1521, 0.0244], device='cuda:0')
+C-Scores: tensor([0.5335, 0.6392, 0.6832, 0.7260], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3427, 0.1821, 0.0325], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.1402, 0.0181], device='cuda:0')
+C-Scores: tensor([0.6173, 0.7158, 0.7266, 0.7773], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3176, 0.1618, 0.0227], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1559, 0.0406], device='cuda:0')
+C-Scores: tensor([0.5378, 0.6397, 0.6598, 0.6605], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3425, 0.1911, 0.0580], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.1501, 0.0349], device='cuda:0')
+C-Scores: tensor([0.5502, 0.6422, 0.6607, 0.6981], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3416, 0.1851, 0.0476], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1473, 0.0244], device='cuda:0')
+C-Scores: tensor([0.5670, 0.6129, 0.6885, 0.7325], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3522, 0.1763, 0.0323], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1518, 0.0279], device='cuda:0')
+C-Scores: tensor([0.5158, 0.5777, 0.6259, 0.6642], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3658, 0.1952, 0.0403], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3330, 0.1380, 0.0171], device='cuda:0')
+C-Scores: tensor([0.6391, 0.7644, 0.7705, 0.8064], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3034, 0.1519, 0.0208], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3328, 0.1260, 0.0164], device='cuda:0')
+C-Scores: tensor([0.7714, 0.8459, 0.8607, 0.8682], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.2823, 0.1277, 0.0186], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1524, 0.0332], device='cuda:0')
+C-Scores: tensor([0.5798, 0.6696, 0.6929, 0.6985], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3323, 0.1803, 0.0454], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1305, 0.0331], device='cuda:0')
+C-Scores: tensor([0.6502, 0.7530, 0.7660, 0.7854], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3068, 0.1456, 0.0404], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1385, 0.0265], device='cuda:0')
+C-Scores: tensor([0.5240, 0.6323, 0.6657, 0.6782], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3451, 0.1722, 0.0377], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.1437, 0.0423], device='cuda:0')
+C-Scores: tensor([0.5916, 0.6917, 0.7244, 0.7295], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3251, 0.1656, 0.0548], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3329, 0.1218, 0.0191], device='cuda:0')
+C-Scores: tensor([0.5729, 0.7168, 0.7402, 0.7650], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3171, 0.1413, 0.0244], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1508, 0.0294], device='cuda:0')
+C-Scores: tensor([0.5493, 0.6531, 0.6697, 0.7178], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3379, 0.1838, 0.0394], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1485, 0.0398], device='cuda:0')
+C-Scores: tensor([0.5859, 0.6819, 0.6780, 0.7229], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3282, 0.1797, 0.0522], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3328, 0.1260, 0.0164], device='cuda:0')
+C-Scores: tensor([0.7714, 0.8459, 0.8607, 0.8682], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.2823, 0.1277, 0.0186], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.0951, 0.0244], device='cuda:0')
+C-Scores: tensor([0.5437, 0.6701, 0.6691, 0.7032], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3321, 0.1244, 0.0336], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3331, 0.1424, 0.0216], device='cuda:0')
+C-Scores: tensor([0.5328, 0.6420, 0.6607, 0.7020], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3416, 0.1773, 0.0298], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1488, 0.0179], device='cuda:0')
+C-Scores: tensor([0.5413, 0.6287, 0.6389, 0.7029], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3464, 0.1889, 0.0248], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1590, 0.0293], device='cuda:0')
+C-Scores: tensor([0.3553, 0.5806, 0.5583, 0.6434], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3646, 0.2217, 0.0435], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3330, 0.1334, 0.0222], device='cuda:0')
+C-Scores: tensor([0.6121, 0.7562, 0.7944, 0.8198], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3058, 0.1437, 0.0263], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1568, 0.0233], device='cuda:0')
+C-Scores: tensor([0.5320, 0.5626, 0.6463, 0.6947], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3720, 0.1953, 0.0324], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1396, 0.0254], device='cuda:0')
+C-Scores: tensor([0.5891, 0.6705, 0.7060, 0.7498], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3320, 0.1651, 0.0328], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1508, 0.0294], device='cuda:0')
+C-Scores: tensor([0.5490, 0.6528, 0.6693, 0.7175], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3380, 0.1839, 0.0394], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1483, 0.0299], device='cuda:0')
+C-Scores: tensor([0.4921, 0.5920, 0.6182, 0.6475], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3602, 0.1935, 0.0441], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3328, 0.1260, 0.0164], device='cuda:0')
+C-Scores: tensor([0.7713, 0.8459, 0.8607, 0.8682], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.2823, 0.1277, 0.0186], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3330, 0.1380, 0.0171], device='cuda:0')
+C-Scores: tensor([0.6390, 0.7643, 0.7705, 0.8063], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3034, 0.1519, 0.0208], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1568, 0.0233], device='cuda:0')
+C-Scores: tensor([0.5329, 0.5627, 0.6467, 0.6951], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3720, 0.1952, 0.0324], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1472, 0.0226], device='cuda:0')
+C-Scores: tensor([0.6051, 0.7490, 0.7784, 0.7985], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3079, 0.1590, 0.0276], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1502, 0.0276], device='cuda:0')
+C-Scores: tensor([0.5564, 0.6432, 0.7042, 0.7183], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3413, 0.1758, 0.0370], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1502, 0.0264], device='cuda:0')
+C-Scores: tensor([0.5856, 0.6998, 0.7150, 0.7330], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3226, 0.1736, 0.0348], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3332, 0.1502, 0.0264], device='cuda:0')
+C-Scores: tensor([0.5856, 0.6998, 0.7150, 0.7330], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3226, 0.1736, 0.0348], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3329, 0.1225, 0.0222], device='cuda:0')
+C-Scores: tensor([0.6221, 0.7616, 0.7978, 0.8243], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3041, 0.1331, 0.0262], device='cuda:0',
+       grad_fn=<DivBackward0>)
+S-Scores: tensor([   nan, 0.3333, 0.1469, 0.0406], device='cuda:0')
+C-Scores: tensor([0.4740, 0.5895, 0.6319, 0.6244], device='cuda:0', grad_fn=<CopySlices>)
+CCI: tensor([   nan, 0.3612, 0.1886, 0.0611], device='cuda:0',
+       grad_fn=<DivBackward0>)

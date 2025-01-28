@@ -10,6 +10,7 @@ class ClassificationHead(nn.Module):
         self.nb_classes = nb_classes
 
         num_classes = nb_classes * sum([K for K in K_range])
+
         self.classifier = nn.Linear(embed_dim, num_classes)        
         
         torch.nn.init.constant_(self.classifier.bias, 0)
