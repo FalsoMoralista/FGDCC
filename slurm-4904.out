@@ -4,7 +4,7 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:root:called-params configs/inat18.yaml
 INFO:root:loaded params...
-{   'data': {   'K_range': [2, 3, 4, 5],
+{   'data': {   'K_range': [2, 3, 4],
                 'batch_size': 96,
                 'cache_path': '/home/rtcalumby/adam/luciano/DeepCluster/cache/inat18',
                 'color_jitter_strength': 0.0,
@@ -23,7 +23,7 @@ INFO:root:loaded params...
                 'use_color_distortion': False,
                 'use_gaussian_blur': False,
                 'use_horizontal_flip': False},
-    'logging': {   'folder': '/home/rtcalumby/adam/luciano/inat18/logs/exp_1',
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/inat18/logs/exp_2',
                    'write_tag': 'jepa'},
     'mask': {   'allow_overlap': False,
                 'aspect_ratio': [0.75, 1.5],
@@ -50,7 +50,7 @@ INFO:root:loaded params...
                         'start_lr': 0.0005,
                         'warmup': 25,
                         'weight_decay': 0.05},
-    'vicreg': {'alpha': 5.0, 'beta': 25.0, 'gamma': 1.0}}
+    'vicreg': {'alpha': 10.0, 'beta': 25.0, 'gamma': 1.0}}
 INFO:root:Running... (rank: 0/1)
 INFO:root:Initialized (rank/world-size) 0/1
 INFO:root:making imagenet data transforms
@@ -64,7 +64,7 @@ INFO:root:Using AdamW
 ['encoder', 'predictor', 'opt', 'scaler', 'target_encoder', 'epoch', 'loss', 'batch_size', 'world_size', 'lr']
 INFO:root:loaded pretrained encoder from epoch 66 with msg: <All keys matched successfully>
 INFO:root:ClassificationHead(
-  (classifier): Linear(in_features=1280, out_features=113988, bias=True)
+  (classifier): Linear(in_features=1280, out_features=73278, bias=True)
 )
 INFO:root:Using AdamW
 INFO:root:VisionTransformer(
@@ -131,13 +131,7 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:root:[1,     0/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 11.6438 -Autoencoder Loss (total): 202.6638 - Reconstruction/K-Means Loss: [0.0000 / 202.6638] - Consistency Loss: [0.0000] - VICReg Loss: [24.6349][wd: 5.00e-02] [lr: 5.00e-04] [autoencoder lr: 0.00e+00][mem: 6.29e+04] (3821.2 ms)
-INFO:root:[1,     0] grad_stats: [1.54e+00 5.68e+00] (6.47e-01, 4.05e+01)
-INFO:root:[1,    50/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 10.7413 -Autoencoder Loss (total): 642.6573 - Reconstruction/K-Means Loss: [0.0000 / 642.6573] - Consistency Loss: [0.0000] - VICReg Loss: [23.4632][wd: 5.00e-02] [lr: 5.00e-04] [autoencoder lr: 0.00e+00][mem: 6.89e+04] (1500.5 ms)
-INFO:root:[1,    50] grad_stats: [7.53e-02 9.13e-02] (1.57e-03, 3.37e+00)
-INFO:root:[1,   100/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 10.4567 -Autoencoder Loss (total): 761.4331 - Reconstruction/K-Means Loss: [0.0000 / 761.4331] - Consistency Loss: [0.0000] - VICReg Loss: [23.5185][wd: 5.00e-02] [lr: 5.00e-04] [autoencoder lr: 0.00e+00][mem: 6.89e+04] (1472.0 ms)
-INFO:root:[1,   100] grad_stats: [4.15e-02 7.19e-02] (8.37e-04, 3.35e+00)
-INFO:root:[1,   150/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 10.2912 -Autoencoder Loss (total): 830.8645 - Reconstruction/K-Means Loss: [0.0000 / 830.8645] - Consistency Loss: [0.0000] - VICReg Loss: [23.5573][wd: 5.00e-02] [lr: 5.01e-04] [autoencoder lr: 0.00e+00][mem: 6.89e+04] (1461.9 ms)
-INFO:root:[1,   150] grad_stats: [2.23e-02 1.45e-02] (1.81e-03, 3.29e+00)
-INFO:root:[1,   200/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 10.1608 -Autoencoder Loss (total): 878.9116 - Reconstruction/K-Means Loss: [0.0000 / 878.9116] - Consistency Loss: [0.0000] - VICReg Loss: [23.3490][wd: 5.00e-02] [lr: 5.01e-04] [autoencoder lr: 0.00e+00][mem: 6.89e+04] (1458.4 ms)
-INFO:root:[1,   200] grad_stats: [5.92e-02 3.24e-02] (5.19e-03, 3.25e+00)
+INFO:root:[1,     0/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 11.2021 -Autoencoder Loss (total): 202.5996 - Reconstruction/K-Means Loss: [0.0000 / 202.5996] - Consistency Loss: [0.0000] - VICReg Loss: [26.1955][wd: 5.00e-02] [lr: 5.00e-04] [autoencoder lr: 0.00e+00][mem: 6.22e+04] (2970.9 ms)
+INFO:root:[1,     0] grad_stats: [1.37e+00 9.12e+00] (9.45e-01, 2.67e+01)
+INFO:root:[1,    50/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 10.4189 -Autoencoder Loss (total): 632.3751 - Reconstruction/K-Means Loss: [0.0000 / 632.3751] - Consistency Loss: [0.0000] - VICReg Loss: [23.3918][wd: 5.00e-02] [lr: 5.00e-04] [autoencoder lr: 0.00e+00][mem: 6.78e+04] (1446.6 ms)
+INFO:root:[1,    50] grad_stats: [1.06e-01 9.10e-02] (1.47e-03, 3.38e+00)

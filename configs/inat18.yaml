@@ -8,7 +8,7 @@ data:
   drop_path: 0.25
   mixup: 0.0 #0.8
   nb_classes: 8142
-  K_range: [2,3,4,5] 
+  K_range: [2,3,4] 
   cutmix: 0.0 #1.0
   reprob: 0.25
   image_folder: /home/rtcalumby/adam/luciano/inat18/ 

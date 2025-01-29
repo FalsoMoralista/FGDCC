@@ -4,7 +4,7 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:root:called-params configs/inat18.yaml
 INFO:root:loaded params...
-{   'data': {   'K_range': [2, 3, 4, 5],
+{   'data': {   'K_range': [2, 3, 4],
                 'batch_size': 96,
                 'cache_path': '/home/rtcalumby/adam/luciano/DeepCluster/cache/inat18',
                 'color_jitter_strength': 0.0,
@@ -23,7 +23,7 @@ INFO:root:loaded params...
                 'use_color_distortion': False,
                 'use_gaussian_blur': False,
                 'use_horizontal_flip': False},
-    'logging': {   'folder': '/home/rtcalumby/adam/luciano/inat18/logs/exp_2',
+    'logging': {   'folder': '/home/rtcalumby/adam/luciano/inat18/logs/exp_1',
                    'write_tag': 'jepa'},
     'mask': {   'allow_overlap': False,
                 'aspect_ratio': [0.75, 1.5],
@@ -50,7 +50,7 @@ INFO:root:loaded params...
                         'start_lr': 0.0005,
                         'warmup': 25,
                         'weight_decay': 0.05},
-    'vicreg': {'alpha': 10.0, 'beta': 25.0, 'gamma': 1.0}}
+    'vicreg': {'alpha': 5.0, 'beta': 25.0, 'gamma': 1.0}}
 INFO:root:Running... (rank: 0/1)
 INFO:root:Initialized (rank/world-size) 0/1
 INFO:root:making imagenet data transforms
@@ -64,7 +64,7 @@ INFO:root:Using AdamW
 ['encoder', 'predictor', 'opt', 'scaler', 'target_encoder', 'epoch', 'loss', 'batch_size', 'world_size', 'lr']
 INFO:root:loaded pretrained encoder from epoch 66 with msg: <All keys matched successfully>
 INFO:root:ClassificationHead(
-  (classifier): Linear(in_features=1280, out_features=113988, bias=True)
+  (classifier): Linear(in_features=1280, out_features=73278, bias=True)
 )
 INFO:root:Using AdamW
 INFO:root:VisionTransformer(
@@ -131,9 +131,7 @@ INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
 INFO:faiss.loader:Loading faiss with AVX2 support.
 INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
-INFO:root:[1,     0/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 11.6438 -Autoencoder Loss (total): 202.6638 - Reconstruction/K-Means Loss: [0.0000 / 202.6638] - Consistency Loss: [0.0000] - VICReg Loss: [26.5974][wd: 5.00e-02] [lr: 5.00e-04] [autoencoder lr: 0.00e+00][mem: 6.29e+04] (3653.1 ms)
-INFO:root:[1,     0] grad_stats: [1.81e+00 6.32e+00] (7.30e-01, 4.71e+01)
-INFO:root:[1,    50/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 11.1485 -Autoencoder Loss (total): 627.3749 - Reconstruction/K-Means Loss: [0.0000 / 627.3749] - Consistency Loss: [0.0000] - VICReg Loss: [29.2453][wd: 5.00e-02] [lr: 5.00e-04] [autoencoder lr: 0.00e+00][mem: 6.89e+04] (1507.7 ms)
-INFO:root:[1,    50] grad_stats: [1.17e-01 1.14e-01] (1.01e-03, 3.34e+00)
-INFO:root:[1,   100/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 10.7898 -Autoencoder Loss (total): 748.4667 - Reconstruction/K-Means Loss: [0.0000 / 748.4667] - Consistency Loss: [0.0000] - VICReg Loss: [26.1829][wd: 5.00e-02] [lr: 5.00e-04] [autoencoder lr: 0.00e+00][mem: 6.89e+04] (1479.2 ms)
-INFO:root:[1,   100] grad_stats: [6.73e-02 3.74e-02] (1.05e-03, 3.32e+00)
+INFO:root:[1,     0/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 11.2021 -Autoencoder Loss (total): 202.5996 - Reconstruction/K-Means Loss: [0.0000 / 202.5996] - Consistency Loss: [0.0000] - VICReg Loss: [24.2571][wd: 5.00e-02] [lr: 5.00e-04] [autoencoder lr: 0.00e+00][mem: 6.22e+04] (3280.8 ms)
+INFO:root:[1,     0] grad_stats: [1.06e+00 8.36e+00] (8.50e-01, 2.20e+01)
+INFO:root:[1,    50/ 4558] - train_losses - Parent Class: 0.0000 - Children class: 10.5578 -Autoencoder Loss (total): 630.7035 - Reconstruction/K-Means Loss: [0.0000 / 630.7035] - Consistency Loss: [0.0000] - VICReg Loss: [23.9068][wd: 5.00e-02] [lr: 5.00e-04] [autoencoder lr: 0.00e+00][mem: 6.78e+04] (1444.7 ms)
+INFO:root:[1,    50] grad_stats: [9.49e-02 1.29e-01] (1.77e-03, 3.36e+00)
