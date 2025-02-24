@@ -1,0 +1,6 @@
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Successfully loaded faiss with AVX2 support.
+Traceback (most recent call last):
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_finetuning.py", line 667, in <module>
+    main()
+TypeError: main() missing 1 required positional argument: 'args'

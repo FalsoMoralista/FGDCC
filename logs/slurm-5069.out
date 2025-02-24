@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC_v2.py", line 16, in <module>
+    from engine_FGDCCv2 import main as app_main
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCCv2.py", line 47, in <module>
+    from src.datasets.FineTuningDataset import make_GenericDataset
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/datasets/FineTuningDataset.py", line 22, in <module>
+    from timm.data import create_transform
+ModuleNotFoundError: No module named 'timm'

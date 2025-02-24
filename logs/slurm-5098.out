@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC_v2.py", line 16, in <module>
+    from engine_FGDCCv2 import main as app_main
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCCv2.py", line 76, in <module>
+    from sklearn.metrics import accuracy_score
+ModuleNotFoundError: No module named 'sklearn'

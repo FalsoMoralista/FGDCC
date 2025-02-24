@@ -1,0 +1,18 @@
+INFO:faiss.loader:Loading faiss with AVX2 support.
+INFO:faiss.loader:Could not load library with AVX2 support due to:
+ImportError('libmkl_intel_lp64.so.1: cannot open shared object file: No such file or directory')
+INFO:faiss.loader:Loading faiss.
+Traceback (most recent call last):
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC_v2.py", line 16, in <module>
+    from engine_FGDCCv2 import main as app_main
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCCv2.py", line 81, in <module>
+    from src import KMeans
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/KMeans.py", line 6, in <module>
+    import faiss
+  File "/home/rtcalumby/miniconda3/envs/fgdcc/lib/python3.10/site-packages/faiss/__init__.py", line 16, in <module>
+    from .loader import *
+  File "/home/rtcalumby/miniconda3/envs/fgdcc/lib/python3.10/site-packages/faiss/loader.py", line 65, in <module>
+    from .swigfaiss import *
+  File "/home/rtcalumby/miniconda3/envs/fgdcc/lib/python3.10/site-packages/faiss/swigfaiss.py", line 13, in <module>
+    from . import _swigfaiss
+ImportError: libmkl_intel_lp64.so.1: cannot open shared object file: No such file or directory

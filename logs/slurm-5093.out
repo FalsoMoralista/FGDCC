@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/main_FGDCC_v2.py", line 15, in <module>
+    from src.utils.distributed import init_distributed
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/utils/distributed.py", line 10, in <module>
+    import torch
+  File "/home/rtcalumby/miniconda3/envs/fgdcc/lib/python3.9/site-packages/torch/__init__.py", line 237, in <module>
+    from torch._C import *  # noqa: F403
+ImportError: /home/rtcalumby/miniconda3/envs/fgdcc/lib/python3.9/site-packages/torch/lib/libtorch_cuda.so: undefined symbol: cudaLaunchKernelExC, version libcudart.so.11.0

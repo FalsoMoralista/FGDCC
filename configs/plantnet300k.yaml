@@ -7,8 +7,7 @@ data:
   crop_size: 224
   drop_path: 0.25
   mixup: 0.0 #0.8
-  nb_classes: 1081
-  K_range: [2,3,4,5]  
+  nb_classes: 1081  
   cutmix: 0.0 #1.0
   reprob: 0.25
   image_folder: /home/rtcalumby/adam/luciano/plantnet_300K/  
@@ -20,12 +19,18 @@ data:
   use_gaussian_blur: false
   use_horizontal_flip: false
   resume_epoch: 0
+dinov2: false
+dinov2_meta:
+  model_name: vit_large  
+k_means:
+  K_range: [2,3,4,5]
+  reinitialize_centroids: 5
 vicreg:
   alpha: 7.5
   beta: 25.0
   gamma: 1.0  
 logging:
-  folder: /home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp58
+  folder: /home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp67
   write_tag: jepa
 mask:
   allow_overlap: false

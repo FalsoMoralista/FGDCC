@@ -62,7 +62,7 @@ from src.helper import (
     )
 
 from src.models import FGDCC
-from src.models.classification_model import ClassificationModel
+from src.models.classification_model import ClassificationModel, ClassificationHead
 from src.models.transformer_autoencoder import VisionTransformerAutoEncoder
 
 from src.transforms import make_transforms
@@ -126,6 +126,15 @@ def main(args, resume_preempt=False):
     reprob = args['data']['reprob']
     nb_classes = args['data']['nb_classes']
 
+    # -- K-means
+    K_range = args['k_means']['K_range']
+    reinitialize_centroids = args['k_means']['reinitialize_centroids']
+
+    # -- VICReg
+    alpha = args['vicreg']['alpha']
+    beta = args['vicreg']['beta']
+    gamma = args['vicreg']['gamma']
+
     # --
     batch_size = args['data']['batch_size']
     pin_mem = args['data']['pin_mem']
@@ -136,14 +145,6 @@ def main(args, resume_preempt=False):
     crop_scale = args['data']['crop_scale']
     resume_epoch = args['data']['resume_epoch']
     cache_path = args['data']['cache_path']
-
-
-    # -- VICReg
-    alpha = args['vicreg']['alpha']
-    beta = args['vicreg']['beta']
-    gamma = args['vicreg']['gamma']
-
-    # --
 
     # -- MASK
     allow_overlap = args['mask']['allow_overlap']  # whether to allow overlap b/w context and target blocks
@@ -225,16 +226,11 @@ def main(args, resume_preempt=False):
                            ('%.5f', 'Reconstruction loss'),
                            ('%.5f', 'K-Means loss'),
                            ('%.5f', 'Consistency loss'),
-                           ('%.5f', 'VICReg loss'), # TODO: remove
+                           ('%.5f', 'VICReg loss'),
                            ('%.3f', 'Test - Acc@1'),
                            ('%.3f', 'Test - Acc@5'),
                            ('%f', 'avg_empty_clusters_per_class'),
                            ('%d', 'time (ms)'))
-
-    reconstruction_logger = CSVLogger(folder + '/autoencoder_log.csv',
-                           ('%d', 'epoch'),
-                           ('%.5f', 'lr'),
-                           ('%.5f', 'Reconstruction loss'))
 
     # -- init model
     encoder, predictor = init_model(
@@ -266,6 +262,11 @@ def main(args, resume_preempt=False):
         supervised=True,
         validation=True,
         color_jitter=color_jitter)
+
+    if args['dinov2'] and args['dinov2_meta']['model_name'] == 'vit_large':
+        batch_size = 128
+    elif args['dinov2'] and args['dinov2_meta']['model_name'] == 'vit_giant':
+        batch_size = 64
 
     # -- init data-loaders/samplers
     _, regular_supervised_loader_train, supervised_sampler_train = make_GenericDataset(
@@ -363,16 +364,33 @@ def main(args, resume_preempt=False):
 
     CEL_no_reduction = torch.nn.CrossEntropyLoss(reduction='none')
 
-    # -- Load ImageNet weights
+    # -- Load weights
     if resume_epoch == 0:    
-        encoder, predictor, target_encoder, optimizer, scaler, start_epoch = load_checkpoint(
-            device=device,
-            r_path=load_path,
-            encoder=encoder,
-            predictor=predictor,
-            target_encoder=target_encoder,
-            opt=optimizer,
-            scaler=scaler)
+        if args['dinov2'] and args['dinov2_meta']['model_name'] == 'vit_large':
+            batch_size = 128
+            proj_embed_dim = 1024
+            target_encoder = torch.hub.load('facebookresearch/dinov2', 'dinov2_vitl14')
+            target_encoder.to(device)
+            cache_path = cache_path + '/dinov2_vit_large'
+            logger.info(f'Dino target encoder: {target_encoder}')        
+        elif args['dinov2'] and args['dinov2_meta']['model_name'] == 'vit_giant':
+            batch_size = 64
+            proj_embed_dim = 1536
+            target_encoder = torch.hub.load('facebookresearch/dinov2', 'dinov2_vitg14')
+            target_encoder.to(device)
+            cache_path = cache_path + '/dinov2_vit_giant'
+            logger.info(f'Dino target encoder: {target_encoder}')
+        else:
+            proj_embed_dim = 1280
+            cache_path = cache_path + '/ijepa_vit_huge'
+            encoder, predictor, target_encoder, optimizer, scaler, start_epoch = load_checkpoint(
+                device=device,
+                r_path=load_path,
+                encoder=encoder,
+                predictor=predictor,
+                target_encoder=target_encoder,
+                opt=optimizer,
+                scaler=scaler)
         
     del encoder
     del predictor
@@ -399,26 +417,21 @@ def main(args, resume_preempt=False):
             if (epoch + 1) % checkpoint_freq == 0:
                 torch.save(save_dict, save_path.format(epoch=f'{epoch + 1}'))
     
-    for p in target_encoder.parameters():
+
+    for p_num, p in enumerate(target_encoder.parameters()):
+        #if p_num <= 4: # Block 0 corresponds to p_num == 5 
+        #    p.requires_grad = False
+        #else:
         p.requires_grad = True
-    target_encoder = target_encoder.module 
 
-    proj_embed_dim = 1280
-    
-    K_range = args['data']['K_range']
-    
-    fgdcc = ClassificationModel(vit_backbone=target_encoder, K_range=K_range, embed_dim=proj_embed_dim, nb_classes=nb_classes).to(device)
-    
-    #fgdcc = FGDCC.get_model(embed_dim=target_encoder.embed_dim,
-    #                  drop_path=drop_path,
-    #                  nb_classes=num_classes,
-    #                  K_range = K_range,
-    #                  proj_embed_dim=proj_embed_dim,
-    #                  pretrained_model=target_encoder,
-    #                  device=device)
+    total_classes = nb_classes * sum([K for K in K_range])
 
+    fgdcc = ClassificationModel(vit_backbone=target_encoder,
+                                embed_dim=proj_embed_dim,
+                                dinov2 = args['dinov2'],
+                                nb_classes=total_classes).to(device)
     logger.info(fgdcc.classifier)
-
+    
     # -- Override previously loaded optimization configs.
     # Create one optimizer that takes into account both encoder and its classifier parameters.
     optimizer, AE_optimizer, AE_scheduler, scaler, scheduler, wd_scheduler = init_DC_opt(
@@ -436,7 +449,7 @@ def main(args, resume_preempt=False):
         ipe_scale=ipe_scale,
         use_bfloat16=use_bfloat16)
     
-    fgdcc = DistributedDataParallel(fgdcc, static_graph=False, find_unused_parameters=False)
+    fgdcc = DistributedDataParallel(fgdcc, static_graph=True, find_unused_parameters=False)
     
     # TODO: ADJUST THIS later!
     if resume_epoch != 0:
@@ -462,8 +475,7 @@ def main(args, resume_preempt=False):
     #configs[rank].device = rank
     #configs[rank].useFloat16 = False
 
-    dimensionality=1280
-    k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=dimensionality, k_range=K_range, resources=resources, config=config)
+    k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=proj_embed_dim, k_range=K_range, resources=resources, config=config)
 
     class_idx_map = train_dataset.class_to_idx
 
@@ -522,48 +534,24 @@ def main(args, resume_preempt=False):
     cached_features_last_epoch = build_cache_v2(data_loader=regular_supervised_loader_train,
                                                 device=device,
                                                 target_encoder=fgdcc.module.vit_encoder,
-                                                path=cache_path) # TODO: adjust here accordingly 
+                                                proj_embed_dim = proj_embed_dim,
+                                                dinov2=args['dinov2'],
+                                                path=cache_path)
     logger.info('Done...')
-    
     logger.info('Initializing centroids...')
     k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device)
     
     logger.info('Update Step...')
     M_losses = k_means_module.update(cached_features_last_epoch, device, empty_clusters_per_epoch) # M-step
 
-    def setup_k_dist_analysis(class_idx_mapping):
-        '''
-            Analyze how the cluster assignments are being distributed through epochs.
-        '''
-        idx_map_to_best_k = {} # Maps between cluster assignment and corresponding K value
-        prediction_distribution = {} # Keeps track of the distribution of K value predictions
-        for class_id in class_idx_mapping.keys():
-            for k in class_idx_mapping[class_id].keys():
-                if prediction_distribution.get(class_id, None) is None:
-                    prediction_distribution[class_id] = {}
-                if prediction_distribution[class_id].get(k, None) is None:
-                    prediction_distribution[class_id][k] = {}
-                prediction_distribution[class_id][k] = 0
-                for key in class_idx_mapping[class_id][k].keys():
-                    cluster_assignment = class_idx_mapping[class_id][k][key]
-                    idx_map_to_best_k[cluster_assignment] = k
-                
-        return prediction_distribution, idx_map_to_best_k
-
-    def update_cluster_counts(y_pred, y_hat, prediction_distribution, idx_map_to_best_k):
-        for i in range(len(y_pred)):
-            prediction = y_pred[i].item()
-            target = y_hat[i].item()
-            best_k = idx_map_to_best_k[prediction]
-            prediction_distribution[target][best_k] += 1
-
     start_epoch = resume_epoch
 
-    VCR = VICReg(args=None, num_features=1280, sim_coeff=alpha, std_coeff=beta, cov_coeff=gamma)
+    VCR = VICReg(args=None, num_features=proj_embed_dim, sim_coeff=alpha, std_coeff=beta, cov_coeff=gamma)
     reconstruction_loss_meter = AverageMeter()
 
-    T = 5
-    accum_iter = 1
+    T = reinitialize_centroids
+    
+    accum_iter = 1 # Gradient accumulation
 
     # -- TRAINING LOOP
     for epoch in range(start_epoch, num_epochs):
@@ -582,8 +570,6 @@ def main(args, resume_preempt=False):
         time_meter = AverageMeter()
 
         fgdcc.train(True)
-
-        prediction_distribution, idx_map_to_best_k = setup_k_dist_analysis(k_means_idx)
 
         prediction_distribution = cluster_assignment_distribution(class_idx_map)
 
@@ -616,22 +602,26 @@ def main(args, resume_preempt=False):
 
                     parent_logits, subclass_logits, subclass_proj_embed = fgdcc(imgs_1)
 
+                    # Desn't modify batch norm statistics
                     with torch.no_grad():
                         _, _, subclass_proj_embed_2 = fgdcc(imgs_2)
 
-                    subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
-                    subclass_proj_embed_2 = torch.mean(subclass_proj_embed_2, dim=1).squeeze(dim=1)
-                    
+                    #if not args['dinov2']:
+                        #subclass_proj_embed = torch.mean(subclass_proj_embed, dim=1).squeeze(dim=1)
+                        #subclass_proj_embed_2 = torch.mean(subclass_proj_embed_2, dim=1).squeeze(dim=1)    
+
                     vicreg_loss = VCR(subclass_proj_embed, subclass_proj_embed_2)
-                    
-                    vicreg_loss_meter.update(vicreg_loss)
 
-                    bottleneck_output = subclass_proj_embed
-
-                    #-- Compute K-Means assignments with disabled autocast for better precision
-                    with torch.cuda.amp.autocast(dtype=torch.float64, enabled=True): 
-                        k_means_losses, best_K_classifiers, cluster_assignments = k_means_module.cosine_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
+                    #-- Compute K-Means assignments with disabled autocast
+                    with torch.cuda.amp.autocast(enabled=False): 
+                        k_means_losses, best_K_classifiers, cluster_assignments = k_means_module.cosine_cluster_index(subclass_proj_embed,
+                                                                                                                      target,
+                                                                                                                      cached_features,
+                                                                                                                      cached_features_last_epoch,
+                                                                                                                      device)
                         #k_means_losses, best_K_classifiers, cluster_assignments = k_means_module.CKA_cluster_index(bottleneck_output, target, cached_features, cached_features_last_epoch, device)
+
+                    vicreg_loss_meter.update(vicreg_loss)                    
 
                     loss = 0
                     parent_cls_loss_meter.update(loss)
@@ -643,11 +633,11 @@ def main(args, resume_preempt=False):
                         cluster_assignment = cluster_assignments[i].item()
                         k_means_idx_targets[i] = k_means_idx[class_id][best_k_id+2][cluster_assignment]
                         prediction_distribution[class_id][best_k_id+2][cluster_assignment] += 1 # FIXME change name
+
                     subclass_loss = criterion(subclass_logits, k_means_idx_targets)
                     
                     # -- Setup losses
                     k_means_loss = 0
-                    consistency_loss = 0
 
                     k_means_losses = k_means_losses.squeeze(2).transpose(0,1)
                     k_means_loss = k_means_losses[best_K_classifiers, torch.arange(best_K_classifiers.size(0))].mean()
@@ -655,7 +645,7 @@ def main(args, resume_preempt=False):
                     children_cls_loss_meter.update(subclass_loss)
                                         
                     # Sum parent, subclass loss + Regularizers
-                    loss = loss + subclass_loss + vicreg_loss # + 0.25 * reconstruction_loss
+                    loss = loss + subclass_loss + vicreg_loss
                     
 
                     # FIXME: this won't work as expected since its a constant
@@ -677,7 +667,7 @@ def main(args, resume_preempt=False):
                     loss_value = loss
 
                 #  Step 2. Backward & step
-                if use_bfloat16:                   
+                if use_bfloat16:
                     scaler(loss, optimizer, clip_grad=None,
                                 parameters=(fgdcc.module.parameters()),
                                 create_graph=False, retain_graph=False,
@@ -691,7 +681,7 @@ def main(args, resume_preempt=False):
                 if (itr + 1) % accum_iter == 0:
                     optimizer.zero_grad()
 
-                return (float(loss), float(k_means_loss), _new_AE_lr, _new_lr, _new_wd, grad_stats, bottleneck_output)
+                return (float(loss), float(k_means_loss), _new_AE_lr, _new_lr, _new_wd, grad_stats, subclass_proj_embed)
 
             (loss, k_means_loss, ae_lr, _new_lr, _new_wd, grad_stats, bottleneck_output), etime = gpu_timer(train_step)
 
@@ -827,13 +817,12 @@ def main(args, resume_preempt=False):
                 labels = targets.to(device, non_blocking=True)
                                  
                 with torch.cuda.amp.autocast():
-                    parent_logits, subclass_logits, _ = fgdcc(images)
+                    loss = 0
+                    parent_logits, subclass_logits, _ = fgdcc(images)                    
                     predictions = torch.argmax(subclass_logits, dim=1) 
                     subclass_predictions = torch.tensor([reverse_idx[pred.item()] for pred in predictions]).to(device)  
-                    loss = 0                
+                                 
                 acc1 = accuracy_score(y_true=targets.numpy(), y_pred=subclass_predictions.cpu().numpy()) * 100
-                #acc1, acc5 = accuracy(subclass_logits, labels, topk=(1, 5))
-
                 acc5 = 0 
 
                 testAcc1.update(acc1)

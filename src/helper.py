@@ -228,8 +228,7 @@ def init_model(
     return encoder, predictor
 
 
-def build_cache_v2(data_loader, device, target_encoder, path, hierarchical_classifier=None):   
-
+def build_cache_v2(data_loader, device, target_encoder, path, proj_embed_dim=1280, dinov2=False,hierarchical_classifier=None):   
     target_encoder.eval()
     if not hierarchical_classifier is None: 
         hierarchical_classifier.eval()
@@ -242,12 +241,16 @@ def build_cache_v2(data_loader, device, target_encoder, path, hierarchical_class
                 targets = target.to(device, non_blocking=True)
                 return (samples, targets)
             imgs, _ = load_imgs()
-            with torch.no_grad():            
-                with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=True):            
+            with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=True):            
+                # TODO: fix normalizations below
+                with torch.no_grad():                 
                     h = target_encoder(imgs)
-                    h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
-                    h = torch.mean(h, dim=1) # Mean over patch-level representation and squeeze
-                    h = torch.squeeze(h, dim=1)  
+                    if not dinov2:
+                        h = F.layer_norm(h, (h.size(-1),)) # Normalize over feature-dim 
+                        h = torch.mean(h, dim=1) # Mean over patch-level representation and squeeze
+                        h = torch.squeeze(h, dim=1)
+                    else:
+                        h = target_encoder.norm(h)  
                     items.append((h, target))
     def build_feature_cache():
         cache = {}        
@@ -259,12 +262,13 @@ def build_cache_v2(data_loader, device, target_encoder, path, hierarchical_class
                     cache[class_id] = []                    
                 cache[class_id].append(x)
         return cache
-    if not os.path.exists(path + '/cached_features_1280_epoch_0.pt'):
+    if not os.path.exists(path + f'/cached_features_{proj_embed_dim}_epoch_0.pt'):
         forward_inputs()
         cache = build_feature_cache()
-        torch.save(cache, path + '/cached_features_1280_epoch_0.pt')
+        torch.save(cache, path + f'/cached_features_{proj_embed_dim}_epoch_0.pt')
     else:
-        cache = torch.load(path + '/cached_features_1280_epoch_0.pt')        
+        logger.info(f'Loading cached features at {path}')        
+        cache = torch.load(path + f'/cached_features_{proj_embed_dim}_epoch_0.pt')        
     target_encoder.train(True)
     
     if not hierarchical_classifier is None: 

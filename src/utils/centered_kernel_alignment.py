@@ -33,7 +33,7 @@ def center_gram(gram, unbiased=False):
     dtype = torch.float64 #gram.dtype
     device = gram.device
     unit = torch.ones((n, n), device=device, dtype=dtype)
-    identity = torch.eye(n, device=device, dtype=dtype)
+    #identity = torch.eye(n, device=device, dtype=dtype)
 
     if unbiased:
         gram = gram - unit.mm(gram) / (n - 2)

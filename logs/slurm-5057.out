@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "main_FGDCC_v2.py", line 16, in <module>
+    from engine_FGDCCv2 import main as app_main
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/engine_FGDCCv2.py", line 64, in <module>
+    from src.models import FGDCC
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/models/FGDCC.py", line 8, in <module>
+    from src.models.transformer_autoencoder import VisionTransformerAutoEncoder
+  File "/home/rtcalumby/adam/luciano/LifeCLEFPlant2022/DeepCluster/src/models/transformer_autoencoder.py", line 6, in <module>
+    import matplotlib.pyplot as plt
+ModuleNotFoundError: No module named 'matplotlib'

@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from src.utils import centered_kernel_alignment as cka_helper
 
 import numpy as np
-np.random.seed(0) # TODO: modify
+np.random.seed(0)
 
 import time
 
@@ -23,7 +23,7 @@ from src.utils.logging import (
 
 class KMeansModule:
 
-    def __init__(self, nb_classes, dimensionality=256, n_iter=300, tol=1e-4, k_range=[2,3,4,5], resources=None, config=None):
+    def __init__(self, nb_classes, dimensionality=256, n_iter=500, tol=1e-4, k_range=[2,3,4,5], resources=None, config=None):
         
         self.resources = resources
         self.config = config
@@ -58,24 +58,23 @@ class KMeansModule:
             centroid_pairs = centroids[pairs]
 
             # Compute cosine similarity in a vectorized way
-            cosine_similarities = F.cosine_similarity(centroid_pairs[:, 0], centroid_pairs[:, 1], dim=1)
+            cosine_similarities = F.cosine_similarity(centroid_pairs[:, 0], centroid_pairs[:, 1], dim=1) # F.pairwise_distance(centroid_pairs[:, 0], centroid_pairs[:, 1])
             
             # Accumulate the sum of cosine similarities
             S_scores[k_i] = cosine_similarities.sum() / len(pairs) # averaging by the number of combinations because in its original formulation it favours large values of K
         return S_scores
 
     def cosine_cluster_index(self, xb, yb, current_cache, last_epoch_cache, device):
-
         batch_size = xb.size(0)
         D_batch = []
         best_K_values = torch.zeros(batch_size, dtype=torch.int32, device=device)
+        
         cluster_assignments = torch.zeros(batch_size, dtype=torch.int32, device=device)
         for i in range(batch_size):
             class_id = yb[i].item()
             sample = xb[i].unsqueeze(0)
 
-            image_list = current_cache.get(class_id, last_epoch_cache.get(class_id))  # TODO: repensar isso
-
+            image_list = current_cache.get(class_id, last_epoch_cache.get(class_id))  # TODO: review
             batch_x = torch.stack(image_list).to(device, dtype=torch.float32)
             batch_x = torch.cat((batch_x, sample), dim=0)
 
@@ -95,7 +94,7 @@ class KMeansModule:
                 centroid_list = centroids[batch_assignments] 
 
                 # Compute the cosine similarity between every image and the cluster centroid to which is associated to
-                C_score = F.cosine_similarity(batch_x, centroid_list)
+                C_score = F.cosine_similarity(batch_x, centroid_list) # F.pairwise_distance(batch_x, centroid_list) 
                 C_scores[k_i] = C_score.sum()
 
             D_batch.append(torch.stack(D_k))
@@ -105,6 +104,7 @@ class KMeansModule:
             # Find the cluster assignment for the best K value
             D, c_assignment = target_K_Means[best_K_values[i]].index.search(sample, 1)
             c_assignment = c_assignment.squeeze(-1)
+
             cluster_assignments[i] = c_assignment
 
         D_batch = torch.stack(D_batch)
@@ -226,7 +226,7 @@ class KMeansModule:
             batch_x = torch.stack(image_list).to(device)
         for k in range(len(self.k_range)):    
             # Then train K-means model for one iteration to initialize centroids (kmeans++ init)
-            self.n_kmeans[class_id][k].train(batch_x.detach().cpu()) 
+            self.n_kmeans[class_id][k].train(batch_x.detach().cpu().numpy()) 
             # Replace the regular index by a gpu one     
             index_flat = self.n_kmeans[class_id][k].index
             gpu_index_flat = faiss.index_cpu_to_gpu(self.resources, rank, index_flat)
@@ -263,16 +263,6 @@ class KMeansModule:
     
     '''
         Assigns a single data point to the set of clusters correspondent to the y target.
-
-        Centroid initialization is going to be a problem in the first epoch because we wouldn't have the features cached yet, after that we can use the previous epoch's
-        cache to initialize the centroids appropriately. Despite that, initialization is a problem for the first epochs despite of everything. That's because we are 
-        using the reduced dimension features provided by an autoencoder that is going to be simultaneously trained to reduce the dimensionality of the features 
-        provided by a ViT encoder that haven't properly learned good features yet. Therefore in the first few epochs, the initialization is expected to be very poor.
-        
-        Other than that we would still could have residual problems due to this initialization process.
-        Because of that, another regularization mechanism that we could do to circumvent this is to reset the K-means
-        centroids after every N epochs. (Another ablation parameter).  
-
     '''
     def assign(self, x, y, resources=None, rank=None, device=None, cached_features=None):
         D_batch = []
@@ -362,7 +352,7 @@ class KMeansModule:
                     sign = (torch.randint(0, 3, (num_empty_clusters, self.d), device=device) - 1).float()
                     perturbations = sign * eps
 
-                    if len(non_empty) > 0:  # Check if non_empty is actually non-empty
+                    if len(non_empty) > 0:  # Check if non_empty is actually non-empty 
                         non_empty_idx = torch.tensor(non_empty, device=device, dtype=torch.int64)
                         selected_idx = non_empty_idx[torch.randint(0, non_empty_idx.size(0), (num_empty_clusters,), device=device)]
                         new_centroids[empty_mask] = new_centroids[selected_idx] + perturbations
