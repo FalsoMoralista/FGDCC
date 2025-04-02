@@ -30,7 +30,7 @@ vicreg:
   beta: 25.0
   gamma: 1.0  
 logging:
-  folder: /home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp67
+  folder: /home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp68
   write_tag: jepa
 mask:
   allow_overlap: false

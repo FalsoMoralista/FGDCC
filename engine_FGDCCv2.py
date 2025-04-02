@@ -79,6 +79,8 @@ from sklearn.metrics import accuracy_score
 import pickle
 
 from src import KMeans
+from src import soft_kmeans
+
 import faiss
 
 # --
@@ -475,7 +477,7 @@ def main(args, resume_preempt=False):
     #configs[rank].device = rank
     #configs[rank].useFloat16 = False
 
-    k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=proj_embed_dim, k_range=K_range, resources=resources, config=config)
+    #k_means_module = KMeans.KMeansModule(nb_classes, dimensionality=proj_embed_dim, k_range=K_range, resources=resources, config=config)
 
     class_idx_map = train_dataset.class_to_idx
 
@@ -538,11 +540,12 @@ def main(args, resume_preempt=False):
                                                 dinov2=args['dinov2'],
                                                 path=cache_path)
     logger.info('Done...')
-    logger.info('Initializing centroids...')
-    k_means_module.init(resources=resources, rank=rank, cached_features=cached_features_last_epoch, config=config, device=device)
+    logger.info('Initializing prototypes...')
+    k_means_module = soft_kmeans.SoftKMeans(nb_classes=nb_classes, d=proj_embed_dim)
+    k_means_module.init_centroids(feature_bank=cached_features_last_epoch)
+    logger.info('Done...')
     
-    logger.info('Update Step...')
-    M_losses = k_means_module.update(cached_features_last_epoch, device, empty_clusters_per_epoch) # M-step
+    exit(0)
 
     start_epoch = resume_epoch
 
