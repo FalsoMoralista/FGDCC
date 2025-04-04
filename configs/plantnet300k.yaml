@@ -28,9 +28,9 @@ k_means:
 vicreg:
   alpha: 7.5
   beta: 25.0
-  gamma: 1.0  
+  gamma: 2.0  
 logging:
-  folder: /home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp67
+  folder: /home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp70
   write_tag: jepa
 mask:
   allow_overlap: false
