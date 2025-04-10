@@ -26,11 +26,11 @@ k_means:
   K_range: [2,3,4,5]
   reinitialize_centroids: 5
 vicreg:
-  alpha: 7.5
-  beta: 25.0
-  gamma: 2.0  
+  alpha: 0
+  beta: 0.0
+  gamma: 1.0  
 logging:
-  folder: /home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp70
+  folder: /home/rtcalumby/adam/luciano/LifeCLEFPlant2022/logs/PlantNet300k_exp77
   write_tag: jepa
 mask:
   allow_overlap: false
