@@ -793,7 +793,7 @@ def main(args, resume_preempt=False):
         # is not consistent. 
         # Good news is that we only have to make the cache consistent in order to make the k-means consistent as well.
         
-        # -- Perform M step on K-means module
+        # -- Update K-means
         M_losses = k_means_module.update(cached_features, device, empty_clusters_per_epoch)
         
         print('Avg no of empty clusters:', empty_clusters_per_epoch.avg) # TODO: REMOVE (doesn't work)

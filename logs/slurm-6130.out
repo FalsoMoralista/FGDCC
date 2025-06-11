@@ -1,0 +1,2 @@
+Error: YAML file name is required as an argument.
+Usage: sbatch -J inat_3 --gpus 1 --mincpus 16 FGDCC_v2.sh <YAML_FILE_NAME>

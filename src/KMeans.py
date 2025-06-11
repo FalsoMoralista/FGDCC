@@ -352,7 +352,7 @@ class KMeansModule:
                     sign = (torch.randint(0, 3, (num_empty_clusters, self.d), device=device) - 1).float()
                     perturbations = sign * eps
 
-                    if len(non_empty) > 0:  # Check if non_empty is actually non-empty 
+                    if len(non_empty) > 0: 
                         non_empty_idx = torch.tensor(non_empty, device=device, dtype=torch.int64)
                         selected_idx = non_empty_idx[torch.randint(0, non_empty_idx.size(0), (num_empty_clusters,), device=device)]
                         new_centroids[empty_mask] = new_centroids[selected_idx] + perturbations
@@ -362,10 +362,32 @@ class KMeansModule:
                         new_centroids[empty_mask] = self.n_kmeans[class_index][k].centroids[selected_idx] + perturbations
                         empty_clusters.extend([K] * num_empty_clusters)
                 
-                # Update the centroids in the FAISS index
-                self.n_kmeans[class_index][k].centroids = new_centroids
-                self.n_kmeans[class_index][k].index.reset()
-                self.n_kmeans[class_index][k].index.add(new_centroids)
+                # Normalize centroids
+                normalized_centroids = F.normalize(new_centroids, p=2, dim=1)
+                normalized_centroids_np = normalized_centroids.cpu().numpy().astype('float32')
+
+                # Replace the index with a new one containing normalized centroids
+                index = faiss.IndexFlatIP(self.d)  # Use Inner Product for cosine similarity
+                gpu_index = faiss.index_cpu_to_gpu(self.resources, 0, index)
+
+                # Add normalized centroids to the index
+                gpu_index.add(normalized_centroids_np)
+
+                # Store the centroids
+                #self.centroids = normalized_centroids.to(device)                
+                
+                ###
+                 
+                # Update the centroids in the FAISS index (older version)
+                #self.n_kmeans[class_index][k].centroids = new_centroids
+                #self.n_kmeans[class_index][k].index.reset()
+                #self.n_kmeans[class_index][k].index.add(new_centroids)
+                
+                # Update the centroids in the FAISS index (new version)
+                self.n_kmeans[class_index][k].centroids = normalized_centroids
+                self.n_kmeans[class_index][k].index = gpu_index
+                self.n_kmeans[class_index][k].gpu = True
+
                 D_per_K_value[k] = torch.mean(D)
                 
         if empty_clusters:
